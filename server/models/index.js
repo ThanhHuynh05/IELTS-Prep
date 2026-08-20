@@ -1,0 +1,86 @@
+import mongoose from 'mongoose';
+
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, enum: ['user', 'admin'], default: 'user' },
+  createdAt: { type: Date, default: Date.now }
+});
+
+export const User = mongoose.model('User', userSchema);
+
+const settingsSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  targetBand: { type: Number, required: true },
+  testDate: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+export const Settings = mongoose.model('Settings', settingsSchema);
+
+const customPassageSchema = new mongoose.Schema({
+  id: { type: String, required: true, unique: true },
+  title: { type: String, required: true },
+  text: { type: String, required: true },
+  sections: { type: Array, required: true }, // Store flexible JSON structure
+  createdAt: { type: Date, default: Date.now }
+});
+
+export const CustomPassage = mongoose.model('CustomPassage', customPassageSchema);
+
+const customListeningSchema = new mongoose.Schema({
+  id: { type: String, required: true, unique: true },
+  title: { type: String, required: true },
+  audioUrl: { type: String, required: true },
+  transcript: { type: String },
+  sections: { type: Array, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+export const CustomListening = mongoose.model('CustomListening', customListeningSchema);
+
+const customWritingSchema = new mongoose.Schema({
+  id: { type: String, required: true, unique: true },
+  title: { type: String, required: true },
+  task1: { type: String, required: true },
+  task2: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+export const CustomWriting = mongoose.model('CustomWriting', customWritingSchema);
+
+const customSpeakingSchema = new mongoose.Schema({
+  id: { type: String, required: true, unique: true },
+  title: { type: String, required: true },
+  part1: { type: Array, required: true },
+  part2: { type: String, required: true },
+  part3: { type: Array, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+export const CustomSpeaking = mongoose.model('CustomSpeaking', customSpeakingSchema);
+
+const mockResultSchema = new mongoose.Schema({
+  username: { type: String, required: true },
+  id: { type: String, required: true },
+  overallBand: { type: Number, required: true },
+  readingBand: { type: Number },
+  listeningBand: { type: Number },
+  writingBand: { type: Number },
+  speakingBand: { type: Number },
+  date: { type: Date, default: Date.now }
+});
+
+export const MockResult = mongoose.model('MockResult', mockResultSchema);
+
+const sectionResultSchema = new mongoose.Schema({
+  username: { type: String, required: true },
+  section: { type: String, enum: ['reading', 'listening', 'writing', 'speaking'], required: true },
+  date: { type: Date, default: Date.now },
+  // Flexible schema to accommodate different result structures (e.g., scores, feedback, raw answers)
+  data: { type: mongoose.Schema.Types.Mixed, required: true }
+});
+
+export const SectionResult = mongoose.model('SectionResult', sectionResultSchema);

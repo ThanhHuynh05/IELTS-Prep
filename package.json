@@ -1,0 +1,14 @@
+{
+  "name": "ielts-master",
+  "version": "1.0.0",
+  "description": "IELTS Master full stack application",
+  "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "npm start --prefix server",
+    "client": "npm run dev --prefix ielts-app",
+    "install-all": "npm install && npm install --prefix server && npm install --prefix ielts-app"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

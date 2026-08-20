@@ -1,0 +1,170 @@
+import { useState, useEffect, useRef } from 'react';
+import { saveResult } from '../../utils/storage';
+
+export default function WritingFeedback({ feedback, onReset, originalEssay }) {
+  const [activeError, setActiveError] = useState(null);
+
+  if (!feedback) return null;
+
+  const renderHighlightedEssay = (essay, errors) => {
+    if (!errors || errors.length === 0) return <p className="whitespace-pre-wrap">{essay}</p>;
+
+    let elements = [essay];
+    
+    errors.forEach((err, index) => {
+      if (!err.originalText) return;
+      
+      let newElements = [];
+      elements.forEach(el => {
+        if (typeof el === 'string') {
+          const parts = el.split(err.originalText);
+          for (let i = 0; i < parts.length; i++) {
+            newElements.push(parts[i]);
+            if (i < parts.length - 1) {
+              newElements.push(
+                <span 
+                  key={`${index}-${i}`} 
+                  onClick={() => setActiveError(err)}
+                  className={`cursor-pointer rounded px-1 font-medium border-b-2 transition-colors ${
+                    err.type === 'grammar' 
+                      ? 'bg-red-100 border-red-400 text-red-900 hover:bg-red-200' 
+                      : 'bg-orange-100 border-orange-400 text-orange-900 hover:bg-orange-200'
+                  }`}
+                >
+                  {err.originalText}
+                </span>
+              );
+            }
+          }
+        } else {
+          newElements.push(el);
+        }
+      });
+      elements = newElements;
+    });
+
+    return (
+      <div className="whitespace-pre-wrap leading-relaxed text-gray-800">
+        {elements.map((el, i) => typeof el === 'string' ? <span key={`text-${i}`}>{el}</span> : el)}
+      </div>
+    );
+  };
+
+  const hasSaved = useRef(false);
+  useEffect(() => {
+    if (feedback && !hasSaved.current) {
+      saveResult('writing', {
+        estimatedBand: Number(feedback.overallBand),
+        title: "Writing Practice",
+        criteria: feedback.criteria
+      });
+      hasSaved.current = true;
+    }
+  }, [feedback]);
+
+  return (
+    <div className="space-y-6">
+      {/* Overall Score */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
+        <h2 className="text-lg text-gray-600 font-medium mb-2">Overall Band Score</h2>
+        <div className="text-5xl font-bold text-blue-600">{Number(feedback.overallBand).toFixed(1)}</div>
+      </div>
+
+      {/* Highlighted Essay Section */}
+      {originalEssay && (
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="font-semibold text-gray-800 mb-4 text-lg">Your Essay Analysis</h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Click on the <span className="bg-red-100 border-b-2 border-red-400 text-red-900 px-1 rounded">red</span> (grammar) or <span className="bg-orange-100 border-b-2 border-orange-400 text-orange-900 px-1 rounded">orange</span> (vocabulary) highlights to see corrections.
+          </p>
+          <div className="p-4 bg-gray-50 rounded-md border border-gray-100 relative">
+            {renderHighlightedEssay(originalEssay, feedback.errors || [])}
+            
+            {/* Error Tooltip */}
+            {activeError && (
+              <div className="mt-4 p-4 bg-white border border-gray-200 rounded-lg shadow-lg relative">
+                <button 
+                  onClick={() => setActiveError(null)}
+                  className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+                <div className="mb-2">
+                  <span className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+                    {activeError.type} Error
+                  </span>
+                </div>
+                <div className="mb-3">
+                  <p className="text-red-600 line-through mb-1">{activeError.originalText}</p>
+                  <p className="text-green-600 font-medium">{activeError.correction}</p>
+                </div>
+                <p className="text-gray-700 text-sm bg-gray-50 p-3 rounded">{activeError.explanation}</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Criteria Scores */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {Object.entries(feedback.criteria).map(([key, data]) => {
+          const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+          return (
+            <div key={key} className="bg-white p-4 rounded-lg shadow-sm border">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="font-semibold text-gray-800">{title}</h3>
+                <span className="bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-sm">
+                  {Number(data.band).toFixed(1)}
+                </span>
+              </div>
+              <p className="text-gray-600 text-sm">{data.feedback}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Strengths & Improvements */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-green-50 p-6 rounded-lg border border-green-100">
+          <h3 className="font-semibold text-green-800 mb-3">Strengths</h3>
+          <ul className="list-disc pl-5 space-y-1 text-green-700 text-sm">
+            {feedback.strengths.map((str, i) => <li key={i}>{str}</li>)}
+          </ul>
+        </div>
+        <div className="bg-amber-50 p-6 rounded-lg border border-amber-100">
+          <h3 className="font-semibold text-amber-800 mb-3">Areas to Improve</h3>
+          <ul className="list-disc pl-5 space-y-1 text-amber-700 text-sm">
+            {feedback.improvements.map((imp, i) => <li key={i}>{imp}</li>)}
+          </ul>
+        </div>
+      </div>
+
+      {/* Band 7.0 Sample Answer */}
+      {feedback.sampleAnswer && (
+        <div className="bg-blue-50 p-6 rounded-lg border border-blue-100 mt-6">
+          <h3 className="font-semibold text-blue-800 mb-4 text-lg">Band 7.0 Sample Answer</h3>
+          <div className="bg-white p-4 rounded border border-blue-200 text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
+            {feedback.sampleAnswer}
+          </div>
+        </div>
+      )}
+
+      {/* Corrected Sentence (Fallback) */}
+      {feedback.correctedSentence && (!feedback.errors || feedback.errors.length === 0) && (
+        <div className="bg-blue-50 p-6 rounded-lg border border-blue-100">
+          <h3 className="font-semibold text-blue-800 mb-2">Example Correction</h3>
+          <p className="text-blue-700 italic">"{feedback.correctedSentence}"</p>
+        </div>
+      )}
+
+      <div className="flex justify-center mt-6">
+        <button
+          onClick={onReset}
+          className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-6 rounded-md transition-colors border"
+        >
+          Try Another Question
+        </button>
+      </div>
+    </div>
+  );
+}
