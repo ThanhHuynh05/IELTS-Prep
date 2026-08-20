@@ -16,14 +16,14 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Simulate strict backend validation
-  const login = async (username, password) => {
+  const login = async (identifier, password) => {
     try {
       const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ identifier, password }),
       });
 
       if (!response.ok) {

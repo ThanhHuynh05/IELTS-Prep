@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { UserPlus, User, Lock, Mail, AlertCircle, ArrowLeft, Shield } from 'lucide-react';
+import { UserPlus, User, Lock, Mail, AlertCircle, ArrowLeft, Shield, CheckCircle2, XCircle } from 'lucide-react';
 
 export default function Register() {
   const [username, setUsername] = useState('');
@@ -11,6 +11,9 @@ export default function Register() {
   const [adminCode, setAdminCode] = useState('');
   const [error, setError] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
+  
+  const doPasswordsMatch = confirmPassword.length > 0 && password === confirmPassword;
+  const doPasswordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
   
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -158,11 +161,26 @@ export default function Register() {
                   name="confirmPassword"
                   type="password"
                   required
-                  className="block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 py-2 transition-colors"
+                  className={`block w-full pl-10 pr-10 sm:text-sm rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white py-2 transition-colors ${
+                    doPasswordsMismatch
+                      ? 'border-red-300 dark:border-red-700 focus:ring-red-500 focus:border-red-500'
+                      : doPasswordsMatch
+                      ? 'border-green-500 dark:border-green-500 focus:ring-green-500 focus:border-green-500'
+                      : 'border-gray-300 dark:border-gray-700 focus:ring-indigo-500 focus:border-indigo-500'
+                  }`}
                   placeholder="Confirm your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
+                {confirmPassword.length > 0 && (
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    {doPasswordsMatch ? (
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <XCircle className="h-5 w-5 text-red-500" />
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 

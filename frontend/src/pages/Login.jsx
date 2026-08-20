@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { Lock, User, LogIn, AlertCircle, ArrowLeft } from 'lucide-react';
 
 export default function Login() {
-  const [username, setUsername] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -16,16 +16,16 @@ export default function Login() {
     e.preventDefault();
     setError('');
     
-    const trimmedUsername = username.trim();
-    if (!trimmedUsername || !password) {
-      setError('Username and password are required');
+    const trimmedIdentifier = identifier.trim();
+    if (!trimmedIdentifier || !password) {
+      setError('Username/Email and password are required');
       return;
     }
 
     setIsLoggingIn(true);
 
     try {
-      const result = await login(trimmedUsername, password);
+      const result = await login(trimmedIdentifier, password);
       if (result.success) {
         navigate('/dashboard');
       } else {
@@ -68,7 +68,7 @@ export default function Login() {
             
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Username
+                Username or Email
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -77,10 +77,10 @@ export default function Login() {
                 <input
                   type="text"
                   required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-700 rounded-md py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  placeholder="admin or user"
+                  placeholder="username or email"
                 />
               </div>
             </div>
