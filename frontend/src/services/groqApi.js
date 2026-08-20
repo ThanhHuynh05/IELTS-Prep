@@ -21,10 +21,9 @@ export async function gradeWriting(taskType, question, essay) {
   "sampleAnswer": "<a complete, well-written Band 7.0 sample response to the question. It MUST be full length (at least 250 words for Task 2) and MUST include clear paragraph breaks using \\n\\n>"
 }`;
 
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+  const response = await fetch("http://localhost:5000/api/evaluate", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
@@ -60,10 +59,9 @@ export async function gradeSpeaking(part, prompt, transcript) {
   "betterPhrase": "<suggest one improved phrase from the transcript>"
 }`;
 
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+  const response = await fetch("http://localhost:5000/api/evaluate", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({

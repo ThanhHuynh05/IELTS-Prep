@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, List } from 'lucide-react';
 
 const DEFAULT_READING_JSON = `[
   {
@@ -38,6 +38,11 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState('reading');
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+
+  // Manage Content State
+  const [manageType, setManageType] = useState('reading');
+  const [contentList, setContentList] = useState([]);
+  const [isLoadingContent, setIsLoadingContent] = useState(false);
 
   // Reading State
   const [rTitle, setRTitle] = useState('');
@@ -143,6 +148,42 @@ export default function AdminPanel() {
     } catch (err) { setError(err.message); }
   };
 
+  useEffect(() => {
+    if (activeTab === 'manage') {
+      fetchContent(manageType);
+    }
+  }, [activeTab, manageType]);
+
+  const fetchContent = async (type) => {
+    setIsLoadingContent(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_URL}/content/${type}`);
+      if (!res.ok) throw new Error('Failed to fetch content');
+      const data = await res.json();
+      setContentList(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoadingContent(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this content?")) return;
+    try {
+      const res = await fetch(`${API_URL}/content/${manageType}/${id}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) throw new Error('Failed to delete content');
+      setSuccess("Content deleted successfully!");
+      fetchContent(manageType);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-8 animate-in fade-in pb-12">
       <div className="flex items-center space-x-3 mb-8">
@@ -161,13 +202,17 @@ export default function AdminPanel() {
         <button onClick={() => {setActiveTab('listening'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'listening' ? 'bg-purple-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><Headphones size={16} className="mr-2" /> Listening</button>
         <button onClick={() => {setActiveTab('writing'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'writing' ? 'bg-orange-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><PenTool size={16} className="mr-2" /> Writing</button>
         <button onClick={() => {setActiveTab('speaking'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'speaking' ? 'bg-pink-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><Mic size={16} className="mr-2" /> Speaking</button>
+        <button onClick={() => {setActiveTab('manage'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'manage' ? 'bg-gray-800 text-white dark:bg-gray-700' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><List size={16} className="mr-2" /> Manage Content</button>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
         <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center capitalize">
-            <PlusCircle size={20} className="mr-2 text-blue-500" />
-            Add New {activeTab} Content
+            {activeTab === 'manage' ? (
+              <><List size={20} className="mr-2 text-gray-600 dark:text-gray-400" /> Manage Existing Content</>
+            ) : (
+              <><PlusCircle size={20} className="mr-2 text-blue-500" /> Add New {activeTab} Content</>
+            )}
           </h2>
         </div>
 
@@ -211,6 +256,42 @@ export default function AdminPanel() {
               <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Part 3 Questions (One per line)</label><textarea value={sPart3} onChange={(e) => setSPart3(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="How has the internet changed the way we learn?\nWhat are the dangers of spending too much time online?" /></div>
               <div className="flex justify-end pt-4"><button onClick={handleSaveSpeaking} className="flex items-center px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-lg shadow-sm"><Save size={20} className="mr-2" />Save Speaking Topic</button></div>
             </>
+          )}
+
+          {activeTab === 'manage' && (
+            <div className="space-y-6">
+              <div className="flex space-x-4 border-b border-gray-200 dark:border-gray-700 pb-4">
+                <button onClick={() => setManageType('reading')} className={`pb-2 border-b-2 font-medium ${manageType === 'reading' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Reading</button>
+                <button onClick={() => setManageType('listening')} className={`pb-2 border-b-2 font-medium ${manageType === 'listening' ? 'border-purple-600 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Listening</button>
+                <button onClick={() => setManageType('writing')} className={`pb-2 border-b-2 font-medium ${manageType === 'writing' ? 'border-orange-600 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Writing</button>
+                <button onClick={() => setManageType('speaking')} className={`pb-2 border-b-2 font-medium ${manageType === 'speaking' ? 'border-pink-600 text-pink-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Speaking</button>
+              </div>
+
+              {isLoadingContent ? (
+                <div className="text-center py-8 text-gray-500">Loading content...</div>
+              ) : contentList.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">No custom {manageType} content found.</div>
+              ) : (
+                <div className="space-y-4">
+                  {contentList.map(item => (
+                    <div key={item._id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
+                      <div>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">{item.title}</h4>
+                        <p className="text-sm text-gray-500">ID: {item._id}</p>
+                      </div>
+                      <button 
+                        onClick={() => handleDelete(item._id)}
+                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors"
+                        title="Delete"
+                        aria-label={`Delete ${item.title}`}
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
 
         </div>

@@ -58,4 +58,36 @@ router.post('/:type', async (req, res) => {
   }
 });
 
+// Delete content by type and ID
+router.delete('/:type/:id', async (req, res) => {
+  const { type, id } = req.params;
+  try {
+    let doc;
+    switch (type) {
+      case 'reading':
+        doc = await CustomPassage.findByIdAndDelete(id);
+        break;
+      case 'listening':
+        doc = await CustomListening.findByIdAndDelete(id);
+        break;
+      case 'writing':
+        doc = await CustomWriting.findByIdAndDelete(id);
+        break;
+      case 'speaking':
+        doc = await CustomSpeaking.findByIdAndDelete(id);
+        break;
+      default:
+        return res.status(400).json({ message: 'Invalid content type' });
+    }
+    
+    if (!doc) {
+      return res.status(404).json({ message: 'Content not found' });
+    }
+    
+    res.json({ message: 'Content deleted successfully', id });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 export default router;

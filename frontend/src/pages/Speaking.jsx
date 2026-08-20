@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import SpeakingPrompt from '../components/speaking/SpeakingPrompt';
 import AudioRecorder from '../components/speaking/AudioRecorder';
 import SpeakingFeedback from '../components/speaking/SpeakingFeedback';
 import { gradeSpeaking } from '../services/groqApi';
 import { SPEAKING_TOPICS } from '../data/speakingTopics';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Clock, SkipForward } from 'lucide-react';
 import TipsModal from '../components/common/TipsModal';
 import LoadingSkeleton from '../components/common/LoadingSkeleton';
 
@@ -16,7 +16,7 @@ const SPEAKING_TIPS = [
   "If you make a mistake, quickly correct yourself and keep going."
 ];
 
-export default function Speaking({ isMockMode, onMockSubmit }) {
+const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const [topics, setTopics] = useState(SPEAKING_TOPICS);
   const [selectedTopic, setSelectedTopic] = useState(SPEAKING_TOPICS[0]);
   const [taskPart, setTaskPart] = useState('part1');
@@ -27,6 +27,45 @@ export default function Speaking({ isMockMode, onMockSubmit }) {
   const [error, setError] = useState(null);
   const [submittedTranscript, setSubmittedTranscript] = useState('');
   const [showTips, setShowTips] = useState(false);
+  const [currentTranscript, setCurrentTranscript] = useState('');
+  const [prepPhase, setPrepPhase] = useState('prep');
+  const [prepSeconds, setPrepSeconds] = useState(60);
+
+  useImperativeHandle(ref, () => ({
+    forceSubmit: () => {
+      if (currentTranscript.trim()) {
+        handleSubmit(currentTranscript);
+      } else {
+        if (onMockSubmit) onMockSubmit({ estimatedBand: 0, rawScore: 0, maxScore: 40 });
+      }
+    }
+  }));
+
+  useEffect(() => {
+    if (taskPart === 'part2') {
+      setPrepPhase('prep');
+      setPrepSeconds(60);
+    } else {
+      setPrepPhase('recording');
+    }
+  }, [taskPart, currentQuestionIndex, practiceMode]);
+
+  useEffect(() => {
+    let interval = null;
+    if (practiceMode && !feedback && taskPart === 'part2' && prepPhase === 'prep') {
+      interval = setInterval(() => {
+        setPrepSeconds(prev => {
+          if (prev <= 1) {
+            setPrepPhase('recording');
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [practiceMode, feedback, taskPart, prepPhase]);
 
   useEffect(() => {
     const fetchCustomTopics = async () => {
@@ -220,6 +259,7 @@ export default function Speaking({ isMockMode, onMockSubmit }) {
                  <button 
                    onClick={() => setCurrentQuestionIndex(p => Math.max(0, p - 1))}
                    disabled={currentQuestionIndex === 0}
+                   aria-label="Previous question"
                    className="text-sm font-medium text-blue-600 hover:bg-blue-50 px-3 py-1 rounded disabled:text-gray-400 disabled:hover:bg-transparent transition-colors"
                  >
                    &larr; Previous
@@ -230,6 +270,7 @@ export default function Speaking({ isMockMode, onMockSubmit }) {
                  <button 
                    onClick={() => setCurrentQuestionIndex(p => Math.min(selectedTopic[taskPart].length - 1, p + 1))}
                    disabled={currentQuestionIndex === selectedTopic[taskPart].length - 1}
+                   aria-label="Next question"
                    className="text-sm font-medium text-blue-600 hover:bg-blue-50 px-3 py-1 rounded disabled:text-gray-400 disabled:hover:bg-transparent transition-colors"
                  >
                    Next &rarr;
@@ -239,10 +280,41 @@ export default function Speaking({ isMockMode, onMockSubmit }) {
 
             <SpeakingPrompt taskPart={taskPart} prompt={currentPrompt} />
             
-            <AudioRecorder 
-              isGrading={isGrading}
-              onSubmit={handleSubmit}
-            />
+            {taskPart === 'part2' && prepPhase === 'prep' ? (
+              <div className="bg-white p-8 rounded-xl shadow-sm border mb-6 flex flex-col items-center">
+                <h3 className="text-xl font-bold text-gray-800 mb-6">Preparation Time</h3>
+                <div className="relative w-32 h-32 flex items-center justify-center mb-6">
+                  <svg className="absolute top-0 left-0 w-full h-full transform -rotate-90">
+                    <circle cx="64" cy="64" r="60" stroke="#E5E7EB" strokeWidth="8" fill="none" />
+                    <circle 
+                      cx="64" cy="64" r="60" 
+                      stroke="#3B82F6" 
+                      strokeWidth="8" 
+                      fill="none" 
+                      strokeDasharray="377" 
+                      strokeDashoffset={377 - (377 * prepSeconds) / 60}
+                      className="transition-all duration-1000 ease-linear"
+                    />
+                  </svg>
+                  <div className="flex flex-col items-center justify-center z-10">
+                    <Clock size={24} className="text-blue-600 mb-1" />
+                    <span className="text-2xl font-bold text-gray-900">{prepSeconds}s</span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setPrepPhase('recording')}
+                  className="text-blue-600 hover:text-blue-800 font-medium flex items-center"
+                >
+                  Skip Prep Time <SkipForward size={16} className="ml-1" />
+                </button>
+              </div>
+            ) : (
+              <AudioRecorder 
+                isGrading={isGrading}
+                onSubmit={handleSubmit}
+                onContentChange={setCurrentTranscript}
+              />
+            )}
           </div>
         ) : (
           /* Feedback View */
@@ -266,4 +338,6 @@ export default function Speaking({ isMockMode, onMockSubmit }) {
       </div>
     </div>
   );
-}
+});
+
+export default Speaking;

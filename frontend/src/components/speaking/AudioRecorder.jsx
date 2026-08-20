@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mic, Square, Loader2, RotateCcw } from 'lucide-react';
 import { useAudioRecorder } from '../../hooks/useAudioRecorder';
 
-export default function AudioRecorder({ isGrading, onSubmit }) {
+export default function AudioRecorder({ isGrading, onSubmit, onContentChange }) {
   const { isRecording, transcript, startRecording, stopRecording, resetTranscript } = useAudioRecorder();
+  
+  useEffect(() => {
+    if (onContentChange) onContentChange(transcript);
+  }, [transcript, onContentChange]);
   
   const handleStopAndSubmit = () => {
     stopRecording();

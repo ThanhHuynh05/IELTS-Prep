@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
-export default function WritingEditor({ taskType, onSubmit, isGrading }) {
+export default function WritingEditor({ taskType, onSubmit, isGrading, onContentChange }) {
   const [essay, setEssay] = useState('');
   const [wordCount, setWordCount] = useState(0);
 
@@ -10,7 +10,8 @@ export default function WritingEditor({ taskType, onSubmit, isGrading }) {
   useEffect(() => {
     const words = essay.trim().split(/\s+/).filter(word => word.length > 0);
     setWordCount(words.length);
-  }, [essay]);
+    if (onContentChange) onContentChange(essay);
+  }, [essay, onContentChange]);
 
   const handleSubmit = () => {
     onSubmit(essay);
@@ -18,11 +19,20 @@ export default function WritingEditor({ taskType, onSubmit, isGrading }) {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-semibold text-gray-800">Your Response</h3>
-        <span className={`text-sm font-medium ${wordCount < minWords ? 'text-red-500' : 'text-green-600'}`}>
-          {wordCount} / {minWords} words minimum
+      <div className="flex justify-between items-center mb-1">
+        <h3 className="font-semibold text-gray-800 dark:text-gray-200">Your Response</h3>
+        <span className={`text-sm font-medium ${
+          wordCount >= minWords 
+            ? 'text-green-600 dark:text-green-400' 
+            : wordCount >= minWords - 50 
+              ? 'text-orange-500 dark:text-orange-400' 
+              : 'text-red-500 dark:text-red-400'
+        }`}>
+          Words: {wordCount}
         </span>
+      </div>
+      <div className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+        Minimum {minWords} words required for this task
       </div>
       
       <textarea

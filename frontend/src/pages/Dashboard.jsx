@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { getResults, getRecentActivity, getSettings } from '../utils/storage';
-import { Activity, BookOpen, Headphones, PenTool, Mic, Target, Calendar } from 'lucide-react';
+import { getResults, getRecentActivity, getSettings, saveSettings } from '../utils/storage';
+import { Activity, BookOpen, Headphones, PenTool, Mic, Target, Calendar, Edit2 } from 'lucide-react';
+import LoadingSkeleton from '../components/common/LoadingSkeleton';
 
 export default function Dashboard() {
   const [readingData, setReadingData] = useState([]);
@@ -10,9 +12,13 @@ export default function Dashboard() {
   const [speakingData, setSpeakingData] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
   const [settings, setSettings] = useState(null);
+  const [isEditingBand, setIsEditingBand] = useState(false);
+  const [tempTargetBand, setTempTargetBand] = useState('7.0');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
         const [read, listen, write, speak, activity, userSettings] = await Promise.all([
           getResults('reading'),
@@ -29,12 +35,36 @@ export default function Dashboard() {
         setSpeakingData(speak);
         setRecentActivity(activity.slice(0, 5));
         setSettings(userSettings);
+        setTempTargetBand(userSettings?.targetBand || '7.0');
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
   }, []);
+
+  const handleBandSave = async () => {
+    setIsEditingBand(false);
+    const newBand = parseFloat(tempTargetBand);
+    if (!isNaN(newBand) && newBand >= 1 && newBand <= 9) {
+      const formattedBand = newBand.toFixed(1);
+      const newSettings = { ...settings, targetBand: formattedBand };
+      setSettings(newSettings);
+      await saveSettings(newSettings);
+    } else {
+      setTempTargetBand(settings?.targetBand || '7.0');
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') handleBandSave();
+    if (e.key === 'Escape') {
+      setIsEditingBand(false);
+      setTempTargetBand(settings?.targetBand || '7.0');
+    }
+  };
 
   const getLatestBand = (data) => {
     if (!data || data.length === 0) return '-';
@@ -92,6 +122,22 @@ export default function Dashboard() {
 
   const daysLeft = calculateDaysLeft();
 
+  if (isLoading) {
+    return (
+      <div className="max-w-[1400px] mx-auto p-4 md:p-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Your Progress Dashboard</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-32 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
+          ))}
+        </div>
+        <div className="h-[400px] bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
+      </div>
+    );
+  }
+
+  const isDataEmpty = maxLength === 0;
+
   return (
     <div className="max-w-[1400px] mx-auto p-4 md:p-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
@@ -101,12 +147,35 @@ export default function Dashboard() {
         </div>
         {settings && (
           <div className="mt-4 md:mt-0 flex space-x-4">
-            {settings.targetBand && (
+            {settings.targetBand !== undefined && (
               <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <Target size={20} className="text-blue-500" />
                 <div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">Target Band</div>
-                  <div className="font-bold text-gray-900 dark:text-white">{settings.targetBand}</div>
+                  {isEditingBand ? (
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="1"
+                      max="9"
+                      value={tempTargetBand}
+                      onChange={(e) => setTempTargetBand(e.target.value)}
+                      onBlur={handleBandSave}
+                      onKeyDown={handleKeyDown}
+                      className="w-16 font-bold text-gray-900 dark:text-white bg-transparent border-b border-blue-500 focus:outline-none"
+                      autoFocus
+                    />
+                  ) : (
+                    <button 
+                      className="font-bold text-gray-900 dark:text-white cursor-pointer hover:text-blue-500 transition-colors flex items-center group"
+                      onClick={() => setIsEditingBand(true)}
+                      aria-label="Edit target band score"
+                      title="Click to edit"
+                    >
+                      {settings.targetBand}
+                      <Edit2 size={12} className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -143,9 +212,34 @@ export default function Dashboard() {
         <SectionCard title="Speaking" icon={Mic} colorClass="bg-pink-100 text-pink-600" data={speakingData} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Band Score Progression</h2>
+      {isDataEmpty ? (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center shadow-sm">
+          <div className="bg-blue-100 dark:bg-blue-900/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Activity className="text-blue-600 dark:text-blue-400" size={40} />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">No practice sessions yet!</h2>
+          <p className="text-gray-600 dark:text-gray-400 max-w-lg mx-auto mb-8">
+            Start your first practice session to generate your estimated band score, track your progress, and get AI-powered feedback.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link to="/reading" className="px-6 py-2 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 font-medium rounded-lg hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors flex items-center">
+              <BookOpen size={18} className="mr-2" /> Reading
+            </Link>
+            <Link to="/listening" className="px-6 py-2 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 font-medium rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors flex items-center">
+              <Headphones size={18} className="mr-2" /> Listening
+            </Link>
+            <Link to="/writing" className="px-6 py-2 bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 font-medium rounded-lg hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors flex items-center">
+              <PenTool size={18} className="mr-2" /> Writing
+            </Link>
+            <Link to="/speaking" className="px-6 py-2 bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400 font-medium rounded-lg hover:bg-pink-200 dark:hover:bg-pink-900/50 transition-colors flex items-center">
+              <Mic size={18} className="mr-2" /> Speaking
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Band Score Progression</h2>
           {chartData.length > 0 ? (
             <div className="h-[400px] w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -196,7 +290,8 @@ export default function Dashboard() {
             <p className="text-gray-500 dark:text-gray-400 text-sm">No recent activity. Start practicing to see your history!</p>
           )}
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

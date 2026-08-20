@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { passages as staticPassages } from '../data/readingPassages';
 import ReadingPassage from '../components/reading/ReadingPassage';
 import ReadingQuestions from '../components/reading/ReadingQuestions';
@@ -13,7 +13,7 @@ const READING_TIPS = [
   "Be careful with spelling in short-answer questions. Exact matches are required."
 ];
 
-export default function Reading({ isMockMode, onMockSubmit }) {
+const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const [passages, setPassages] = useState(staticPassages);
   const [selectedPassage, setSelectedPassage] = useState(staticPassages[0]);
   const [userAnswers, setUserAnswers] = useState({});
@@ -40,6 +40,12 @@ export default function Reading({ isMockMode, onMockSubmit }) {
   const handleAnswerChange = (questionId, value) => {
     setUserAnswers(prev => ({ ...prev, [questionId]: value }));
   };
+
+  useImperativeHandle(ref, () => ({
+    forceSubmit: () => {
+      handleSubmit();
+    }
+  }));
 
   const handleSubmit = () => {
     if (isMockMode) {
@@ -151,4 +157,6 @@ export default function Reading({ isMockMode, onMockSubmit }) {
       </div>
     </div>
   );
-}
+});
+
+export default Reading;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { listeningTests as staticTests } from '../data/listeningTests';
 import ListeningPlayer from '../components/listening/ListeningPlayer';
 import ListeningQuestions from '../components/listening/ListeningQuestions';
@@ -13,7 +13,7 @@ const LISTENING_TIPS = [
   "Pay attention to synonyms and paraphrasing—the recording rarely uses the exact words from the question."
 ];
 
-export default function Listening({ isMockMode, onMockSubmit }) {
+const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const [tests, setTests] = useState(staticTests);
   const [selectedTest, setSelectedTest] = useState(staticTests[0]);
   const [userAnswers, setUserAnswers] = useState({});
@@ -40,6 +40,12 @@ export default function Listening({ isMockMode, onMockSubmit }) {
   const handleAnswerChange = (questionId, value) => {
     setUserAnswers(prev => ({ ...prev, [questionId]: value }));
   };
+
+  useImperativeHandle(ref, () => ({
+    forceSubmit: () => {
+      handleSubmit();
+    }
+  }));
 
   const handleSubmit = () => {
     if (isMockMode) {
@@ -182,4 +188,6 @@ export default function Listening({ isMockMode, onMockSubmit }) {
       </div>
     </div>
   );
-}
+});
+
+export default Listening;

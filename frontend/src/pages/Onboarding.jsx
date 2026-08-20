@@ -25,10 +25,11 @@ export default function Onboarding({ onComplete }) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="targetBand" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Target Overall Band Score
             </label>
             <select
+              id="targetBand"
               value={targetBand}
               onChange={(e) => setTargetBand(e.target.value)}
               className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -41,10 +42,11 @@ export default function Onboarding({ onComplete }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+            <label htmlFor="testDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
               <Calendar size={16} className="mr-2" /> Official Test Date (Optional)
             </label>
             <input
+              id="testDate"
               type="date"
               value={testDate}
               onChange={(e) => setTestDate(e.target.value)}

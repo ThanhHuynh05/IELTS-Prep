@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Clock } from 'lucide-react';
 import useTimer from '../hooks/useTimer';
@@ -21,16 +21,20 @@ export default function MockTest() {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [results, setResults] = useState({});
   const [isFinished, setIsFinished] = useState(false);
+  const [isGradingOnExpire, setIsGradingOnExpire] = useState(false);
+  const sectionRef = useRef(null);
 
   const currentSection = SECTIONS[currentSectionIndex];
 
   // Callback when timer hits 0
   const handleExpire = () => {
-    // If they run out of time without submitting, they get whatever they had, or 0.
-    // To cleanly advance, we simulate an empty submission.
-    // The specific components don't auto-grade partial work currently if we just force next.
-    // So we'll assign a 0 for that section if they timeout completely.
-    handleSectionSubmit({ estimatedBand: 0, rawScore: 0, maxScore: 40 });
+    setIsGradingOnExpire(true);
+    if (sectionRef.current && sectionRef.current.forceSubmit) {
+      sectionRef.current.forceSubmit();
+    } else {
+      handleSectionSubmit({ estimatedBand: 0, rawScore: 0, maxScore: 40 });
+      setIsGradingOnExpire(false);
+    }
   };
 
   const timer = useTimer(currentSection?.minutes || 1, handleExpire);
@@ -42,6 +46,7 @@ export default function MockTest() {
 
   const handleSectionSubmit = (sectionResult) => {
     timer.stop();
+    setIsGradingOnExpire(false);
     setResults(prev => ({
       ...prev,
       [currentSection.id]: sectionResult
@@ -124,10 +129,17 @@ export default function MockTest() {
           </div>
         </div>
       </div>
+      
+      {isGradingOnExpire && (
+        <div className="absolute top-16 left-0 right-0 z-40 bg-blue-600 text-white p-2 text-center text-sm font-medium shadow-md">
+          Time's up! Submitting your work...
+        </div>
+      )}
 
       {/* Component Area */}
       <div className="flex-1 overflow-hidden relative bg-gray-50">
         <CurrentComponent 
+          ref={sectionRef}
           isMockMode={true} 
           onMockSubmit={handleSectionSubmit} 
         />

@@ -13,6 +13,7 @@ export default function TipsModal({ isOpen, onClose, title, tips }) {
           </h2>
           <button 
             onClick={onClose}
+            aria-label="Close tips"
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
           >
             <X size={20} />

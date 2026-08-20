@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import WritingQuestion from '../components/writing/WritingQuestion';
 import WritingEditor from '../components/writing/WritingEditor';
 import WritingFeedback from '../components/writing/WritingFeedback';
@@ -9,6 +9,7 @@ import LoadingSkeleton from '../components/common/LoadingSkeleton';
 const STANDARD_TEST = {
   id: 'standard-writ',
   title: 'Standard Practice',
+  task1Image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Graph_of_tourist_arrivals_in_the_Caribbean.svg/800px-Graph_of_tourist_arrivals_in_the_Caribbean.svg.png',
   task1: "The graph below shows the number of tourists visiting a particular Caribbean island between 2010 and 2017.\n\nSummarize the information by selecting and reporting the main features, and make comparisons where relevant.",
   task2: "Some people believe that unpaid community service should be a compulsory part of high school programs (for example working for a charity, improving the neighbourhood or teaching sports to younger children).\n\nTo what extent do you agree or disagree?"
 };
@@ -21,7 +22,7 @@ const WRITING_TIPS = [
   "Use a variety of complex sentence structures to score higher in Grammatical Range."
 ];
 
-export default function Writing({ isMockMode, onMockSubmit }) {
+const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const [tests, setTests] = useState([STANDARD_TEST]);
   const [selectedTest, setSelectedTest] = useState(STANDARD_TEST);
   const [taskType, setTaskType] = useState('task2');
@@ -31,6 +32,17 @@ export default function Writing({ isMockMode, onMockSubmit }) {
   const [error, setError] = useState(null);
   const [submittedEssay, setSubmittedEssay] = useState('');
   const [showTips, setShowTips] = useState(false);
+  const [currentEssay, setCurrentEssay] = useState('');
+
+  useImperativeHandle(ref, () => ({
+    forceSubmit: () => {
+      if (currentEssay.trim()) {
+        handleSubmit(currentEssay);
+      } else {
+        if (onMockSubmit) onMockSubmit({ estimatedBand: 0, rawScore: 0, maxScore: 40 });
+      }
+    }
+  }));
 
   useEffect(() => {
     const fetchCustomTests = async () => {
@@ -157,7 +169,7 @@ export default function Writing({ isMockMode, onMockSubmit }) {
       ) : !feedback ? (
         <>
           {taskType === 'task1' ? (
-            <WritingQuestion taskType={taskType} question={currentQuestion} />
+            <WritingQuestion taskType={taskType} question={currentQuestion} task1Image={selectedTest.task1Image} />
           ) : (
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700 mb-6 transition-colors">
               <h2 className="text-xl font-semibold mb-2 dark:text-white">Task 2</h2>
@@ -177,6 +189,7 @@ export default function Writing({ isMockMode, onMockSubmit }) {
             taskType={taskType} 
             onSubmit={handleSubmit} 
             isGrading={isGrading} 
+            onContentChange={setCurrentEssay}
           />
         </>
       ) : (
@@ -184,4 +197,6 @@ export default function Writing({ isMockMode, onMockSubmit }) {
       )}
     </div>
   );
-}
+});
+
+export default Writing;
