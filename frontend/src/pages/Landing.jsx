@@ -18,7 +18,7 @@ export default function Landing() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
               <BookOpen className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
-              <span className="font-bold text-xl tracking-tight">IELTS Master</span>
+              <span className="font-bold text-xl tracking-tight">IELTS Prep</span>
             </div>
             <div className="flex items-center gap-4">
               <Link to="/login" className="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">

@@ -1,8 +1,54 @@
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { saveResult } from '../../utils/storage';
 
 export default function SpeakingFeedback({ feedback, onReset, originalTranscript }) {
+  const [activeError, setActiveError] = useState(null);
+
   if (!feedback) return null;
+
+  const renderHighlightedTranscript = (transcript, errors) => {
+    if (!errors || errors.length === 0) return <p className="whitespace-pre-wrap">{transcript}</p>;
+
+    let elements = [transcript];
+    
+    errors.forEach((err, index) => {
+      if (!err.originalText) return;
+      
+      let newElements = [];
+      elements.forEach(el => {
+        if (typeof el === 'string') {
+          const parts = el.split(err.originalText);
+          for (let i = 0; i < parts.length; i++) {
+            newElements.push(parts[i]);
+            if (i < parts.length - 1) {
+              newElements.push(
+                <span 
+                  key={`${index}-${i}`} 
+                  onClick={() => setActiveError(err)}
+                  className={`cursor-pointer rounded px-1 font-medium border-b-2 transition-colors ${
+                    err.type === 'grammar' 
+                      ? 'bg-red-100 border-red-400 text-red-900 hover:bg-red-200' 
+                      : 'bg-orange-100 border-orange-400 text-orange-900 hover:bg-orange-200'
+                  }`}
+                >
+                  {err.originalText}
+                </span>
+              );
+            }
+          }
+        } else {
+          newElements.push(el);
+        }
+      });
+      elements = newElements;
+    });
+
+    return (
+      <div className="whitespace-pre-wrap leading-relaxed text-gray-800">
+        {elements.map((el, i) => typeof el === 'string' ? <span key={`text-${i}`}>{el}</span> : el)}
+      </div>
+    );
+  };
 
   const hasSaved = useRef(false);
   useEffect(() => {
@@ -27,9 +73,34 @@ export default function SpeakingFeedback({ feedback, onReset, originalTranscript
       {/* Transcript Review */}
       {originalTranscript && (
         <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="font-semibold text-gray-800 mb-4 text-lg">Your Transcript</h3>
-          <div className="p-4 bg-gray-50 rounded-md border border-gray-100 text-gray-700 leading-relaxed">
-            {originalTranscript}
+          <h3 className="font-semibold text-gray-800 mb-4 text-lg">Your Transcript Analysis</h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Click on the <span className="bg-red-100 border-b-2 border-red-400 text-red-900 px-1 rounded">red</span> (grammar) or <span className="bg-orange-100 border-b-2 border-orange-400 text-orange-900 px-1 rounded">orange</span> (pronunciation) highlights to see corrections.
+          </p>
+          <div className="p-4 bg-gray-50 rounded-md border border-gray-100 relative">
+            {renderHighlightedTranscript(originalTranscript, feedback.errors || [])}
+            
+            {/* Error Tooltip */}
+            {activeError && (
+              <div className="mt-4 p-4 bg-white border border-gray-200 rounded-lg shadow-lg relative">
+                <button 
+                  onClick={() => setActiveError(null)}
+                  className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+                <div className="mb-2">
+                  <span className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+                    {activeError.type} Error
+                  </span>
+                </div>
+                <div className="mb-3">
+                  <p className="text-red-600 line-through mb-1">{activeError.originalText}</p>
+                  <p className="text-green-600 font-medium">{activeError.correction}</p>
+                </div>
+                <p className="text-gray-700 text-sm bg-gray-50 p-3 rounded">{activeError.explanation}</p>
+              </div>
+            )}
           </div>
         </div>
       )}

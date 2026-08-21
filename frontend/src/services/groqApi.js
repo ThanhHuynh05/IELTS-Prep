@@ -56,7 +56,15 @@ export async function gradeSpeaking(part, prompt, transcript) {
   },
   "strengths": ["<strength 1>", "<strength 2>"],
   "improvements": ["<improvement 1>", "<improvement 2>"],
-  "betterPhrase": "<suggest one improved phrase from the transcript>"
+  "betterPhrase": "<suggest one improved phrase from the transcript>",
+  "errors": [
+    {
+      "type": "<'grammar' or 'pronunciation'>",
+      "originalText": "<exact incorrect text from the user's transcript>",
+      "correction": "<the correct word or phrase>",
+      "explanation": "<why it is wrong and how to fix it>"
+    }
+  ]
 }`;
 
   const response = await fetch("http://localhost:5000/api/evaluate", {
