@@ -65,14 +65,15 @@ app.post('/api/evaluate', apiLimiter, async (req, res) => {
   try {
     const { model, response_format, messages } = req.body;
     
-    if (!process.env.GROQ_API_KEY) {
+    const apiKey = process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
+    if (!apiKey) {
       return res.status(500).json({ error: 'Server misconfiguration: Missing GROQ_API_KEY' });
     }
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({

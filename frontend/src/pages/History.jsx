@@ -21,10 +21,10 @@ export default function History() {
         getResults('speaking')
       ]);
       setResults({
-        reading: read.reverse(),
-        listening: listen.reverse(),
-        writing: write.reverse(),
-        speaking: speak.reverse()
+        reading: read,
+        listening: listen,
+        writing: write,
+        speaking: speak
       });
     };
     fetchHistory();
@@ -116,6 +116,37 @@ export default function History() {
                     </div>
                   )}
 
+                  {(activeTab === 'reading' || activeTab === 'listening') && result.detailedResults && (
+                    <details className="text-sm text-gray-600 dark:text-gray-300 group mt-3">
+                      <summary className="cursor-pointer font-medium text-blue-600 dark:text-blue-400 select-none flex items-center">
+                        <span className="group-open:hidden">View detailed answers &darr;</span>
+                        <span className="hidden group-open:inline">Hide detailed answers &uarr;</span>
+                      </summary>
+                      <div className="mt-3 space-y-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-700 max-h-64 overflow-y-auto">
+                        {result.detailedResults.map((q, qIndex) => (
+                          <div key={q.id || qIndex} className="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-gray-200 dark:border-gray-800 pb-3 last:border-0 last:pb-0">
+                            <div className="flex flex-col sm:w-1/2 pr-2">
+                              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Q{qIndex + 1}</span>
+                              <span className="text-sm text-gray-800 dark:text-gray-200 line-clamp-2" title={q.question}>{q.question}</span>
+                            </div>
+                            <div className="flex flex-col mt-2 sm:mt-0 sm:items-end">
+                              <div className="flex items-center space-x-2">
+                                <span className="text-xs text-gray-500 w-16 sm:w-auto text-left sm:text-right">You:</span>
+                                <span className={`text-sm font-semibold truncate max-w-[120px] ${q.isCorrect ? 'text-green-600' : 'text-red-600 line-through'}`} title={q.userAnswer || '-'}>{q.userAnswer || '-'}</span>
+                              </div>
+                              {!q.isCorrect && (
+                                <div className="flex items-center space-x-2 mt-1">
+                                  <span className="text-xs text-gray-500 w-16 sm:w-auto text-left sm:text-right">Correct:</span>
+                                  <span className="text-sm font-semibold text-green-600 truncate max-w-[120px]" title={q.answer}>{q.answer}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  )}
+
                   {(activeTab === 'writing' || activeTab === 'speaking') && result.criteria && (
                     <details className="text-sm text-gray-600 dark:text-gray-300 group mt-2">
                       <summary className="cursor-pointer font-medium text-blue-600 dark:text-blue-400 select-none flex items-center">
@@ -125,8 +156,8 @@ export default function History() {
                       <div className="mt-3 grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-700">
                         {Object.entries(result.criteria).map(([key, value]) => (
                           <div key={key}>
-                            <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{key}</div>
-                            <div className="font-semibold text-gray-900 dark:text-white">{value}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{key.replace(/([A-Z])/g, ' $1')}</div>
+                            <div className="font-semibold text-gray-900 dark:text-white">Band: {typeof value === 'object' ? Number(value.band).toFixed(1) : value}</div>
                           </div>
                         ))}
                       </div>

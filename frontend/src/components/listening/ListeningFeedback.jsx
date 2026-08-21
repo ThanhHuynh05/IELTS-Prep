@@ -37,7 +37,8 @@ export default function ListeningFeedback({ sections, userAnswers, transcript, o
         rawScore: correctCount,
         maxScore: allQuestions.length,
         estimatedBand: estimatedBand,
-        title: "Listening Practice"
+        title: "Listening Practice",
+        detailedResults: results
       });
       hasSaved.current = true;
     }

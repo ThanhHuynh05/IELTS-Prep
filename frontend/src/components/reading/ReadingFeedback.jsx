@@ -41,7 +41,8 @@ export default function ReadingFeedback({ sections, userAnswers, onReset }) {
         rawScore: correctCount,
         maxScore: allQuestions.length,
         estimatedBand: estimatedBand,
-        title: "Reading Practice"
+        title: "Reading Practice",
+        detailedResults: results
       });
       hasSaved.current = true;
     }

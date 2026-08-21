@@ -29,10 +29,10 @@ export default function Dashboard() {
           getSettings()
         ]);
         
-        setReadingData(read);
-        setListeningData(listen);
-        setWritingData(write);
-        setSpeakingData(speak);
+        setReadingData(read.reverse());
+        setListeningData(listen.reverse());
+        setWritingData(write.reverse());
+        setSpeakingData(speak.reverse());
         setRecentActivity(activity.slice(0, 5));
         setSettings(userSettings);
         setTempTargetBand(userSettings?.targetBand || '7.0');
@@ -96,8 +96,8 @@ export default function Dashboard() {
     Speaking: speakingData[i] ? speakingData[i].estimatedBand : null,
   }));
 
-  const SectionCard = ({ title, icon: Icon, colorClass, data }) => (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between transition-colors">
+  const SectionCard = ({ title, icon: Icon, colorClass, data, link }) => (
+    <Link to={link} className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between transition-colors hover:border-blue-300 hover:shadow-md cursor-pointer block">
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 rounded-lg ${colorClass}`}>
           <Icon size={24} />
@@ -108,7 +108,7 @@ export default function Dashboard() {
         <div className="text-4xl font-bold text-gray-900 dark:text-white">{getLatestBand(data)}</div>
         <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Latest Band Score</div>
       </div>
-    </div>
+    </Link>
   );
 
   const calculateDaysLeft = () => {
@@ -206,10 +206,10 @@ export default function Dashboard() {
           </div>
         </div>
         
-        <SectionCard title="Reading" icon={BookOpen} colorClass="bg-emerald-100 text-emerald-600" data={readingData} />
-        <SectionCard title="Listening" icon={Headphones} colorClass="bg-purple-100 text-purple-600" data={listeningData} />
-        <SectionCard title="Writing" icon={PenTool} colorClass="bg-orange-100 text-orange-600" data={writingData} />
-        <SectionCard title="Speaking" icon={Mic} colorClass="bg-pink-100 text-pink-600" data={speakingData} />
+        <SectionCard title="Reading" icon={BookOpen} colorClass="bg-emerald-100 text-emerald-600" data={readingData} link="/reading" />
+        <SectionCard title="Listening" icon={Headphones} colorClass="bg-purple-100 text-purple-600" data={listeningData} link="/listening" />
+        <SectionCard title="Writing" icon={PenTool} colorClass="bg-orange-100 text-orange-600" data={writingData} link="/writing" />
+        <SectionCard title="Speaking" icon={Mic} colorClass="bg-pink-100 text-pink-600" data={speakingData} link="/speaking" />
       </div>
 
       {isDataEmpty ? (
