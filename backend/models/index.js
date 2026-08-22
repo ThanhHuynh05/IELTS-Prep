@@ -22,15 +22,20 @@ const settingsSchema = new mongoose.Schema({
 
 export const Settings = mongoose.model('Settings', settingsSchema);
 
-const customPassageSchema = new mongoose.Schema({
+const customReadingTestSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   title: { type: String, required: true },
-  text: { type: String, required: true },
-  sections: { type: Array, required: true }, // Store flexible JSON structure
+  passages: [
+    {
+      title: { type: String, required: true },
+      text: { type: String, required: true },
+      sections: { type: Array, required: true }
+    }
+  ],
   createdAt: { type: Date, default: Date.now }
 });
 
-export const CustomPassage = mongoose.model('CustomPassage', customPassageSchema);
+export const CustomReadingTest = mongoose.model('CustomReadingTest', customReadingTestSchema);
 
 const customListeningSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },

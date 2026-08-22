@@ -3,7 +3,6 @@ import SpeakingPrompt from '../components/speaking/SpeakingPrompt';
 import AudioRecorder from '../components/speaking/AudioRecorder';
 import SpeakingFeedback from '../components/speaking/SpeakingFeedback';
 import { gradeSpeaking } from '../services/groqApi';
-import { SPEAKING_TOPICS } from '../data/speakingTopics';
 import { CheckCircle2, Clock, SkipForward } from 'lucide-react';
 import TipsModal from '../components/common/TipsModal';
 import LoadingSkeleton from '../components/common/LoadingSkeleton';
@@ -17,8 +16,8 @@ const SPEAKING_TIPS = [
 ];
 
 const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
-  const [topics, setTopics] = useState(SPEAKING_TOPICS);
-  const [selectedTopic, setSelectedTopic] = useState(SPEAKING_TOPICS[0]);
+  const [topics, setTopics] = useState([]);
+  const [selectedTopic, setSelectedTopic] = useState(null);
   const [taskPart, setTaskPart] = useState('part1');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [practiceMode, setPracticeMode] = useState(isMockMode || false);
@@ -74,7 +73,8 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         if (res.ok) {
           const custom = await res.json();
           if (custom.length > 0) {
-            setTopics([...SPEAKING_TOPICS, ...custom]);
+            setTopics(custom);
+            setSelectedTopic(custom[0]);
           }
         }
       } catch (err) {
@@ -83,6 +83,17 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     };
     fetchCustomTopics();
   }, []);
+
+  if (!selectedTopic) {
+    return (
+      <div className="max-w-7xl mx-auto p-8 flex items-center justify-center h-[calc(100vh-80px)]">
+        <div className="text-center bg-white p-12 rounded-xl shadow-sm border border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">No Speaking Topics Available</h2>
+          <p className="text-gray-600">Please add some speaking topics in the Admin Panel.</p>
+        </div>
+      </div>
+    );
+  }
 
   const currentPrompt = taskPart === 'part2' ? selectedTopic.part2 : selectedTopic[taskPart][currentQuestionIndex];
 
@@ -110,6 +121,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     setSubmittedTranscript('');
     setPracticeMode(false);
   };
+
 
   return (
     <div className="max-w-7xl mx-auto pb-12 p-8 flex h-[calc(100vh-80px)]">

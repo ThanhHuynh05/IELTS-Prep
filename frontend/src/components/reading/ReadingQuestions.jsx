@@ -1,4 +1,4 @@
-export default function ReadingQuestions({ sections, userAnswers, onAnswerChange, onSubmit }) {
+export default function ReadingQuestions({ sections, allTestQuestions, userAnswers, onAnswerChange, onSubmit }) {
   if (!sections) return null;
 
   const handleInputChange = (questionId, value) => {
@@ -6,15 +6,18 @@ export default function ReadingQuestions({ sections, userAnswers, onAnswerChange
   };
 
   // Check if all questions across all sections have an answer
-  const allQuestions = sections.flatMap(sec => sec.questions);
-  const allAnswered = allQuestions.every(q => userAnswers[q.id] && userAnswers[q.id].trim() !== "");
+  const currentPassageQuestions = sections.flatMap(sec => sec.questions);
+  const totalQuestionsInTest = allTestQuestions ? allTestQuestions.length : currentPassageQuestions.length;
+  
+  // Calculate answered count out of the entire test
+  const answeredCount = Object.keys(userAnswers).filter(k => userAnswers[k].trim() !== "").length;
 
   return (
     <div className="h-full overflow-y-auto pl-6 border-l border-gray-200 dark:border-gray-700">
       <div className="mb-6 flex justify-between items-end">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white">Questions</h2>
         <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-          {Object.keys(userAnswers).filter(k => userAnswers[k].trim() !== "").length} / {allQuestions.length} Answered
+          {answeredCount} / {totalQuestionsInTest} Answered
         </span>
       </div>
 
@@ -24,14 +27,23 @@ export default function ReadingQuestions({ sections, userAnswers, onAnswerChange
             <div className="mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{section.title}</h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm whitespace-pre-line">{section.instructions}</p>
+              {section.imageUrl && (
+                <div className="mt-4">
+                  <img 
+                    src={section.imageUrl} 
+                    alt="Section Chart or Table" 
+                    className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="space-y-6">
               {section.questions.map((q, index) => {
-                // Find global index for display if needed, but usually sections say "1-4", so we should ideally use the actual question number. 
-                // For simplicity, we just use the index within the section + some offset, or just map the ID.
-                // Since the user screenshots show a number, let's extract the number from the ID or just use a global counter.
-                const globalNumber = allQuestions.findIndex(gq => gq.id === q.id) + 1;
+                // Calculate the global number across the entire test
+                const globalNumber = allTestQuestions 
+                  ? allTestQuestions.findIndex(gq => gq.id === q.id) + 1
+                  : currentPassageQuestions.findIndex(gq => gq.id === q.id) + 1;
 
                 return (
                   <div key={q.id} className="flex flex-col sm:flex-row sm:items-start sm:space-x-4">

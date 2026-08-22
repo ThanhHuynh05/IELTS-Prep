@@ -6,13 +6,6 @@ import { gradeWriting } from '../services/groqApi';
 import TipsModal from '../components/common/TipsModal';
 import LoadingSkeleton from '../components/common/LoadingSkeleton';
 
-const STANDARD_TEST = {
-  id: 'standard-writ',
-  title: 'Standard Practice',
-  task1Image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Graph_of_tourist_arrivals_in_the_Caribbean.svg/800px-Graph_of_tourist_arrivals_in_the_Caribbean.svg.png',
-  task1: "The graph below shows the number of tourists visiting a particular Caribbean island between 2010 and 2017.\n\nSummarize the information by selecting and reporting the main features, and make comparisons where relevant.",
-  task2: "Some people believe that unpaid community service should be a compulsory part of high school programs (for example working for a charity, improving the neighbourhood or teaching sports to younger children).\n\nTo what extent do you agree or disagree?"
-};
 
 const WRITING_TIPS = [
   "Task 1 (Academic): Spend about 20 minutes on this task. Ensure you write at least 150 words.",
@@ -23,8 +16,8 @@ const WRITING_TIPS = [
 ];
 
 const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
-  const [tests, setTests] = useState([STANDARD_TEST]);
-  const [selectedTest, setSelectedTest] = useState(STANDARD_TEST);
+  const [tests, setTests] = useState([]);
+  const [selectedTest, setSelectedTest] = useState(null);
   const [taskType, setTaskType] = useState('task2');
   const [task2Question, setTask2Question] = useState('');
   const [isGrading, setIsGrading] = useState(false);
@@ -51,7 +44,9 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         if (res.ok) {
           const custom = await res.json();
           if (custom.length > 0) {
-            setTests([STANDARD_TEST, ...custom]);
+            setTests(custom);
+            setSelectedTest(custom[0]);
+            setTask2Question(custom[0].task2);
           }
         }
       } catch (err) {
@@ -68,6 +63,17 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     setFeedback(null);
     setError(null);
   };
+
+  if (!selectedTest) {
+    return (
+      <div className="max-w-7xl mx-auto p-8 flex items-center justify-center h-[calc(100vh-80px)]">
+        <div className="text-center bg-white p-12 rounded-xl shadow-sm border border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">No Writing Tests Available</h2>
+          <p className="text-gray-600">Please add some writing tests in the Admin Panel.</p>
+        </div>
+      </div>
+    );
+  }
 
   const currentQuestion = taskType === 'task1' ? selectedTest.task1 : (task2Question || selectedTest.task2);
 
@@ -98,6 +104,7 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const handleReset = () => {
     setFeedback(null);
   };
+
 
   return (
     <div className="max-w-4xl mx-auto pb-12 p-4">

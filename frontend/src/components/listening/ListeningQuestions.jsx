@@ -23,6 +23,15 @@ export default function ListeningQuestions({ sections, userAnswers, onAnswerChan
             <div className="mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{section.title}</h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm whitespace-pre-line">{section.instructions}</p>
+              {section.imageUrl && (
+                <div className="mt-4">
+                  <img 
+                    src={section.imageUrl} 
+                    alt="Section Chart or Table" 
+                    className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="space-y-6">

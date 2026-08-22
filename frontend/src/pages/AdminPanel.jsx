@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, List } from 'lucide-react';
+import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, List, FileText } from 'lucide-react';
 import QuestionBuilder from '../components/common/QuestionBuilder';
+import PdfExtractorModal from '../components/common/PdfExtractorModal';
 
 const DEFAULT_READING_JSON = `[
   {
@@ -39,6 +40,7 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState('reading');
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [showPdfModal, setShowPdfModal] = useState(false);
 
   // Manage Content State
   const [manageType, setManageType] = useState('reading');
@@ -46,9 +48,20 @@ export default function AdminPanel() {
   const [isLoadingContent, setIsLoadingContent] = useState(false);
 
   // Reading State
-  const [rTitle, setRTitle] = useState('');
-  const [rText, setRText] = useState('');
-  const [rSections, setRSections] = useState(() => JSON.parse(DEFAULT_READING_JSON));
+  const [rTestTitle, setRTestTitle] = useState('');
+  const [activePassageTab, setActivePassageTab] = useState(1);
+  
+  const initialPassageState = () => ({
+    title: '',
+    text: '',
+    sections: JSON.parse(DEFAULT_READING_JSON)
+  });
+
+  const [passages, setPassages] = useState([
+    initialPassageState(),
+    initialPassageState(),
+    initialPassageState()
+  ]);
 
   // Listening State
   const [lTitle, setLTitle] = useState('');
@@ -73,19 +86,28 @@ export default function AdminPanel() {
   const handleSaveReading = async () => {
     setError(''); setSuccess('');
     try {
-      if (!rTitle || !rText) throw new Error("Title and text are required.");
-      const sections = rSections;
-      const newPassage = { id: `custom-read-${Date.now()}`, title: rTitle, text: rText, sections };
+      if (!rTestTitle) throw new Error("Test Title is required.");
+      if (passages.some(p => !p.title || !p.text)) {
+        throw new Error("Title and text are required for all 3 passages.");
+      }
+
+      const newTest = { 
+        id: `custom-readtest-${Date.now()}`, 
+        title: rTestTitle, 
+        passages: passages 
+      };
       
       const res = await fetch(`${API_URL}/content/reading`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPassage)
+        body: JSON.stringify(newTest)
       });
       if (!res.ok) throw new Error('Failed to save to database');
       
-      setSuccess(`Reading Passage "${rTitle}" added!`);
-      setRTitle(''); setRText(''); setRSections(JSON.parse(DEFAULT_READING_JSON));
+      setSuccess(`Reading Test "${rTestTitle}" added!`);
+      setRTestTitle('');
+      setPassages([initialPassageState(), initialPassageState(), initialPassageState()]);
+      setActivePassageTab(1);
     } catch (err) { setError(err.message); }
   };
 
@@ -199,12 +221,22 @@ export default function AdminPanel() {
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-2 mb-6 overflow-x-auto pb-2">
-        <button onClick={() => {setActiveTab('reading'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'reading' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><BookOpen size={16} className="mr-2" /> Reading</button>
-        <button onClick={() => {setActiveTab('listening'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'listening' ? 'bg-purple-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><Headphones size={16} className="mr-2" /> Listening</button>
-        <button onClick={() => {setActiveTab('writing'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'writing' ? 'bg-orange-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><PenTool size={16} className="mr-2" /> Writing</button>
-        <button onClick={() => {setActiveTab('speaking'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'speaking' ? 'bg-pink-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><Mic size={16} className="mr-2" /> Speaking</button>
-        <button onClick={() => {setActiveTab('manage'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'manage' ? 'bg-gray-800 text-white dark:bg-gray-700' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><List size={16} className="mr-2" /> Manage Content</button>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
+        <div className="flex space-x-2 overflow-x-auto pb-2 sm:pb-0">
+          <button onClick={() => {setActiveTab('reading'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'reading' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><BookOpen size={16} className="mr-2" /> Reading</button>
+          <button onClick={() => {setActiveTab('listening'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'listening' ? 'bg-purple-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><Headphones size={16} className="mr-2" /> Listening</button>
+          <button onClick={() => {setActiveTab('writing'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'writing' ? 'bg-orange-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><PenTool size={16} className="mr-2" /> Writing</button>
+          <button onClick={() => {setActiveTab('speaking'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'speaking' ? 'bg-pink-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><Mic size={16} className="mr-2" /> Speaking</button>
+          <button onClick={() => {setActiveTab('manage'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'manage' ? 'bg-gray-800 text-white dark:bg-gray-700' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><List size={16} className="mr-2" /> Manage Content</button>
+        </div>
+
+        <button 
+          onClick={() => setShowPdfModal(true)}
+          className="flex items-center px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg font-medium text-sm transition-colors whitespace-nowrap shadow-sm border border-slate-200 dark:border-slate-700 w-fit"
+        >
+          <FileText size={16} className="mr-2 text-blue-500" />
+          Extract PDF Text
+        </button>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
@@ -223,14 +255,85 @@ export default function AdminPanel() {
           {error && <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-4 rounded-md border border-red-200 dark:border-red-800">{error}</div>}
 
           {activeTab === 'reading' && (
-            <>
-              <div><label htmlFor="rTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Passage Title</label><input id="rTitle" type="text" value={rTitle} onChange={(e) => setRTitle(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" placeholder="e.g. The Discovery of Penicillin" /></div>
-              <div><label htmlFor="rText" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Passage Text</label><textarea id="rText" value={rText} onChange={(e) => setRText(e.target.value)} rows={8} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" placeholder="Paste the full reading text here..." /></div>
-              <div className="mt-8 border-t dark:border-gray-700 pt-6">
-                <QuestionBuilder sections={rSections} onChange={setRSections} />
+            <div className="space-y-6">
+              <div>
+                <label htmlFor="rTestTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Test Title</label>
+                <input 
+                  id="rTestTitle" 
+                  type="text" 
+                  value={rTestTitle} 
+                  onChange={(e) => setRTestTitle(e.target.value)} 
+                  className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" 
+                  placeholder="e.g. IELTS Academic Test 1" 
+                />
               </div>
-              <div className="flex justify-end pt-4"><button onClick={handleSaveReading} className="flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm"><Save size={20} className="mr-2" />Save Passage</button></div>
-            </>
+
+              {/* Passage Tabs */}
+              <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
+                {[1, 2, 3].map((num) => (
+                  <button
+                    key={num}
+                    onClick={() => setActivePassageTab(num)}
+                    className={`px-6 py-3 font-medium text-sm transition-colors border-b-2 ${
+                      activePassageTab === num 
+                        ? 'border-blue-600 text-blue-600 dark:text-blue-400' 
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    Passage {num}
+                  </button>
+                ))}
+              </div>
+
+              {/* Passage Content (using the active tab) */}
+              <div className="space-y-4 animate-in fade-in duration-200" key={activePassageTab}>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Passage {activePassageTab} Title</label>
+                  <input 
+                    type="text" 
+                    value={passages[activePassageTab - 1].title} 
+                    onChange={(e) => {
+                      const newPassages = [...passages];
+                      newPassages[activePassageTab - 1].title = e.target.value;
+                      setPassages(newPassages);
+                    }} 
+                    className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" 
+                    placeholder="e.g. The Discovery of Penicillin" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Passage {activePassageTab} Text</label>
+                  <textarea 
+                    value={passages[activePassageTab - 1].text} 
+                    onChange={(e) => {
+                      const newPassages = [...passages];
+                      newPassages[activePassageTab - 1].text = e.target.value;
+                      setPassages(newPassages);
+                    }} 
+                    rows={8} 
+                    className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" 
+                    placeholder="Paste the full reading text here..." 
+                  />
+                </div>
+                <div className="mt-8 border-t dark:border-gray-700 pt-6">
+                  <QuestionBuilder 
+                    sections={passages[activePassageTab - 1].sections} 
+                    onChange={(newSections) => {
+                      const newPassages = [...passages];
+                      newPassages[activePassageTab - 1].sections = newSections;
+                      setPassages(newPassages);
+                    }} 
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-4 mt-6 border-t dark:border-gray-700">
+                <button onClick={handleSaveReading} className="flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm">
+                  <Save size={20} className="mr-2" />
+                  Save Full Test
+                </button>
+              </div>
+            </div>
           )}
 
           {activeTab === 'listening' && (
@@ -332,6 +435,11 @@ export default function AdminPanel() {
 
         </div>
       </div>
+      
+      <PdfExtractorModal 
+        isOpen={showPdfModal} 
+        onClose={() => setShowPdfModal(false)} 
+      />
     </div>
   );
 }

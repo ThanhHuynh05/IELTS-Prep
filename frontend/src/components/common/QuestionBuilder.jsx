@@ -141,6 +141,17 @@ export default function QuestionBuilder({ sections, onChange }) {
             />
           </div>
 
+          <div className="mb-4">
+            <label className="block text-xs font-medium text-gray-500 mb-1">Image URL (Optional - For Charts/Tables)</label>
+            <input 
+              type="url" 
+              value={section.imageUrl || ''} 
+              onChange={(e) => handleSectionChange(sIdx, 'imageUrl', e.target.value)}
+              className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-sm focus:ring-1 focus:ring-blue-500"
+              placeholder="https://example.com/flowchart.png"
+            />
+          </div>
+
           {['multiple-choice', 'matching'].includes(section.type) && (
             <div className="mb-4">
               <label className="block text-xs font-medium text-gray-500 mb-1">Options (Comma separated)</label>

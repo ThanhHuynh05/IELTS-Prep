@@ -1,5 +1,4 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { listeningTests as staticTests } from '../data/listeningTests';
 import ListeningPlayer from '../components/listening/ListeningPlayer';
 import ListeningQuestions from '../components/listening/ListeningQuestions';
 import ListeningFeedback from '../components/listening/ListeningFeedback';
@@ -14,8 +13,8 @@ const LISTENING_TIPS = [
 ];
 
 const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
-  const [tests, setTests] = useState(staticTests);
-  const [selectedTest, setSelectedTest] = useState(staticTests[0]);
+  const [tests, setTests] = useState([]);
+  const [selectedTest, setSelectedTest] = useState(null);
   const [userAnswers, setUserAnswers] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showTips, setShowTips] = useState(false);
@@ -27,7 +26,8 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         if (res.ok) {
           const custom = await res.json();
           if (custom.length > 0) {
-            setTests([...staticTests, ...custom]);
+            setTests(custom);
+            setSelectedTest(custom[0]);
           }
         }
       } catch (err) {
@@ -108,6 +108,17 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     setSelectedTest(test);
     handleReset();
   };
+
+  if (!selectedTest) {
+    return (
+      <div className="max-w-[1400px] mx-auto p-8 flex items-center justify-center h-[calc(100vh-80px)]">
+        <div className="text-center bg-white p-12 rounded-xl shadow-sm border border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">No Listening Tests Available</h2>
+          <p className="text-gray-600">Please add some tests in the Admin Panel.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-[1400px] mx-auto pb-6 p-4 h-[calc(100vh-80px)] flex flex-col">

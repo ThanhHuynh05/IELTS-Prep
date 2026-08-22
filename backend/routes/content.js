@@ -1,5 +1,5 @@
 import express from 'express';
-import { CustomPassage, CustomListening, CustomWriting, CustomSpeaking } from '../models/index.js';
+import { CustomReadingTest, CustomListening, CustomWriting, CustomSpeaking } from '../models/index.js';
 
 const router = express.Router();
 
@@ -10,7 +10,7 @@ router.get('/:type', async (req, res) => {
     let data;
     switch (type) {
       case 'reading':
-        data = await CustomPassage.find();
+        data = await CustomReadingTest.find();
         break;
       case 'listening':
         data = await CustomListening.find();
@@ -37,7 +37,7 @@ router.post('/:type', async (req, res) => {
     let doc;
     switch (type) {
       case 'reading':
-        doc = new CustomPassage(req.body);
+        doc = new CustomReadingTest(req.body);
         break;
       case 'listening':
         doc = new CustomListening(req.body);
@@ -65,7 +65,7 @@ router.delete('/:type/:id', async (req, res) => {
     let doc;
     switch (type) {
       case 'reading':
-        doc = await CustomPassage.findByIdAndDelete(id);
+        doc = await CustomReadingTest.findByIdAndDelete(id);
         break;
       case 'listening':
         doc = await CustomListening.findByIdAndDelete(id);

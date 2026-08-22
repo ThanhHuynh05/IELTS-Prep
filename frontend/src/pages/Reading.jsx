@@ -1,5 +1,4 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { passages as staticPassages } from '../data/readingPassages';
 import ReadingPassage from '../components/reading/ReadingPassage';
 import ReadingQuestions from '../components/reading/ReadingQuestions';
 import ReadingFeedback from '../components/reading/ReadingFeedback';
@@ -14,27 +13,29 @@ const READING_TIPS = [
 ];
 
 const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
-  const [passages, setPassages] = useState(staticPassages);
-  const [selectedPassage, setSelectedPassage] = useState(staticPassages[0]);
+  const [tests, setTests] = useState([]);
+  const [selectedTest, setSelectedTest] = useState(null);
+  const [activePassageIndex, setActivePassageIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showTips, setShowTips] = useState(false);
 
   useEffect(() => {
-    const fetchCustomPassages = async () => {
+    const fetchCustomTests = async () => {
       try {
         const res = await fetch('http://localhost:5000/api/content/reading');
         if (res.ok) {
           const custom = await res.json();
           if (custom.length > 0) {
-            setPassages([...staticPassages, ...custom]);
+            setTests(custom);
+            setSelectedTest(custom[0]);
           }
         }
       } catch (err) {
-        console.error('Failed to load custom reading passages', err);
+        console.error('Failed to load custom reading tests', err);
       }
     };
-    fetchCustomPassages();
+    fetchCustomTests();
   }, []);
 
   const handleAnswerChange = (questionId, value) => {
@@ -48,9 +49,10 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   }));
 
   const handleSubmit = () => {
+    // Get all questions from all passages
+    const allQuestions = selectedTest.passages.flatMap(p => p.sections.flatMap(sec => sec.questions));
+    
     if (isMockMode) {
-      // Calculate score and pass it up immediately
-      const allQuestions = selectedPassage.sections.flatMap(sec => sec.questions);
       let correctCount = 0;
       allQuestions.forEach(q => {
         if ((userAnswers[q.id] || "").trim().toLowerCase() === q.answer.trim().toLowerCase()) {
@@ -72,13 +74,42 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     }
   };
 
-  // If in mock mode, we want a unified height if possible, or just the same layout without the header
+  if (!selectedTest || !selectedTest.passages || selectedTest.passages.length === 0) {
+    return (
+      <div className="max-w-[1400px] mx-auto p-8 flex items-center justify-center h-[calc(100vh-80px)]">
+        <div className="text-center bg-white p-12 rounded-xl shadow-sm border border-gray-200">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">No Reading Tests Available</h2>
+          <p className="text-gray-600">Please add some reading tests in the Admin Panel.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const activePassage = selectedTest.passages[activePassageIndex];
+
   if (isMockMode) {
     return (
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-full">
-        <ReadingPassage passage={selectedPassage} />
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-full relative">
+        {/* Passage Navigation for Mock Mode */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 flex space-x-2 bg-gray-100 p-1 rounded-lg shadow-sm z-10">
+           {[0, 1, 2].map((idx) => (
+              <button
+                key={idx}
+                onClick={() => setActivePassageIndex(idx)}
+                className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all ${
+                  activePassageIndex === idx 
+                    ? 'bg-white text-blue-600 shadow-sm' 
+                    : 'text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Passage {idx + 1}
+              </button>
+            ))}
+        </div>
+        
+        <ReadingPassage passage={activePassage} />
         <ReadingQuestions 
-          sections={selectedPassage.sections} 
+          sections={activePassage.sections} 
           userAnswers={userAnswers}
           onAnswerChange={handleAnswerChange}
           onSubmit={handleSubmit}
@@ -90,10 +121,11 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const handleReset = () => {
     setUserAnswers({});
     setIsSubmitted(false);
+    setActivePassageIndex(0);
   };
 
-  const handlePassageSelect = (passage) => {
-    setSelectedPassage(passage);
+  const handleTestSelect = (test) => {
+    setSelectedTest(test);
     handleReset();
   };
 
@@ -117,19 +149,37 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           </button>
         </div>
         <div className="flex space-x-2">
-          {passages.map((passage, index) => (
+          {tests.map((test) => (
             <button
-              key={passage.id}
-              onClick={() => handlePassageSelect(passage)}
+              key={test.id}
+              onClick={() => handleTestSelect(test)}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                selectedPassage.id === passage.id 
+                selectedTest.id === test.id 
                   ? 'bg-blue-600 text-white shadow-sm' 
                   : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
               }`}
             >
-              Passage {index + 1}
+              {test.title}
             </button>
           ))}
+        </div>
+      </div>
+      {/* Passage Navigation for normal mode */}
+      <div className="flex justify-center mb-6">
+        <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg shadow-sm">
+           {[0, 1, 2].map((idx) => (
+              <button
+                key={idx}
+                onClick={() => setActivePassageIndex(idx)}
+                className={`px-6 py-2 rounded-md text-sm font-bold transition-all ${
+                  activePassageIndex === idx 
+                    ? 'bg-white text-blue-600 shadow-sm' 
+                    : 'text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                Passage {idx + 1}
+              </button>
+            ))}
         </div>
       </div>
 
@@ -137,22 +187,25 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         
         {/* Left Side: Passage text */}
-        <ReadingPassage passage={selectedPassage} />
+        <ReadingPassage passage={activePassage} />
 
-        {/* Right Side: Questions or Feedback */}
         {!isSubmitted ? (
           <ReadingQuestions 
-            sections={selectedPassage.sections} 
+            sections={activePassage.sections} 
+            allTestQuestions={selectedTest.passages.flatMap(p => p.sections.flatMap(s => s.questions))}
             userAnswers={userAnswers}
             onAnswerChange={handleAnswerChange}
             onSubmit={handleSubmit}
           />
         ) : (
-          <ReadingFeedback 
-            sections={selectedPassage.sections}
-            userAnswers={userAnswers}
-            onReset={handleReset}
-          />
+          <div className="flex flex-col h-full overflow-y-auto pr-2 custom-scrollbar">
+            <h2 className="text-xl font-bold mb-4">Test Feedback</h2>
+            <ReadingFeedback 
+              sections={selectedTest.passages.flatMap(p => p.sections)}
+              userAnswers={userAnswers}
+              onReset={handleReset}
+            />
+          </div>
         )}
       </div>
     </div>

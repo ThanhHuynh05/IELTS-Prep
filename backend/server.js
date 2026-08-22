@@ -5,6 +5,11 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import multer from 'multer';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const pdfParse = require('pdf-parse');
 
 // Load env vars from the root .env
 const __filename = fileURLToPath(import.meta.url);
@@ -93,6 +98,28 @@ app.post('/api/evaluate', apiLimiter, async (req, res) => {
   } catch (error) {
     console.error("Evaluate API Error:", error);
     res.status(500).json({ error: "Failed to evaluate", details: error.message });
+  }
+});
+
+const upload = multer({ storage: multer.memoryStorage() });
+app.post('/api/extract-pdf', apiLimiter, upload.single('pdf'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No PDF file uploaded' });
+    }
+    
+    // Some CommonJS/ESM interop layers wrap the function in a 'default' property
+    const parseFunc = typeof pdfParse === 'function' ? pdfParse : (pdfParse.default || pdfParse);
+    
+    if (typeof parseFunc !== 'function') {
+        throw new Error('pdfParse is not a function. It is: ' + typeof parseFunc + ' keys: ' + Object.keys(pdfParse).join(','));
+    }
+
+    const data = await parseFunc(req.file.buffer);
+    res.json({ text: data.text });
+  } catch (error) {
+    console.error('PDF Parse Error:', error);
+    res.status(500).json({ error: 'Failed to extract text from PDF', details: error.message });
   }
 });
 
