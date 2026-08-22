@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, List } from 'lucide-react';
+import QuestionBuilder from '../components/common/QuestionBuilder';
 
 const DEFAULT_READING_JSON = `[
   {
@@ -47,24 +48,25 @@ export default function AdminPanel() {
   // Reading State
   const [rTitle, setRTitle] = useState('');
   const [rText, setRText] = useState('');
-  const [rSectionsJson, setRSectionsJson] = useState(DEFAULT_READING_JSON);
+  const [rSections, setRSections] = useState(() => JSON.parse(DEFAULT_READING_JSON));
 
   // Listening State
   const [lTitle, setLTitle] = useState('');
   const [lAudio, setLAudio] = useState('');
   const [lTranscript, setLTranscript] = useState('');
-  const [lSectionsJson, setLSectionsJson] = useState(DEFAULT_LISTENING_JSON);
+  const [lSections, setLSections] = useState(() => JSON.parse(DEFAULT_LISTENING_JSON));
 
   // Writing State
   const [wTitle, setWTitle] = useState('');
   const [wTask1, setWTask1] = useState('');
+  const [wTask1Image, setWTask1Image] = useState('');
   const [wTask2, setWTask2] = useState('');
 
   // Speaking State
   const [sTitle, setSTitle] = useState('');
-  const [sPart1, setSPart1] = useState('');
+  const [sPart1, setSPart1] = useState(['']);
   const [sPart2, setSPart2] = useState('');
-  const [sPart3, setSPart3] = useState('');
+  const [sPart3, setSPart3] = useState(['']);
 
   const API_URL = 'http://localhost:5000/api';
 
@@ -72,7 +74,7 @@ export default function AdminPanel() {
     setError(''); setSuccess('');
     try {
       if (!rTitle || !rText) throw new Error("Title and text are required.");
-      const sections = JSON.parse(rSectionsJson);
+      const sections = rSections;
       const newPassage = { id: `custom-read-${Date.now()}`, title: rTitle, text: rText, sections };
       
       const res = await fetch(`${API_URL}/content/reading`, {
@@ -83,7 +85,7 @@ export default function AdminPanel() {
       if (!res.ok) throw new Error('Failed to save to database');
       
       setSuccess(`Reading Passage "${rTitle}" added!`);
-      setRTitle(''); setRText(''); setRSectionsJson(DEFAULT_READING_JSON);
+      setRTitle(''); setRText(''); setRSections(JSON.parse(DEFAULT_READING_JSON));
     } catch (err) { setError(err.message); }
   };
 
@@ -91,7 +93,7 @@ export default function AdminPanel() {
     setError(''); setSuccess('');
     try {
       if (!lTitle || !lAudio) throw new Error("Title and Audio URL are required.");
-      const sections = JSON.parse(lSectionsJson);
+      const sections = lSections;
       const newTest = { id: `custom-list-${Date.now()}`, title: lTitle, audioUrl: lAudio, transcript: lTranscript, sections };
       
       const res = await fetch(`${API_URL}/content/listening`, {
@@ -102,7 +104,7 @@ export default function AdminPanel() {
       if (!res.ok) throw new Error('Failed to save to database');
       
       setSuccess(`Listening Test "${lTitle}" added!`);
-      setLTitle(''); setLAudio(''); setLTranscript(''); setLSectionsJson(DEFAULT_LISTENING_JSON);
+      setLTitle(''); setLAudio(''); setLTranscript(''); setLSections(JSON.parse(DEFAULT_LISTENING_JSON));
     } catch (err) { setError(err.message); }
   };
 
@@ -110,7 +112,7 @@ export default function AdminPanel() {
     setError(''); setSuccess('');
     try {
       if (!wTitle || !wTask1 || !wTask2) throw new Error("All fields are required.");
-      const newTest = { id: `custom-writ-${Date.now()}`, title: wTitle, task1: wTask1, task2: wTask2 };
+      const newTest = { id: `custom-writ-${Date.now()}`, title: wTitle, task1: wTask1, task1Image: wTask1Image, task2: wTask2 };
       
       const res = await fetch(`${API_URL}/content/writing`, {
         method: 'POST',
@@ -120,20 +122,20 @@ export default function AdminPanel() {
       if (!res.ok) throw new Error('Failed to save to database');
 
       setSuccess(`Writing Test "${wTitle}" added!`);
-      setWTitle(''); setWTask1(''); setWTask2('');
+      setWTitle(''); setWTask1(''); setWTask1Image(''); setWTask2('');
     } catch (err) { setError(err.message); }
   };
 
   const handleSaveSpeaking = async () => {
     setError(''); setSuccess('');
     try {
-      if (!sTitle || !sPart1 || !sPart2 || !sPart3) throw new Error("All fields are required.");
+      if (!sTitle || !sPart1.some(q => q.trim()) || !sPart2 || !sPart3.some(q => q.trim())) throw new Error("All fields are required.");
       const newTest = { 
         id: `custom-speak-${Date.now()}`, 
         title: sTitle, 
-        part1: sPart1.split('\\n').filter(q => q.trim()), 
+        part1: sPart1.filter(q => q.trim()), 
         part2: sPart2, 
-        part3: sPart3.split('\\n').filter(q => q.trim()) 
+        part3: sPart3.filter(q => q.trim()) 
       };
       
       const res = await fetch(`${API_URL}/content/speaking`, {
@@ -144,7 +146,7 @@ export default function AdminPanel() {
       if (!res.ok) throw new Error('Failed to save to database');
 
       setSuccess(`Speaking Topic "${sTitle}" added!`);
-      setSTitle(''); setSPart1(''); setSPart2(''); setSPart3('');
+      setSTitle(''); setSPart1(['']); setSPart2(''); setSPart3(['']);
     } catch (err) { setError(err.message); }
   };
 
@@ -222,38 +224,72 @@ export default function AdminPanel() {
 
           {activeTab === 'reading' && (
             <>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Passage Title</label><input type="text" value={rTitle} onChange={(e) => setRTitle(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" placeholder="e.g. The Discovery of Penicillin" /></div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Passage Text</label><textarea value={rText} onChange={(e) => setRText(e.target.value)} rows={8} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" placeholder="Paste the full reading text here..." /></div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Questions (JSON)</label><textarea value={rSectionsJson} onChange={(e) => setRSectionsJson(e.target.value)} rows={10} className="w-full font-mono text-sm p-3 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-blue-500" /></div>
+              <div><label htmlFor="rTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Passage Title</label><input id="rTitle" type="text" value={rTitle} onChange={(e) => setRTitle(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" placeholder="e.g. The Discovery of Penicillin" /></div>
+              <div><label htmlFor="rText" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Passage Text</label><textarea id="rText" value={rText} onChange={(e) => setRText(e.target.value)} rows={8} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" placeholder="Paste the full reading text here..." /></div>
+              <div className="mt-8 border-t dark:border-gray-700 pt-6">
+                <QuestionBuilder sections={rSections} onChange={setRSections} />
+              </div>
               <div className="flex justify-end pt-4"><button onClick={handleSaveReading} className="flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm"><Save size={20} className="mr-2" />Save Passage</button></div>
             </>
           )}
 
           {activeTab === 'listening' && (
             <>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Test Title</label><input type="text" value={lTitle} onChange={(e) => setLTitle(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500" placeholder="e.g. Campus Library Orientation" /></div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Audio URL (.mp3)</label><input type="url" value={lAudio} onChange={(e) => setLAudio(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500" placeholder="https://example.com/audio.mp3" /></div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Audio Transcript (Optional)</label><textarea value={lTranscript} onChange={(e) => setLTranscript(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500" placeholder="Paste the transcript..." /></div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Questions (JSON)</label><textarea value={lSectionsJson} onChange={(e) => setLSectionsJson(e.target.value)} rows={10} className="w-full font-mono text-sm p-3 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-300 focus:ring-2 focus:ring-purple-500" /></div>
+              <div><label htmlFor="lTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Test Title</label><input id="lTitle" type="text" value={lTitle} onChange={(e) => setLTitle(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500" placeholder="e.g. Campus Library Orientation" /></div>
+              <div><label htmlFor="lAudio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Audio URL (.mp3)</label><input id="lAudio" type="url" value={lAudio} onChange={(e) => setLAudio(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500" placeholder="https://example.com/audio.mp3" /></div>
+              <div><label htmlFor="lTranscript" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Audio Transcript (Optional)</label><textarea id="lTranscript" value={lTranscript} onChange={(e) => setLTranscript(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500" placeholder="Paste the transcript..." /></div>
+              <div className="mt-8 border-t dark:border-gray-700 pt-6">
+                <QuestionBuilder sections={lSections} onChange={setLSections} />
+              </div>
               <div className="flex justify-end pt-4"><button onClick={handleSaveListening} className="flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-sm"><Save size={20} className="mr-2" />Save Listening Test</button></div>
             </>
           )}
 
           {activeTab === 'writing' && (
             <>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Test Title</label><input type="text" value={wTitle} onChange={(e) => setWTitle(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="e.g. Academic Practice 1" /></div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 1 Prompt</label><textarea value={wTask1} onChange={(e) => setWTask1(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="The chart below shows..." /></div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 2 Prompt</label><textarea value={wTask2} onChange={(e) => setWTask2(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="Some people believe..." /></div>
+              <div><label htmlFor="wTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Test Title</label><input id="wTitle" type="text" value={wTitle} onChange={(e) => setWTitle(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="e.g. Academic Practice 1" /></div>
+              <div><label htmlFor="wTask1" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 1 Prompt</label><textarea id="wTask1" value={wTask1} onChange={(e) => setWTask1(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="The chart below shows..." /></div>
+              <div><label htmlFor="wTask1Image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 1 Chart Image URL</label><input id="wTask1Image" type="url" value={wTask1Image} onChange={(e) => setWTask1Image(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="https://example.com/chart.png" /></div>
+              <div><label htmlFor="wTask2" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 2 Prompt</label><textarea id="wTask2" value={wTask2} onChange={(e) => setWTask2(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="Some people believe..." /></div>
               <div className="flex justify-end pt-4"><button onClick={handleSaveWriting} className="flex items-center px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg shadow-sm"><Save size={20} className="mr-2" />Save Writing Test</button></div>
             </>
           )}
 
           {activeTab === 'speaking' && (
             <>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Topic Title</label><input type="text" value={sTitle} onChange={(e) => setSTitle(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="e.g. Technology & Internet" /></div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Part 1 Questions (One per line)</label><textarea value={sPart1} onChange={(e) => setSPart1(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="Do you use the internet often?\nWhat is your favorite website?" /></div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Part 2 Prompt (Cue Card)</label><textarea value={sPart2} onChange={(e) => setSPart2(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="Describe a useful website you have visited..." /></div>
-              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Part 3 Questions (One per line)</label><textarea value={sPart3} onChange={(e) => setSPart3(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="How has the internet changed the way we learn?\nWhat are the dangers of spending too much time online?" /></div>
+              <div><label htmlFor="sTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Topic Title</label><input id="sTitle" type="text" value={sTitle} onChange={(e) => setSTitle(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="e.g. Technology & Internet" /></div>
+              
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Part 1 Questions</label>
+                  <button type="button" onClick={() => setSPart1([...sPart1, ''])} className="text-xs text-pink-600 hover:text-pink-800 dark:text-pink-400 font-medium">+ Add Question</button>
+                </div>
+                <div className="space-y-2">
+                  {sPart1.map((q, i) => (
+                    <div key={i} className="flex gap-2">
+                      <input type="text" value={q} onChange={(e) => { const newP = [...sPart1]; newP[i] = e.target.value; setSPart1(newP); }} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="Question text..." />
+                      <button type="button" onClick={() => setSPart1(sPart1.filter((_, idx) => idx !== i))} className="text-gray-400 hover:text-red-500 px-2"><Trash2 size={18}/></button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div><label htmlFor="sPart2" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Part 2 Prompt (Cue Card)</label><textarea id="sPart2" value={sPart2} onChange={(e) => setSPart2(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="Describe a useful website you have visited..." /></div>
+              
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Part 3 Questions</label>
+                  <button type="button" onClick={() => setSPart3([...sPart3, ''])} className="text-xs text-pink-600 hover:text-pink-800 dark:text-pink-400 font-medium">+ Add Question</button>
+                </div>
+                <div className="space-y-2">
+                  {sPart3.map((q, i) => (
+                    <div key={i} className="flex gap-2">
+                      <input type="text" value={q} onChange={(e) => { const newP = [...sPart3]; newP[i] = e.target.value; setSPart3(newP); }} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="Question text..." />
+                      <button type="button" onClick={() => setSPart3(sPart3.filter((_, idx) => idx !== i))} className="text-gray-400 hover:text-red-500 px-2"><Trash2 size={18}/></button>
+                    </div>
+                  ))}
+                </div>
+              </div>
               <div className="flex justify-end pt-4"><button onClick={handleSaveSpeaking} className="flex items-center px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-lg shadow-sm"><Save size={20} className="mr-2" />Save Speaking Topic</button></div>
             </>
           )}
