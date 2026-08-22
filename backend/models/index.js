@@ -25,10 +25,12 @@ export const Settings = mongoose.model('Settings', settingsSchema);
 const customReadingTestSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   title: { type: String, required: true },
+  pdfUrl: { type: String }, // Optional PDF for the entire test
   passages: [
     {
-      title: { type: String, required: true },
-      text: { type: String, required: true },
+      title: { type: String }, // Optional
+      text: { type: String }, // Made optional in case a PDF is provided
+      imageUrl: { type: String },
       sections: { type: Array, required: true }
     }
   ],

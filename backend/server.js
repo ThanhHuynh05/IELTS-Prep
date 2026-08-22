@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
 import { createRequire } from 'module';
+import fs from 'fs';
 
 const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
@@ -25,6 +26,13 @@ app.use(cors({
   optionsSuccessStatus: 200
 }));
 app.use(express.json());
+
+// Serve uploaded files statically
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+app.use('/uploads', express.static(uploadsDir));
 
 // Rate Limiter
 const apiLimiter = rateLimit({
@@ -101,8 +109,8 @@ app.post('/api/evaluate', apiLimiter, async (req, res) => {
   }
 });
 
-const upload = multer({ storage: multer.memoryStorage() });
-app.post('/api/extract-pdf', apiLimiter, upload.single('pdf'), async (req, res) => {
+const extractUpload = multer({ storage: multer.memoryStorage() });
+app.post('/api/extract-pdf', apiLimiter, extractUpload.single('pdf'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No PDF file uploaded' });
@@ -121,6 +129,26 @@ app.post('/api/extract-pdf', apiLimiter, upload.single('pdf'), async (req, res) 
     console.error('PDF Parse Error:', error);
     res.status(500).json({ error: 'Failed to extract text from PDF', details: error.message });
   }
+});
+
+const diskStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+const fileUpload = multer({ storage: diskStorage });
+
+app.post('/api/upload-pdf-file', apiLimiter, fileUpload.single('pdf'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No PDF file uploaded' });
+  }
+  // Return the public URL to access the uploaded file
+  const fileUrl = `http://localhost:${PORT}/uploads/${req.file.filename}`;
+  res.json({ url: fileUrl });
 });
 
 app.listen(PORT, () => {

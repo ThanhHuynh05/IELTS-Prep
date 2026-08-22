@@ -130,7 +130,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto pb-6 p-4 h-[calc(100vh-80px)] flex flex-col">
+    <div className="w-full px-4 md:px-8 pb-6 h-[calc(100vh-80px)] flex flex-col">
       <TipsModal 
         isOpen={showTips} 
         onClose={() => setShowTips(false)} 
@@ -184,29 +184,34 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       </div>
 
       {/* Split Screen Layout */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200" style={{ minHeight: '82vh' }}>
         
         {/* Left Side: Passage text */}
-        <ReadingPassage passage={activePassage} />
+        <div className="lg:col-span-9 h-full overflow-hidden flex flex-col">
+          <ReadingPassage passage={activePassage} testPdfUrl={selectedTest?.pdfUrl} />
+        </div>
 
-        {!isSubmitted ? (
-          <ReadingQuestions 
-            sections={activePassage.sections} 
-            allTestQuestions={selectedTest.passages.flatMap(p => p.sections.flatMap(s => s.questions))}
-            userAnswers={userAnswers}
-            onAnswerChange={handleAnswerChange}
-            onSubmit={handleSubmit}
-          />
-        ) : (
-          <div className="flex flex-col h-full overflow-y-auto pr-2 custom-scrollbar">
-            <h2 className="text-xl font-bold mb-4">Test Feedback</h2>
-            <ReadingFeedback 
-              sections={selectedTest.passages.flatMap(p => p.sections)}
+        {/* Right Side: Questions */}
+        <div className="lg:col-span-3 h-full overflow-hidden flex flex-col border-l border-gray-100 pl-4 lg:pl-6">
+          {!isSubmitted ? (
+            <ReadingQuestions 
+              sections={activePassage.sections} 
+              allTestQuestions={selectedTest.passages.flatMap(p => p.sections.flatMap(s => s.questions))}
               userAnswers={userAnswers}
-              onReset={handleReset}
+              onAnswerChange={handleAnswerChange}
+              onSubmit={handleSubmit}
             />
-          </div>
-        )}
+          ) : (
+            <div className="flex flex-col h-full overflow-y-auto pr-2 custom-scrollbar">
+              <h2 className="text-xl font-bold mb-4">Test Feedback</h2>
+              <ReadingFeedback 
+                sections={selectedTest.passages.flatMap(p => p.sections)}
+                userAnswers={userAnswers}
+                onReset={handleReset}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

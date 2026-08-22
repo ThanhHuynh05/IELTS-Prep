@@ -1,22 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, List, FileText } from 'lucide-react';
+import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, List, FileText, Wand2 } from 'lucide-react';
 import QuestionBuilder from '../components/common/QuestionBuilder';
 import PdfExtractorModal from '../components/common/PdfExtractorModal';
 
 const DEFAULT_READING_JSON = `[
   {
     "id": "sec-1",
-    "title": "Questions 1-3",
-    "instructions": "Do the following statements agree with the information given?\\nSelect TRUE, FALSE, or NOT GIVEN.",
-    "type": "true-false-ng",
-    "options": ["TRUE", "FALSE", "NOT GIVEN"],
-    "questions": [
-      {
-        "id": "q1",
-        "question": "Example question 1?",
-        "answer": "TRUE"
-      }
-    ]
+    "title": "Answer Overview",
+    "instructions": "",
+    "type": "mixed",
+    "options": [],
+    "questions": []
   }
 ]`;
 
@@ -49,7 +43,9 @@ export default function AdminPanel() {
 
   // Reading State
   const [rTestTitle, setRTestTitle] = useState('');
+  const [rTestPdfUrl, setRTestPdfUrl] = useState('');
   const [activePassageTab, setActivePassageTab] = useState(1);
+  const [pastedAnswers, setPastedAnswers] = useState('');
   
   const initialPassageState = () => ({
     title: '',
@@ -87,13 +83,15 @@ export default function AdminPanel() {
     setError(''); setSuccess('');
     try {
       if (!rTestTitle) throw new Error("Test Title is required.");
-      if (passages.some(p => !p.title || !p.text)) {
-        throw new Error("Title and text are required for all 3 passages.");
+      if (!rTestPdfUrl) throw new Error("A Test PDF must be uploaded.");
+      if (passages.some(p => p.sections.length === 0)) {
+        throw new Error("You must add at least one question section to all 3 passages.");
       }
 
       const newTest = { 
         id: `custom-readtest-${Date.now()}`, 
         title: rTestTitle, 
+        pdfUrl: rTestPdfUrl,
         passages: passages 
       };
       
@@ -102,13 +100,122 @@ export default function AdminPanel() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newTest)
       });
-      if (!res.ok) throw new Error('Failed to save to database');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to save to database: ${res.statusText}`);
+      }
       
       setSuccess(`Reading Test "${rTestTitle}" added!`);
       setRTestTitle('');
+      setRTestPdfUrl('');
       setPassages([initialPassageState(), initialPassageState(), initialPassageState()]);
       setActivePassageTab(1);
     } catch (err) { setError(err.message); }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('pdf', file);
+
+    try {
+      setError('');
+      const res = await fetch(`${API_URL}/upload-pdf-file`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Failed to upload PDF');
+      
+      const data = await res.json();
+      setRTestPdfUrl(data.url);
+      setSuccess(`Test PDF Uploaded Successfully!`);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleQuickPaste = () => {
+    if (!pastedAnswers.trim()) return;
+
+    try {
+      const lines = pastedAnswers.split('\n').map(l => l.trim()).filter(l => l);
+      let extracted = [];
+      let currentNumber = null;
+      let currentText = "";
+      
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+        
+        // Match numbers at start of line: "1 ", "14. ", "40)"
+        const match = line.match(/^0?(\d+)[.)\s]+(.*)$/i);
+        
+        if (match) {
+          if (currentNumber !== null) {
+            extracted.push({ num: currentNumber, text: currentText.trim() });
+          }
+          currentNumber = parseInt(match[1]);
+          currentText = match[2];
+        } else if (currentNumber !== null) {
+          // Continuation of previous answer
+          currentText += " " + line;
+        }
+      }
+      
+      if (currentNumber !== null) {
+        extracted.push({ num: currentNumber, text: currentText.trim() });
+      }
+
+      if (extracted.length === 0) {
+         throw new Error("No numbered answers found in the pasted text.");
+      }
+
+      extracted.sort((a,b) => a.num - b.num);
+      
+      const guessType = (text) => {
+        const t = text.toUpperCase();
+        if (t.includes('TRUE') || t.includes('FALSE') || t.includes('NOT GIVEN')) return 'true-false-ng';
+        if (t.includes('YES') || t.includes('NO') || t.includes('NOT GIVEN')) return 'yes-no-ng';
+        if (/^[A-Z]$/.test(t) || /^[A-Z]\s+AND\s+[A-Z]$/.test(t)) return 'multiple-choice';
+        if (/^[IVX]+$/i.test(t)) return 'matching-headings';
+        return 'fill-in-the-blanks';
+      };
+
+      const newQuestions = extracted.map(ans => ({
+        id: `q-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+        question: '',
+        answer: ans.text
+      }));
+
+      const newPassages = [...passages];
+      const currentPassage = newPassages[activePassageTab - 1];
+      
+      if (!currentPassage.sections || currentPassage.sections.length === 0) {
+        currentPassage.sections = [{
+          id: `sec-${Date.now()}`,
+          title: 'Answer Overview',
+          instructions: '',
+          type: 'mixed',
+          options: [],
+          questions: newQuestions
+        }];
+      } else {
+        // Just append questions to the first section
+        currentPassage.sections[0].questions = [
+          ...(currentPassage.sections[0].questions || []),
+          ...newQuestions
+        ];
+        // Remove any other sections if they somehow got added
+        currentPassage.sections = [currentPassage.sections[0]];
+      }
+      
+      setPassages(newPassages);
+      setSuccess(`Successfully added ${extracted.length} answers to Passage ${activePassageTab}! Please verify the question types.`);
+      setPastedAnswers('');
+    } catch (err) {
+      setError('Failed to parse answers. Please check the format.');
+    }
   };
 
   const handleSaveListening = async () => {
@@ -251,13 +358,31 @@ export default function AdminPanel() {
         </div>
 
         <div className="p-6 space-y-6">
-          {success && <div className="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 p-4 rounded-md border border-green-200 dark:border-green-800">{success}</div>}
+          {success && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in">
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl max-w-sm w-full mx-4 border border-green-100 dark:border-green-900/30 transform transition-all animate-in zoom-in duration-200">
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mb-4">
+                    <Shield className="text-green-600 dark:text-green-400" size={24} />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Success!</h3>
+                  <p className="text-gray-600 dark:text-gray-300 mb-6">{success}</p>
+                  <button 
+                    onClick={() => setSuccess('')}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 rounded-lg transition-colors focus:ring-4 focus:ring-green-100 dark:focus:ring-green-900/20"
+                  >
+                    Awesome
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           {error && <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-4 rounded-md border border-red-200 dark:border-red-800">{error}</div>}
 
           {activeTab === 'reading' && (
             <div className="space-y-6">
               <div>
-                <label htmlFor="rTestTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Test Title</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Test Title</label>
                 <input 
                   id="rTestTitle" 
                   type="text" 
@@ -268,8 +393,26 @@ export default function AdminPanel() {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Test PDF Upload (Optional)</label>
+                <div className="flex items-center space-x-4">
+                  <input 
+                    type="file" 
+                    accept="application/pdf"
+                    onChange={handleFileUpload}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                  {rTestPdfUrl && (
+                    <span className="text-green-600 text-sm font-medium whitespace-nowrap">
+                      ✅ Full Test PDF Uploaded
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">If you upload a PDF here, it will be displayed on the left side for the entire test. You still need to add the questions for each passage below.</p>
+              </div>
+
               {/* Passage Tabs */}
-              <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
+              <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6 mt-4">
                 {[1, 2, 3].map((num) => (
                   <button
                     key={num}
@@ -280,44 +423,52 @@ export default function AdminPanel() {
                         : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
                     }`}
                   >
-                    Passage {num}
+                    Passage {num} Questions
                   </button>
                 ))}
               </div>
 
               {/* Passage Content (using the active tab) */}
               <div className="space-y-4 animate-in fade-in duration-200" key={activePassageTab}>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Passage {activePassageTab} Title</label>
-                  <input 
-                    type="text" 
-                    value={passages[activePassageTab - 1].title} 
-                    onChange={(e) => {
-                      const newPassages = [...passages];
-                      newPassages[activePassageTab - 1].title = e.target.value;
-                      setPassages(newPassages);
-                    }} 
-                    className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" 
-                    placeholder="e.g. The Discovery of Penicillin" 
-                  />
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-5 mb-6 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-3 opacity-20">
+                    <Wand2 size={64} className="text-blue-500" />
+                  </div>
+                  <h3 className="text-lg font-bold text-blue-800 dark:text-blue-300 mb-2 flex items-center">
+                    <Wand2 size={20} className="mr-2" />
+                    Quick Paste Answers for Passage {activePassageTab}
+                  </h3>
+                  <p className="text-sm text-blue-700 dark:text-blue-400 mb-4 max-w-2xl">
+                    Paste your copied answers for this specific passage below (e.g. <code>1 population</code>). We will instantly parse them and add them as new sections!
+                  </p>
+                  
+                  <div className="flex flex-col space-y-3">
+                    <textarea
+                      value={pastedAnswers}
+                      onChange={(e) => setPastedAnswers(e.target.value)}
+                      placeholder="1 population&#10;2 suburbs&#10;3 FALSE..."
+                      className="w-full p-3 h-24 border border-blue-200 dark:border-blue-700 rounded-lg bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 font-mono"
+                    />
+                    <div className="flex justify-end">
+                      <button 
+                        onClick={handleQuickPaste}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded shadow-sm transition-colors"
+                      >
+                        Parse & Add to Passage {activePassageTab}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Passage {activePassageTab} Text</label>
-                  <textarea 
-                    value={passages[activePassageTab - 1].text} 
-                    onChange={(e) => {
-                      const newPassages = [...passages];
-                      newPassages[activePassageTab - 1].text = e.target.value;
-                      setPassages(newPassages);
-                    }} 
-                    rows={8} 
-                    className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" 
-                    placeholder="Paste the full reading text here..." 
-                  />
-                </div>
-                <div className="mt-8 border-t dark:border-gray-700 pt-6">
+
+                <div className="pt-2">
                   <QuestionBuilder 
                     sections={passages[activePassageTab - 1].sections} 
+                    passageNumber={activePassageTab}
+                    startIndex={
+                      1 + passages.slice(0, activePassageTab - 1).reduce((acc, passage) => {
+                        return acc + (passage.sections || []).reduce((secAcc, sec) => secAcc + (sec.questions || []).length, 0);
+                      }, 0)
+                    }
                     onChange={(newSections) => {
                       const newPassages = [...passages];
                       newPassages[activePassageTab - 1].sections = newSections;

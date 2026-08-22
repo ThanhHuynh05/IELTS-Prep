@@ -11,6 +11,7 @@ export default function ReadingQuestions({ sections, allTestQuestions, userAnswe
   
   // Calculate answered count out of the entire test
   const answeredCount = Object.keys(userAnswers).filter(k => userAnswers[k].trim() !== "").length;
+  const allAnswered = totalQuestionsInTest > 0 && answeredCount === totalQuestionsInTest;
 
   return (
     <div className="h-full overflow-y-auto pl-6 border-l border-gray-200 dark:border-gray-700">
@@ -25,7 +26,7 @@ export default function ReadingQuestions({ sections, allTestQuestions, userAnswe
         {sections.map((section) => (
           <div key={section.id} className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
             <div className="mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{section.title}</h3>
+              {section.title && <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{section.title}</h3>}
               <p className="text-gray-600 dark:text-gray-300 text-sm whitespace-pre-line">{section.instructions}</p>
               {section.imageUrl && (
                 <div className="mt-4">
@@ -46,7 +47,7 @@ export default function ReadingQuestions({ sections, allTestQuestions, userAnswe
                   : currentPassageQuestions.findIndex(gq => gq.id === q.id) + 1;
 
                 return (
-                  <div key={q.id} className="flex flex-col sm:flex-row sm:items-start sm:space-x-4">
+                  <div key={q.id} className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mb-4">
                     <div className="font-bold text-gray-800 dark:text-gray-200 shrink-0 w-6">
                       {globalNumber}.
                     </div>
@@ -55,7 +56,7 @@ export default function ReadingQuestions({ sections, allTestQuestions, userAnswe
                       {/* For True/False/NG and Yes/No/NG, show text then dropdown */}
                       {(section.type === 'true-false-ng' || section.type === 'yes-no-ng') && (
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-                          <span className="text-gray-700 dark:text-gray-300">{q.question}</span>
+                          {q.question && <span className="text-gray-700 dark:text-gray-300">{q.question}</span>}
                           <select 
                             value={userAnswers[q.id] || ''}
                             onChange={(e) => handleInputChange(q.id, e.target.value)}
@@ -72,7 +73,7 @@ export default function ReadingQuestions({ sections, allTestQuestions, userAnswe
                       {/* For Matching Headings, show text then small input */}
                       {section.type === 'matching-headings' && (
                         <div className="flex items-center space-x-3">
-                          <span className="text-gray-700 dark:text-gray-300">{q.question}</span>
+                          {q.question && <span className="text-gray-700 dark:text-gray-300">{q.question}</span>}
                           <input 
                             type="text"
                             maxLength={2}
@@ -86,7 +87,7 @@ export default function ReadingQuestions({ sections, allTestQuestions, userAnswe
                       {/* For Multiple Choice, show text then radio list */}
                       {section.type === 'multiple-choice' && (
                         <div>
-                          <span className="text-gray-700 dark:text-gray-300 font-medium block mb-3">{q.question}</span>
+                          {q.question && <span className="text-gray-700 dark:text-gray-300 font-medium block mb-3">{q.question}</span>}
                           <div className="space-y-2">
                             {q.options.map((opt, i) => (
                               <label key={i} className="flex items-center space-x-3 cursor-pointer group bg-gray-50 dark:bg-gray-700/50 p-2 rounded hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors">
@@ -106,9 +107,9 @@ export default function ReadingQuestions({ sections, allTestQuestions, userAnswe
                       )}
 
                       {/* For Fill in Blank, show text with an input box replacing the blank, or just an input below */}
-                      {section.type === 'fill-in-blank' && (
+                      {(section.type === 'fill-in-the-blanks' || section.type === 'mixed') && (
                         <div className="space-y-2">
-                          <span className="text-gray-700 dark:text-gray-300 block">{q.question}</span>
+                          {q.question && <span className="text-gray-700 dark:text-gray-300 block">{q.question}</span>}
                           <input 
                             type="text" 
                             value={userAnswers[q.id] || ''}

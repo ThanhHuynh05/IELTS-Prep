@@ -1,9 +1,18 @@
 import { PlusCircle, Trash2, Settings, Plus } from 'lucide-react';
 
-export default function QuestionBuilder({ sections, onChange }) {
+export default function QuestionBuilder({ sections = [], onChange, startIndex = 1, passageNumber }) {
+  const getQuestionNumber = (sIdx, qIdx) => {
+    let num = startIndex;
+    for (let i = 0; i < sIdx; i++) {
+      num += (sections[i].questions || []).length;
+    }
+    num += qIdx;
+    return num;
+  };
+
   const handleAddSection = () => {
     const newSection = {
-      id: `sec-${Date.now()}`,
+      id: `sec-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
       title: 'New Section',
       instructions: '',
       type: 'multiple-choice',
@@ -40,7 +49,7 @@ export default function QuestionBuilder({ sections, onChange }) {
   const handleAddQuestion = (sectionIndex) => {
     const newSections = [...sections];
     const newQuestion = {
-      id: `q-${Date.now()}`,
+      id: `q-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
       question: 'New Question',
       answer: ''
     };
@@ -71,14 +80,10 @@ export default function QuestionBuilder({ sections, onChange }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between mb-2">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Question Sections</label>
-        <button 
-          onClick={handleAddSection}
-          className="flex items-center px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 rounded-md text-sm font-medium transition-colors"
-        >
-          <Plus size={16} className="mr-1" /> Add Section
-        </button>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">
+          {passageNumber ? `Passage ${passageNumber} Answer Overview` : 'Answer Overview'}
+        </h2>
       </div>
 
       {sections.length === 0 && (
@@ -88,85 +93,9 @@ export default function QuestionBuilder({ sections, onChange }) {
       )}
 
       {sections.map((section, sIdx) => (
-        <div key={section.id || sIdx} className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-all">
-          <div className="flex justify-between items-start mb-4">
-            <h3 className="font-semibold text-gray-900 dark:text-white flex items-center">
-              <Settings size={18} className="mr-2 text-gray-500" />
-              Section {sIdx + 1}
-            </h3>
-            <button 
-              onClick={() => handleRemoveSection(sIdx)}
-              className="text-red-500 hover:text-red-700 p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
-              title="Remove Section"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Section Title</label>
-              <input 
-                type="text" 
-                value={section.title || ''} 
-                onChange={(e) => handleSectionChange(sIdx, 'title', e.target.value)}
-                className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-sm focus:ring-1 focus:ring-blue-500"
-                placeholder="e.g. Questions 1-5"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Question Type</label>
-              <select
-                value={section.type || 'multiple-choice'}
-                onChange={(e) => handleSectionChange(sIdx, 'type', e.target.value)}
-                className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-sm focus:ring-1 focus:ring-blue-500"
-              >
-                <option value="multiple-choice">Multiple Choice</option>
-                <option value="true-false-ng">True/False/Not Given</option>
-                <option value="yes-no-ng">Yes/No/Not Given</option>
-                <option value="fill-in-the-blanks">Fill in the Blanks</option>
-                <option value="matching">Matching</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-xs font-medium text-gray-500 mb-1">Instructions</label>
-            <textarea 
-              value={section.instructions || ''} 
-              onChange={(e) => handleSectionChange(sIdx, 'instructions', e.target.value)}
-              className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-sm focus:ring-1 focus:ring-blue-500"
-              rows={2}
-              placeholder="e.g. Choose the correct letter, A, B, C or D."
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block text-xs font-medium text-gray-500 mb-1">Image URL (Optional - For Charts/Tables)</label>
-            <input 
-              type="url" 
-              value={section.imageUrl || ''} 
-              onChange={(e) => handleSectionChange(sIdx, 'imageUrl', e.target.value)}
-              className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-sm focus:ring-1 focus:ring-blue-500"
-              placeholder="https://example.com/flowchart.png"
-            />
-          </div>
-
-          {['multiple-choice', 'matching'].includes(section.type) && (
-            <div className="mb-4">
-              <label className="block text-xs font-medium text-gray-500 mb-1">Options (Comma separated)</label>
-              <input 
-                type="text" 
-                value={(section.options || []).join(', ')} 
-                onChange={(e) => handleOptionsChange(sIdx, e.target.value)}
-                className="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-sm focus:ring-1 focus:ring-blue-500"
-                placeholder="e.g. A, B, C, D"
-              />
-            </div>
-          )}
-
+        <div key={section.id || sIdx} className="transition-all">
           {/* Questions within Section */}
-          <div className="mt-6 border-t dark:border-gray-700 pt-4">
+          <div className="mt-2 pt-2">
             <div className="flex justify-between items-center mb-3">
               <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300">Questions</h4>
               <button 
@@ -181,16 +110,10 @@ export default function QuestionBuilder({ sections, onChange }) {
               {(section.questions || []).map((q, qIdx) => (
                 <div key={q.id || qIdx} className="flex gap-3 items-start bg-white dark:bg-gray-900 p-3 rounded border dark:border-gray-700">
                   <div className="font-mono text-xs text-gray-400 pt-2 w-8 text-center bg-gray-100 dark:bg-gray-800 rounded">
-                    {qIdx + 1}
+                    {getQuestionNumber(sIdx, qIdx)}
                   </div>
                   <div className="flex-1 space-y-2">
-                    <input 
-                      type="text" 
-                      value={q.question || ''} 
-                      onChange={(e) => handleQuestionChange(sIdx, qIdx, 'question', e.target.value)}
-                      className="w-full p-1.5 border-b border-gray-200 dark:border-gray-700 bg-transparent text-sm focus:outline-none focus:border-blue-500"
-                      placeholder="Question text..."
-                    />
+                    <div className="text-sm font-medium text-gray-500 mb-1">Answer:</div>
                     <input 
                       type="text" 
                       value={q.answer || ''} 
