@@ -42,9 +42,10 @@ export const CustomReadingTest = mongoose.model('CustomReadingTest', customReadi
 const customListeningSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   title: { type: String, required: true },
-  audioUrl: { type: String, required: true },
+  audioUrl: { type: String }, // Optional now
   pdfUrl: { type: String }, // Optional PDF for the test questions
   transcript: { type: String },
+  isSectionMedia: { type: Boolean, default: false },
   sections: { type: Array, required: true },
   createdAt: { type: Date, default: Date.now }
 });

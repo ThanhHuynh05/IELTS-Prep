@@ -126,7 +126,7 @@ app.post('/api/extract-pdf', apiLimiter, extractUpload.single('pdf'), async (req
   }
 });
 
-app.post('/api/upload-pdf-file/token', async (req, res) => {
+app.post('/api/upload-file/token', async (req, res) => {
   try {
     const { handleUpload } = await import('@vercel/blob/client');
     const jsonResponse = await handleUpload({
@@ -134,7 +134,7 @@ app.post('/api/upload-pdf-file/token', async (req, res) => {
       request: req,
       onBeforeGenerateToken: async (pathname) => {
         return {
-          allowedContentTypes: ['application/pdf'],
+          allowedContentTypes: ['application/pdf', 'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-m4a'],
         };
       }
     });

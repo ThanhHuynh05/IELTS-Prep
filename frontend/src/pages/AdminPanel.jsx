@@ -44,6 +44,7 @@ export default function AdminPanel() {
   const [lTranscript, setLTranscript] = useState('');
   const [pastedListeningAnswers, setPastedListeningAnswers] = useState('');
   const [lSections, setLSections] = useState(() => JSON.parse(DEFAULT_LISTENING_JSON));
+  const [isSectionMedia, setIsSectionMedia] = useState(false);
 
   // Writing State
   const [wTitle, setWTitle] = useState('');
@@ -97,24 +98,24 @@ export default function AdminPanel() {
     } catch (err) { setError(err.message); }
   };
 
-  const handlePdfUpload = async (e, setPdfUrl) => {
+  const handleFileUpload = async (e, setUrl, fileTypeLabel = 'PDF') => {
     const file = e.target.files[0];
     if (!file) return;
 
     try {
       setError('');
-      setSuccess('Uploading... This might take a moment for large files.');
+      setSuccess(`Uploading ${fileTypeLabel}... This might take a moment for large files.`);
       
       const newBlob = await upload(file.name, file, {
         access: 'public',
-        handleUploadUrl: `${API_URL}/upload-pdf-file/token`,
+        handleUploadUrl: `${API_URL}/upload-file/token`,
       });
       
-      setPdfUrl(newBlob.url);
-      setSuccess(`Test PDF Uploaded Successfully!`);
+      setUrl(newBlob.url);
+      setSuccess(`${fileTypeLabel} Uploaded Successfully!`);
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Failed to upload PDF');
+      setError(err.message || `Failed to upload ${fileTypeLabel}`);
     }
   };
 
@@ -242,20 +243,13 @@ export default function AdminPanel() {
 
       const newSections = [...lSections];
       
-      if (newSections.length === 0) {
-        newSections.push({
-          id: `sec-${Date.now()}`,
-          title: 'Answer Overview',
-          instructions: '',
-          type: 'mixed',
-          questions: newQuestions
-        });
-      } else {
-        newSections[0].questions = [
-          ...(newSections[0].questions || []),
-          ...newQuestions
-        ];
-      }
+      newSections.push({
+        id: `sec-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+        title: `Section ${newSections.length + 1}`,
+        instructions: '',
+        type: 'mixed',
+        questions: newQuestions
+      });
       
       setLSections(newSections);
       setSuccess(`Successfully added ${extracted.length} answers to Listening Test!`);
@@ -268,14 +262,16 @@ export default function AdminPanel() {
   const handleSaveListening = async () => {
     setError(''); setSuccess('');
     try {
-      if (!lTitle || !lAudio) throw new Error("Title and Audio URL are required.");
+      if (!lTitle) throw new Error("Title is required.");
+      if (!isSectionMedia && !lAudio) throw new Error("Audio URL is required for full test mode.");
+      
       const sections = lSections;
       const newTest = { 
         id: editingId || `custom-list-${Date.now()}`, 
         title: lTitle, 
-        audioUrl: lAudio, 
+        audioUrl: isSectionMedia ? '' : lAudio, 
         pdfUrl: lPdfUrl,
-        transcript: lTranscript, 
+        isSectionMedia,
         sections 
       };
       
@@ -398,6 +394,7 @@ export default function AdminPanel() {
       setLAudio(item.audioUrl || '');
       setLPdfUrl(item.pdfUrl || '');
       setLTranscript(item.transcript || '');
+      setIsSectionMedia(item.isSectionMedia || false);
       setLSections(item.sections || JSON.parse(DEFAULT_LISTENING_JSON));
       setEditingId(item._id);
       setActiveTab('listening');
@@ -494,7 +491,7 @@ export default function AdminPanel() {
                   <input 
                     type="file" 
                     accept="application/pdf"
-                    onChange={(e) => handlePdfUpload(e, setRTestPdfUrl)}
+                    onChange={(e) => handleFileUpload(e, setRTestPdfUrl, 'PDF')}
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   />
                   {rTestPdfUrl && (
@@ -585,15 +582,52 @@ export default function AdminPanel() {
           {activeTab === 'listening' && (
             <div className="space-y-6">
               <div><label htmlFor="lTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Test Title</label><input id="lTitle" type="text" value={lTitle} onChange={(e) => setLTitle(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500" placeholder="e.g. Campus Library Orientation" /></div>
-              <div><label htmlFor="lAudio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Audio URL (.mp3)</label><input id="lAudio" type="url" value={lAudio} onChange={(e) => setLAudio(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500" placeholder="https://example.com/audio.mp3" /></div>
               
+              <div className="flex items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                <input 
+                  type="checkbox" 
+                  id="isSectionMedia" 
+                  checked={isSectionMedia} 
+                  onChange={(e) => setIsSectionMedia(e.target.checked)}
+                  className="w-5 h-5 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
+                />
+                <label htmlFor="isSectionMedia" className="ml-3 font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+                  Split Media by Section (Upload Audio & PDF for each section individually)
+                </label>
+              </div>
+
+              {!isSectionMedia && (
+                <div>
+                  <label htmlFor="lAudio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Test Audio URL (.mp3)</label>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <input 
+                      id="lAudio" 
+                      type="url" 
+                      value={lAudio} 
+                      onChange={(e) => setLAudio(e.target.value)} 
+                      className="flex-1 p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500" 
+                      placeholder="https://example.com/audio.mp3" 
+                    />
+                    <div className="flex items-center shrink-0 border border-gray-300 dark:border-gray-600 rounded-lg px-2 overflow-hidden bg-gray-50 dark:bg-gray-800">
+                      <span className="text-sm text-gray-500 dark:text-gray-400 mr-2 shrink-0">OR Upload:</span>
+                      <input 
+                        type="file" 
+                        accept="audio/*"
+                        onChange={(e) => handleFileUpload(e, setLAudio, 'Audio')}
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 max-w-[220px]"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+                  
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Questions PDF Upload (Optional)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Test PDF Upload (Optional)</label>
                 <div className="flex items-center space-x-4">
                   <input 
                     type="file" 
                     accept="application/pdf"
-                    onChange={(e) => handlePdfUpload(e, setLPdfUrl)}
+                    onChange={(e) => handleFileUpload(e, setLPdfUrl, 'PDF')}
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
                   />
                   {lPdfUrl && (
@@ -602,8 +636,48 @@ export default function AdminPanel() {
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Upload a PDF containing the questions to display alongside the audio.</p>
+                <p className="text-xs text-gray-500 mt-1">Upload a single PDF containing all the questions.</p>
               </div>
+
+              {isSectionMedia && (
+                <div className="mb-6 space-y-4">
+                  <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Section Media Uploads</h3>
+                  {lSections.map((section, idx) => (
+                    <div key={section.id} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 space-y-4">
+                      <h4 className="font-semibold text-purple-700 dark:text-purple-400">{section.title || `Section ${idx + 1}`} Media</h4>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Audio URL</label>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <input 
+                            type="url" 
+                            value={section.audioUrl || ''} 
+                            onChange={(e) => {
+                              const newSecs = [...lSections];
+                              newSecs[idx].audioUrl = e.target.value;
+                              setLSections(newSecs);
+                            }}
+                            className="flex-1 p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm" 
+                          />
+                          <div className="flex items-center shrink-0 border border-gray-300 dark:border-gray-600 rounded px-2 bg-white dark:bg-gray-900">
+                            <span className="text-xs text-gray-500 mr-2">Upload:</span>
+                            <input 
+                              type="file" 
+                              accept="audio/*"
+                              onChange={(e) => handleFileUpload(e, (url) => {
+                                const newSecs = [...lSections];
+                                newSecs[idx].audioUrl = url;
+                                setLSections(newSecs);
+                              }, 'Audio')}
+                              className="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-purple-50 file:text-purple-700"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {lSections.length === 0 && <p className="text-sm text-gray-500">Add a section below to upload its media.</p>}
+                </div>
+              )}
 
               <div><label htmlFor="lTranscript" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Audio Transcript (Optional)</label><textarea id="lTranscript" value={lTranscript} onChange={(e) => setLTranscript(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500" placeholder="Paste the transcript..." /></div>
               
@@ -638,6 +712,7 @@ export default function AdminPanel() {
               </div>
 
               <div className="mt-8 border-t dark:border-gray-700 pt-6">
+
                 <QuestionBuilder sections={lSections} onChange={setLSections} />
               </div>
               <div className="flex justify-end pt-4"><button onClick={handleSaveListening} className="flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-sm"><Save size={20} className="mr-2" />{editingId ? 'Update Listening Test' : 'Save Listening Test'}</button></div>

@@ -78,29 +78,35 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   };
 
   if (isMockMode) {
+    const hasLeftPanel = !selectedTest.isSectionMedia || selectedTest.pdfUrl;
+    
     return (
-      <div className={`flex-1 grid grid-cols-1 ${selectedTest.pdfUrl ? 'lg:grid-cols-12' : 'lg:grid-cols-[1fr_2fr]'} gap-6 overflow-hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 h-full`}>
-        <div className={`flex flex-col border-r border-gray-200 pr-4 sm:pr-6 ${selectedTest.pdfUrl ? 'lg:col-span-9 h-full' : ''}`}>
-          <ListeningPlayer key={selectedTest.id} transcript={selectedTest.transcript} />
-          <div className="mt-4 mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg shrink-0">
-            <h4 className="font-bold text-yellow-800 mb-2">Test Instructions</h4>
-            <ul className="text-sm text-yellow-700 space-y-2 list-disc pl-4">
-              <li>You will only hear the audio <strong>once</strong>.</li>
-              <li>Read the questions carefully before starting the audio.</li>
-              <li>Answer the questions as you listen.</li>
-            </ul>
-          </div>
-          {selectedTest.pdfUrl && (
-            <div className="flex-1 min-h-[400px] border border-gray-200 rounded-lg overflow-hidden relative">
-              <iframe 
-                src={`${selectedTest.pdfUrl}#toolbar=0`} 
-                className="absolute inset-0 w-full h-full"
-                title="Listening Test PDF"
-              />
+      <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'lg:grid-cols-12' : 'lg:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 overflow-hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 h-full`}>
+        {hasLeftPanel && (
+          <div className={`flex flex-col border-r border-gray-200 pr-4 sm:pr-6 ${selectedTest.pdfUrl ? 'lg:col-span-9 h-full' : ''}`}>
+            {!selectedTest.isSectionMedia && (
+              <ListeningPlayer key={selectedTest.id} transcript={selectedTest.transcript} />
+            )}
+            <div className="mt-4 mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg shrink-0">
+              <h4 className="font-bold text-yellow-800 mb-2">Test Instructions</h4>
+              <ul className="text-sm text-yellow-700 space-y-2 list-disc pl-4">
+                <li>You will only hear the audio <strong>once</strong>.</li>
+                <li>Read the questions carefully before starting the audio.</li>
+                <li>Answer the questions as you listen.</li>
+              </ul>
             </div>
-          )}
-        </div>
-        <div className={`overflow-hidden flex flex-col ${selectedTest.pdfUrl ? 'lg:col-span-3 h-full custom-scrollbar overflow-y-auto' : ''}`}>
+            {selectedTest.pdfUrl && (
+              <div className="flex-1 min-h-[400px] border border-gray-200 rounded-lg overflow-hidden relative">
+                <iframe 
+                  src={`${selectedTest.pdfUrl}#toolbar=0`} 
+                  className="absolute inset-0 w-full h-full"
+                  title="Listening Test PDF"
+                />
+              </div>
+            )}
+          </div>
+        )}
+        <div className={`overflow-hidden flex flex-col ${hasLeftPanel && selectedTest.pdfUrl ? 'lg:col-span-3 h-full custom-scrollbar overflow-y-auto' : ''}`}>
           <ListeningQuestions 
             sections={selectedTest.sections} 
             userAnswers={userAnswers}
@@ -142,6 +148,8 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     );
   }
 
+  const hasLeftPanel = selectedTest && (!selectedTest.isSectionMedia || selectedTest.pdfUrl);
+
   return (
     <div className="max-w-[1400px] mx-auto pb-6 p-4 h-[calc(100vh-80px)] flex flex-col">
       <TipsModal 
@@ -180,39 +188,43 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       </div>
 
       {/* Main Layout */}
-      <div className={`flex-1 grid grid-cols-1 ${selectedTest.pdfUrl ? 'lg:grid-cols-12' : 'lg:grid-cols-[1fr_2fr]'} gap-6 overflow-hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200`}>
+      <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'lg:grid-cols-12' : 'lg:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 overflow-hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200`}>
         
         {/* Left Side: Audio Player & PDF */}
-        <div className={`flex flex-col border-r border-gray-200 pr-4 sm:pr-6 ${selectedTest.pdfUrl ? 'lg:col-span-9 h-full' : ''}`}>
-          <ListeningPlayer 
-            key={selectedTest.id}
-            transcript={selectedTest.transcript} 
-            audioUrl={selectedTest.audioUrl}
-          />
-          
-          <div className="mt-4 mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg shrink-0">
-            <h4 className="font-bold text-yellow-800 mb-2">Test Instructions</h4>
-            <ul className="text-sm text-yellow-700 space-y-2 list-disc pl-4">
-              <li>You will only hear the audio <strong>once</strong>.</li>
-              <li>Read the questions carefully before starting the audio.</li>
-              <li>Answer the questions as you listen.</li>
-              <li>When you have answered all questions, click Submit.</li>
-            </ul>
-          </div>
-
-          {selectedTest.pdfUrl && (
-            <div className="flex-1 min-h-[400px] border border-gray-200 rounded-lg overflow-hidden relative">
-              <iframe 
-                src={`${selectedTest.pdfUrl}#toolbar=0`} 
-                className="absolute inset-0 w-full h-full"
-                title="Listening Test PDF"
+        {hasLeftPanel && (
+          <div className={`flex flex-col border-r border-gray-200 pr-4 sm:pr-6 ${selectedTest.pdfUrl ? 'lg:col-span-9 h-full' : ''}`}>
+            {!selectedTest.isSectionMedia && (
+              <ListeningPlayer 
+                key={selectedTest.id}
+                transcript={selectedTest.transcript} 
+                audioUrl={selectedTest.audioUrl}
               />
+            )}
+            
+            <div className="mt-4 mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg shrink-0">
+              <h4 className="font-bold text-yellow-800 mb-2">Test Instructions</h4>
+              <ul className="text-sm text-yellow-700 space-y-2 list-disc pl-4">
+                <li>You will only hear the audio <strong>once</strong>.</li>
+                <li>Read the questions carefully before starting the audio.</li>
+                <li>Answer the questions as you listen.</li>
+                <li>When you have answered all questions, click Submit.</li>
+              </ul>
             </div>
-          )}
-        </div>
+
+            {selectedTest.pdfUrl && (
+              <div className="flex-1 min-h-[400px] border border-gray-200 rounded-lg overflow-hidden relative">
+                <iframe 
+                  src={`${selectedTest.pdfUrl}#toolbar=0`} 
+                  className="absolute inset-0 w-full h-full"
+                  title="Listening Test PDF"
+                />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Right Side: Questions or Feedback */}
-        <div className={`overflow-hidden flex flex-col ${selectedTest.pdfUrl ? 'lg:col-span-3 h-full custom-scrollbar overflow-y-auto' : ''}`}>
+        <div className={`overflow-hidden flex flex-col ${hasLeftPanel && selectedTest.pdfUrl ? 'lg:col-span-3 h-full custom-scrollbar overflow-y-auto' : ''}`}>
           {!isSubmitted ? (
             <ListeningQuestions 
               sections={selectedTest.sections} 

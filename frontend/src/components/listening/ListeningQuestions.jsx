@@ -1,3 +1,5 @@
+import ListeningPlayer from './ListeningPlayer';
+
 export default function ListeningQuestions({ sections, userAnswers, onAnswerChange, onSubmit }) {
   if (!sections) return null;
 
@@ -23,6 +25,13 @@ export default function ListeningQuestions({ sections, userAnswers, onAnswerChan
             <div className="mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{section.title}</h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm whitespace-pre-line">{section.instructions}</p>
+              
+              {section.audioUrl && (
+                <div className="mt-6 mb-4">
+                  <ListeningPlayer audioUrl={section.audioUrl} />
+                </div>
+              )}
+
               {section.imageUrl && (
                 <div className="mt-4">
                   <img 
