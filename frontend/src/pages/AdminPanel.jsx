@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, List, FileText, Wand2, Edit2 } from 'lucide-react';
+import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, List, FileText, Wand2, Edit2, XCircle } from 'lucide-react';
 import { upload } from '@vercel/blob/client';
 import QuestionBuilder from '../components/common/QuestionBuilder';
 
@@ -69,15 +69,25 @@ export default function AdminPanel() {
     setError(''); setSuccess('');
     try {
       if (!rTestTitle) throw new Error("Test Title is required.");
-      if (!rTestPdfUrl) throw new Error("A Test PDF must be uploaded.");
+      if (!rTestPdfUrl) throw new Error("A Test PDF must be selected.");
       if (passages.some(p => p.sections.length === 0)) {
         throw new Error("You must add at least one question section to all 3 passages.");
+      }
+
+      let finalPdfUrl = rTestPdfUrl;
+      if (rTestPdfUrl instanceof File) {
+        setSuccess('Uploading PDF to storage... Please wait.');
+        const newBlob = await upload(rTestPdfUrl.name, rTestPdfUrl, {
+          access: 'public',
+          handleUploadUrl: `${API_URL}/upload-file/token`,
+        });
+        finalPdfUrl = newBlob.url;
       }
 
       const newTest = { 
         id: editingId || `custom-readtest-${Date.now()}`, 
         title: rTestTitle, 
-        pdfUrl: rTestPdfUrl,
+        pdfUrl: finalPdfUrl,
         passages: passages 
       };
       
@@ -103,25 +113,14 @@ export default function AdminPanel() {
     } catch (err) { setError(err.message); }
   };
 
-  const handleFileUpload = async (e, setUrl, fileTypeLabel = 'PDF') => {
+  const handleFileUpload = (e, setFileOrUrl, fileTypeLabel = 'File') => {
     const file = e.target.files[0];
     if (!file) return;
-
-    try {
-      setError('');
-      setSuccess(`Uploading ${fileTypeLabel}... This might take a moment for large files.`);
-      
-      const newBlob = await upload(file.name, file, {
-        access: 'public',
-        handleUploadUrl: `${API_URL}/upload-file/token`,
-      });
-      
-      setUrl(newBlob.url);
-      setSuccess(`${fileTypeLabel} Uploaded Successfully!`);
-    } catch (err) {
-      console.error(err);
-      setError(err.message || `Failed to upload ${fileTypeLabel}`);
-    }
+    
+    // Store the file object directly in the state. 
+    // It will be uploaded when the user clicks 'Save Test'.
+    setFileOrUrl(file);
+    setSuccess(`${fileTypeLabel} selected! It will be uploaded when you save the test.`);
   };
 
   const handleQuickPaste = () => {
@@ -282,14 +281,37 @@ export default function AdminPanel() {
     setError(''); setSuccess('');
     try {
       if (!lTitle) throw new Error("Title is required.");
-      if (!isSectionMedia && !lAudio) throw new Error("Audio URL is required for full test mode.");
+      if (!isSectionMedia && !lAudio) throw new Error("Audio must be selected for full test mode.");
       
-      const sections = lSections;
+      let finalPdfUrl = lPdfUrl;
+      if (lPdfUrl instanceof File) {
+        setSuccess('Uploading global PDF to storage... Please wait.');
+        const newBlob = await upload(lPdfUrl.name, lPdfUrl, { access: 'public', handleUploadUrl: `${API_URL}/upload-file/token` });
+        finalPdfUrl = newBlob.url;
+      }
+
+      let finalAudioUrl = isSectionMedia ? '' : lAudio;
+      if (!isSectionMedia && lAudio instanceof File) {
+        setSuccess('Uploading global Audio to storage... Please wait.');
+        const newBlob = await upload(lAudio.name, lAudio, { access: 'public', handleUploadUrl: `${API_URL}/upload-file/token` });
+        finalAudioUrl = newBlob.url;
+      }
+
+      const sections = [...lSections];
+      for (let i = 0; i < sections.length; i++) {
+        if (isSectionMedia && sections[i].audioUrl instanceof File) {
+          setSuccess(`Uploading Audio for Section ${i + 1}... Please wait.`);
+          const file = sections[i].audioUrl;
+          const newBlob = await upload(file.name, file, { access: 'public', handleUploadUrl: `${API_URL}/upload-file/token` });
+          sections[i].audioUrl = newBlob.url;
+        }
+      }
+
       const newTest = { 
         id: editingId || `custom-list-${Date.now()}`, 
         title: lTitle, 
-        audioUrl: isSectionMedia ? '' : lAudio, 
-        pdfUrl: lPdfUrl,
+        audioUrl: finalAudioUrl, 
+        pdfUrl: finalPdfUrl,
         isSectionMedia,
         sections 
       };
@@ -508,15 +530,21 @@ export default function AdminPanel() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Test PDF Upload (Optional)</label>
                 <div className="flex items-center space-x-4">
                   <input 
+                    key={rTestPdfUrl ? 'has-file' : 'no-file'}
                     type="file" 
                     accept="application/pdf"
                     onChange={(e) => handleFileUpload(e, setRTestPdfUrl, 'PDF')}
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   />
                   {rTestPdfUrl && (
-                    <span className="text-green-600 text-sm font-medium whitespace-nowrap">
-                      ✅ Full Test PDF Uploaded
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-green-600 text-sm font-medium whitespace-nowrap">
+                        ✅ {rTestPdfUrl instanceof File ? rTestPdfUrl.name : 'PDF Selected'}
+                      </span>
+                      <button onClick={() => setRTestPdfUrl('')} className="text-red-500 hover:text-red-700" title="Remove PDF">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   )}
                 </div>
                 <p className="text-xs text-gray-500 mt-1">If you upload a PDF here, it will be displayed on the left side for the entire test. You still need to add the questions for each passage below.</p>
@@ -619,17 +647,25 @@ export default function AdminPanel() {
                 <div>
                   <label htmlFor="lAudio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Test Audio URL (.mp3)</label>
                   <div className="flex flex-col sm:flex-row gap-4">
-                    <input 
-                      id="lAudio" 
-                      type="url" 
-                      value={lAudio} 
-                      onChange={(e) => setLAudio(e.target.value)} 
-                      className="flex-1 p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500" 
-                      placeholder="https://example.com/audio.mp3" 
-                    />
+                    <div className="flex-1 flex relative">
+                      <input 
+                        id="lAudio" 
+                        type="text" 
+                        value={lAudio instanceof File ? lAudio.name : lAudio || ''} 
+                        onChange={(e) => setLAudio(e.target.value)} 
+                        className="w-full p-3 pr-10 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500" 
+                        placeholder="https://example.com/audio.mp3" 
+                      />
+                      {lAudio && (
+                        <button onClick={() => setLAudio('')} className="absolute right-3 top-3.5 text-gray-400 hover:text-red-500" title="Clear Audio">
+                          <XCircle size={20} />
+                        </button>
+                      )}
+                    </div>
                     <div className="flex items-center shrink-0 border border-gray-300 dark:border-gray-600 rounded-lg px-2 overflow-hidden bg-gray-50 dark:bg-gray-800">
                       <span className="text-sm text-gray-500 dark:text-gray-400 mr-2 shrink-0">OR Upload:</span>
                       <input 
+                        key={lAudio ? 'has-file' : 'no-file'}
                         type="file" 
                         accept="audio/*"
                         onChange={(e) => handleFileUpload(e, setLAudio, 'Audio')}
@@ -644,15 +680,21 @@ export default function AdminPanel() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Test PDF Upload (Optional)</label>
                 <div className="flex items-center space-x-4">
                   <input 
+                    key={lPdfUrl ? 'has-file' : 'no-file'}
                     type="file" 
                     accept="application/pdf"
                     onChange={(e) => handleFileUpload(e, setLPdfUrl, 'PDF')}
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
                   />
                   {lPdfUrl && (
-                    <span className="text-green-600 text-sm font-medium whitespace-nowrap">
-                      ✅ PDF Uploaded
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-green-600 text-sm font-medium whitespace-nowrap">
+                        ✅ {lPdfUrl instanceof File ? lPdfUrl.name : 'PDF Selected'}
+                      </span>
+                      <button onClick={() => setLPdfUrl('')} className="text-red-500 hover:text-red-700" title="Remove PDF">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   )}
                 </div>
                 <p className="text-xs text-gray-500 mt-1">Upload a single PDF containing all the questions.</p>
@@ -667,19 +709,35 @@ export default function AdminPanel() {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Audio URL</label>
                         <div className="flex flex-col sm:flex-row gap-2">
-                          <input 
-                            type="url" 
-                            value={section.audioUrl || ''} 
-                            onChange={(e) => {
-                              const newSecs = [...lSections];
-                              newSecs[idx].audioUrl = e.target.value;
-                              setLSections(newSecs);
-                            }}
-                            className="flex-1 p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm" 
-                          />
+                          <div className="flex-1 flex relative">
+                            <input 
+                              type="text" 
+                              value={section.audioUrl instanceof File ? section.audioUrl.name : section.audioUrl || ''} 
+                              onChange={(e) => {
+                                const newSecs = [...lSections];
+                                newSecs[idx].audioUrl = e.target.value;
+                                setLSections(newSecs);
+                              }}
+                              className="w-full p-2 pr-8 border dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm" 
+                            />
+                            {section.audioUrl && (
+                              <button 
+                                onClick={() => {
+                                  const newSecs = [...lSections];
+                                  newSecs[idx].audioUrl = '';
+                                  setLSections(newSecs);
+                                }} 
+                                className="absolute right-2 top-2 text-gray-400 hover:text-red-500" 
+                                title="Clear Audio"
+                              >
+                                <XCircle size={16} />
+                              </button>
+                            )}
+                          </div>
                           <div className="flex items-center shrink-0 border border-gray-300 dark:border-gray-600 rounded px-2 bg-white dark:bg-gray-900">
                             <span className="text-xs text-gray-500 mr-2">Upload:</span>
                             <input 
+                              key={section.audioUrl ? 'has-file' : 'no-file'}
                               type="file" 
                               accept="audio/*"
                               onChange={(e) => handleFileUpload(e, (url) => {
