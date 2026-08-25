@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { getResults, getRecentActivity, getSettings, saveSettings } from '../utils/storage';
-import { Activity, BookOpen, Headphones, PenTool, Mic, Target, Calendar, Edit2 } from 'lucide-react';
+import { Activity, BookOpen, Headphones, PenTool, Mic, Target, Calendar, Edit2, Loader2 } from 'lucide-react';
 import LoadingSkeleton from '../components/common/LoadingSkeleton';
 
 export default function Dashboard() {
@@ -97,7 +97,7 @@ export default function Dashboard() {
   }));
 
   const SectionCard = ({ title, icon: Icon, colorClass, data, link }) => (
-    <Link to={link} className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between transition-colors hover:border-blue-300 hover:shadow-md cursor-pointer block">
+    <Link to={link} className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between transition-colors hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-md cursor-pointer block hover:bg-gray-50 dark:hover:bg-gray-700/50">
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 rounded-lg ${colorClass}`}>
           <Icon size={24} />
@@ -124,14 +124,8 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="max-w-[1400px] mx-auto p-4 md:p-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Your Progress Dashboard</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
-          ))}
-        </div>
-        <div className="h-[400px] bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
       </div>
     );
   }

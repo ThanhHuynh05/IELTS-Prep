@@ -58,6 +58,36 @@ router.post('/:type', async (req, res) => {
   }
 });
 
+// Update content by type and ID
+router.put('/:type/:id', async (req, res) => {
+  const { type, id } = req.params;
+  try {
+    let doc;
+    switch (type) {
+      case 'reading':
+        doc = await CustomReadingTest.findByIdAndUpdate(id, req.body, { new: true });
+        break;
+      case 'listening':
+        doc = await CustomListening.findByIdAndUpdate(id, req.body, { new: true });
+        break;
+      case 'writing':
+        doc = await CustomWriting.findByIdAndUpdate(id, req.body, { new: true });
+        break;
+      case 'speaking':
+        doc = await CustomSpeaking.findByIdAndUpdate(id, req.body, { new: true });
+        break;
+      default:
+        return res.status(400).json({ message: 'Invalid content type' });
+    }
+    if (!doc) {
+      return res.status(404).json({ message: 'Content not found' });
+    }
+    res.json({ message: 'Content updated successfully', doc });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Delete content by type and ID
 router.delete('/:type/:id', async (req, res) => {
   const { type, id } = req.params;

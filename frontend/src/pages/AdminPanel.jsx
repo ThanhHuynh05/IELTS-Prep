@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, List, FileText, Wand2 } from 'lucide-react';
+import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, List, FileText, Wand2, Edit2 } from 'lucide-react';
 import { upload } from '@vercel/blob/client';
 import QuestionBuilder from '../components/common/QuestionBuilder';
 import PdfExtractorModal from '../components/common/PdfExtractorModal';
@@ -41,6 +41,7 @@ export default function AdminPanel() {
   const [manageType, setManageType] = useState('reading');
   const [contentList, setContentList] = useState([]);
   const [isLoadingContent, setIsLoadingContent] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   // Reading State
   const [rTestTitle, setRTestTitle] = useState('');
@@ -90,14 +91,17 @@ export default function AdminPanel() {
       }
 
       const newTest = { 
-        id: `custom-readtest-${Date.now()}`, 
+        id: editingId || `custom-readtest-${Date.now()}`, 
         title: rTestTitle, 
         pdfUrl: rTestPdfUrl,
         passages: passages 
       };
       
-      const res = await fetch(`${API_URL}/content/reading`, {
-        method: 'POST',
+      const url = editingId ? `${API_URL}/content/reading/${editingId}` : `${API_URL}/content/reading`;
+      const method = editingId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newTest)
       });
@@ -106,11 +110,12 @@ export default function AdminPanel() {
         throw new Error(errorData.message || `Failed to save to database: ${res.statusText}`);
       }
       
-      setSuccess(`Reading Test "${rTestTitle}" added!`);
+      setSuccess(`Reading Test "${rTestTitle}" ${editingId ? 'updated' : 'added'}!`);
       setRTestTitle('');
       setRTestPdfUrl('');
       setPassages([initialPassageState(), initialPassageState(), initialPassageState()]);
       setActivePassageTab(1);
+      setEditingId(null);
     } catch (err) { setError(err.message); }
   };
 
@@ -314,6 +319,44 @@ export default function AdminPanel() {
     }
   };
 
+  const handleEdit = (item) => {
+    if (manageType === 'reading') {
+      setRTestTitle(item.title || '');
+      setRTestPdfUrl(item.pdfUrl || '');
+      // Ensure passages array has 3 items
+      const itemPassages = item.passages || [];
+      const newPassages = [
+        itemPassages[0] || initialPassageState(),
+        itemPassages[1] || initialPassageState(),
+        itemPassages[2] || initialPassageState()
+      ];
+      setPassages(newPassages);
+      setEditingId(item._id);
+      setActiveTab('reading');
+    } else if (manageType === 'listening') {
+      setLTitle(item.title || '');
+      setLAudio(item.audioUrl || '');
+      setLTranscript(item.transcript || '');
+      setLSections(item.sections || JSON.parse(DEFAULT_LISTENING_JSON));
+      setEditingId(item._id);
+      setActiveTab('listening');
+    } else if (manageType === 'writing') {
+      setWTitle(item.title || '');
+      setWTask1(item.task1 || '');
+      setWTask1Image(item.task1Image || '');
+      setWTask2(item.task2 || '');
+      setEditingId(item._id);
+      setActiveTab('writing');
+    } else if (manageType === 'speaking') {
+      setSTitle(item.title || '');
+      setSPart1(item.part1 || ['']);
+      setSPart2(item.part2 || '');
+      setSPart3(item.part3 || ['']);
+      setEditingId(item._id);
+      setActiveTab('speaking');
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-8 animate-in fade-in pb-12">
       <div className="flex items-center space-x-3 mb-8">
@@ -329,11 +372,11 @@ export default function AdminPanel() {
       {/* Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
         <div className="flex space-x-2 overflow-x-auto pb-2 sm:pb-0">
-          <button onClick={() => {setActiveTab('reading'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'reading' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><BookOpen size={16} className="mr-2" /> Reading</button>
-          <button onClick={() => {setActiveTab('listening'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'listening' ? 'bg-purple-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><Headphones size={16} className="mr-2" /> Listening</button>
-          <button onClick={() => {setActiveTab('writing'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'writing' ? 'bg-orange-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><PenTool size={16} className="mr-2" /> Writing</button>
-          <button onClick={() => {setActiveTab('speaking'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'speaking' ? 'bg-pink-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><Mic size={16} className="mr-2" /> Speaking</button>
-          <button onClick={() => {setActiveTab('manage'); setError(''); setSuccess('');}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'manage' ? 'bg-gray-800 text-white dark:bg-gray-700' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><List size={16} className="mr-2" /> Manage Content</button>
+          <button onClick={() => {setActiveTab('reading'); setError(''); setSuccess(''); if(manageType !== 'reading') setEditingId(null);}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'reading' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><BookOpen size={16} className="mr-2" /> Reading</button>
+          <button onClick={() => {setActiveTab('listening'); setError(''); setSuccess(''); if(manageType !== 'listening') setEditingId(null);}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'listening' ? 'bg-purple-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><Headphones size={16} className="mr-2" /> Listening</button>
+          <button onClick={() => {setActiveTab('writing'); setError(''); setSuccess(''); if(manageType !== 'writing') setEditingId(null);}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'writing' ? 'bg-orange-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><PenTool size={16} className="mr-2" /> Writing</button>
+          <button onClick={() => {setActiveTab('speaking'); setError(''); setSuccess(''); if(manageType !== 'speaking') setEditingId(null);}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'speaking' ? 'bg-pink-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><Mic size={16} className="mr-2" /> Speaking</button>
+          <button onClick={() => {setActiveTab('manage'); setError(''); setSuccess(''); setEditingId(null);}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'manage' ? 'bg-gray-800 text-white dark:bg-gray-700' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><List size={16} className="mr-2" /> Manage Content</button>
         </div>
 
         <button 
@@ -351,7 +394,7 @@ export default function AdminPanel() {
             {activeTab === 'manage' ? (
               <><List size={20} className="mr-2 text-gray-600 dark:text-gray-400" /> Manage Existing Content</>
             ) : (
-              <><PlusCircle size={20} className="mr-2 text-blue-500" /> Add New {activeTab} Content</>
+              <><PlusCircle size={20} className="mr-2 text-blue-500" /> {editingId ? 'Edit' : 'Add New'} {activeTab} Content {editingId && <button onClick={() => {setEditingId(null); setRTestTitle(''); setRTestPdfUrl(''); setPassages([initialPassageState(), initialPassageState(), initialPassageState()]);}} className="ml-4 text-xs font-normal text-red-500 hover:underline">(Cancel Edit)</button>}</>
             )}
           </h2>
         </div>
@@ -480,7 +523,7 @@ export default function AdminPanel() {
               <div className="flex justify-end pt-4 mt-6 border-t dark:border-gray-700">
                 <button onClick={handleSaveReading} className="flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm">
                   <Save size={20} className="mr-2" />
-                  Save Full Test
+                  {editingId ? 'Update Full Test' : 'Save Full Test'}
                 </button>
               </div>
             </div>
@@ -568,14 +611,24 @@ export default function AdminPanel() {
                         <h4 className="font-semibold text-gray-900 dark:text-white">{item.title}</h4>
                         <p className="text-sm text-gray-500">ID: {item._id}</p>
                       </div>
-                      <button 
-                        onClick={() => handleDelete(item._id)}
-                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors"
-                        title="Delete"
-                        aria-label={`Delete ${item.title}`}
-                      >
-                        <Trash2 size={20} />
-                      </button>
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={() => handleEdit(item)}
+                          className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-colors"
+                          title="Edit"
+                          aria-label={`Edit ${item.title}`}
+                        >
+                          <Edit2 size={20} />
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(item._id)}
+                          className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors"
+                          title="Delete"
+                          aria-label={`Delete ${item.title}`}
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
