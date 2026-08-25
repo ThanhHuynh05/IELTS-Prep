@@ -69,7 +69,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   useEffect(() => {
     const fetchCustomTopics = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/content/speaking');
+        const res = await fetch('/api/content/speaking');
         if (res.ok) {
           const custom = await res.json();
           if (custom.length > 0) {

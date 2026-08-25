@@ -131,24 +131,25 @@ app.post('/api/extract-pdf', apiLimiter, extractUpload.single('pdf'), async (req
   }
 });
 
-const diskStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadsDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + '-' + file.originalname);
-  }
-});
-const fileUpload = multer({ storage: diskStorage });
+const fileUpload = multer({ storage: multer.memoryStorage() });
 
-app.post('/api/upload-pdf-file', apiLimiter, fileUpload.single('pdf'), (req, res) => {
+app.post('/api/upload-pdf-file', apiLimiter, fileUpload.single('pdf'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No PDF file uploaded' });
   }
-  // Return the public URL to access the uploaded file
-  const fileUrl = `http://localhost:${PORT}/uploads/${req.file.filename}`;
-  res.json({ url: fileUrl });
+  try {
+    const { put } = await import('@vercel/blob');
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const filename = uniqueSuffix + '-' + req.file.originalname;
+    const blob = await put(filename, req.file.buffer, {
+      access: 'public',
+      token: process.env.BLOB_READ_WRITE_TOKEN
+    });
+    res.json({ url: blob.url });
+  } catch (error) {
+    console.error('Blob upload error:', error);
+    res.status(500).json({ error: 'Failed to upload file to Vercel Blob' });
+  }
 });
 
 app.listen(PORT, () => {

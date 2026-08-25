@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
   // Simulate strict backend validation
   const login = async (identifier, password) => {
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,7 +47,7 @@ export function AuthProvider({ children }) {
 
   const register = async (username, email, password, adminCode = '') => {
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ export function AuthProvider({ children }) {
 
   const forgotPassword = async (email) => {
     try {
-      const response = await fetch('http://localhost:5000/api/auth/forgot-password', {
+      const response = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ export function AuthProvider({ children }) {
 
   const resetPassword = async (email, code, newPassword) => {
     try {
-      const response = await fetch('http://localhost:5000/api/auth/reset-password', {
+      const response = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

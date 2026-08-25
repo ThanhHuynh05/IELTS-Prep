@@ -33,7 +33,7 @@ export default function PdfExtractorModal({ isOpen, onClose }) {
     formData.append('pdf', file);
 
     try {
-      const res = await fetch('http://localhost:5000/api/extract-pdf', {
+      const res = await fetch('/api/extract-pdf', {
         method: 'POST',
         body: formData,
       });

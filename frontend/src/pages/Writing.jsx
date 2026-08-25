@@ -40,7 +40,7 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   useEffect(() => {
     const fetchCustomTests = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/content/writing');
+        const res = await fetch('/api/content/writing');
         if (res.ok) {
           const custom = await res.json();
           if (custom.length > 0) {

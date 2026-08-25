@@ -77,7 +77,7 @@ export default function AdminPanel() {
   const [sPart2, setSPart2] = useState('');
   const [sPart3, setSPart3] = useState(['']);
 
-  const API_URL = 'http://localhost:5000/api';
+  const API_URL = '/api';
 
   const handleSaveReading = async () => {
     setError(''); setSuccess('');
