@@ -77,9 +77,9 @@ export default function ListeningFeedback({ sections, userAnswers, transcript, o
 
       <h3 className="text-xl font-bold text-gray-900 mb-4">Review Your Answers</h3>
       <div className="space-y-8 pb-12">
-        {sections.map((section) => (
+        {sections.map((section, idx) => (
           <div key={section.id} className="mb-6">
-            <h4 className="font-bold text-gray-700 mb-3 pb-2 border-b">{section.title}</h4>
+            <h4 className="font-bold text-gray-700 mb-3 pb-2 border-b">Section {idx + 1}</h4>
             <div className="space-y-4">
               {section.questions.map((q) => {
                 const res = results.find(r => r.id === q.id);

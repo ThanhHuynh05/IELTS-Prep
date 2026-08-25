@@ -713,7 +713,7 @@ export default function AdminPanel() {
                   <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Section Media Uploads</h3>
                   {lSections.map((section, idx) => (
                     <div key={section.id} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 space-y-4">
-                      <h4 className="font-semibold text-purple-700 dark:text-purple-400">{section.title || `Section ${idx + 1}`} Media</h4>
+                      <h4 className="font-semibold text-purple-700 dark:text-purple-400">Section {idx + 1} Media</h4>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Audio URL</label>
                         <div className="flex flex-col sm:flex-row gap-2">

@@ -25,7 +25,7 @@ export default function ListeningQuestions({ sections, activeSectionIndex = 0, u
       <div className="space-y-10 pb-12">
         <div key={section.id} className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
           <div className="mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{section.title}</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Section {activeSectionIndex + 1}</h3>
             <p className="text-gray-600 dark:text-gray-300 text-sm whitespace-pre-line">{section.instructions}</p>
 
             {section.imageUrl && (
@@ -100,9 +100,9 @@ export default function ListeningQuestions({ sections, activeSectionIndex = 0, u
                         </div>
                       )}
 
-                      {section.type === 'fill-in-blank' && (
+                      {(section.type === 'fill-in-blank' || section.type === 'mixed' || !['true-false-ng', 'yes-no-ng', 'matching-headings', 'multiple-choice'].includes(section.type)) && (
                         <div className="space-y-2">
-                          <span className="text-gray-700 dark:text-gray-300 block">{q.question}</span>
+                          {q.question && <span className="text-gray-700 dark:text-gray-300 block">{q.question}</span>}
                           <input 
                             type="text" 
                             value={userAnswers[q.id] || ''}
