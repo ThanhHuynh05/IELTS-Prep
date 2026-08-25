@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, List, FileText, Wand2 } from 'lucide-react';
+import { upload } from '@vercel/blob/client';
 import QuestionBuilder from '../components/common/QuestionBuilder';
 import PdfExtractorModal from '../components/common/PdfExtractorModal';
 
@@ -117,22 +118,20 @@ export default function AdminPanel() {
     const file = e.target.files[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append('pdf', file);
-
     try {
       setError('');
-      const res = await fetch(`${API_URL}/upload-pdf-file`, {
-        method: 'POST',
-        body: formData,
-      });
-      if (!res.ok) throw new Error('Failed to upload PDF');
+      setSuccess('Uploading... This might take a moment for large files.');
       
-      const data = await res.json();
-      setRTestPdfUrl(data.url);
+      const newBlob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: `${API_URL}/upload-pdf-file/token`,
+      });
+      
+      setRTestPdfUrl(newBlob.url);
       setSuccess(`Test PDF Uploaded Successfully!`);
     } catch (err) {
-      setError(err.message);
+      console.error(err);
+      setError(err.message || 'Failed to upload PDF');
     }
   };
 

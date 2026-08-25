@@ -126,24 +126,25 @@ app.post('/api/extract-pdf', apiLimiter, extractUpload.single('pdf'), async (req
   }
 });
 
-const fileUpload = multer({ storage: multer.memoryStorage() });
-
-app.post('/api/upload-pdf-file', apiLimiter, fileUpload.single('pdf'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No PDF file uploaded' });
-  }
+app.post('/api/upload-pdf-file/token', async (req, res) => {
   try {
-    const { put } = await import('@vercel/blob');
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const filename = uniqueSuffix + '-' + req.file.originalname;
-    const blob = await put(filename, req.file.buffer, {
-      access: 'public',
-      token: process.env.BLOB_READ_WRITE_TOKEN
+    const { handleUpload } = await import('@vercel/blob/client');
+    const jsonResponse = await handleUpload({
+      body: req.body,
+      request: req,
+      onBeforeGenerateToken: async (pathname) => {
+        return {
+          allowedContentTypes: ['application/pdf'],
+        };
+      },
+      onUploadCompleted: async ({ blob, tokenPayload }) => {
+        console.log('Upload completed:', blob.url);
+      },
     });
-    res.json({ url: blob.url });
+    res.json(jsonResponse);
   } catch (error) {
-    console.error('Blob upload error:', error);
-    res.status(500).json({ error: 'Failed to upload file to Vercel Blob' });
+    console.error('Token generation error:', error);
+    res.status(400).json({ error: error.message });
   }
 });
 
