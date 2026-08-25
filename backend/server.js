@@ -27,12 +27,7 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Serve uploaded files statically
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
-app.use('/uploads', express.static(uploadsDir));
+// Removed local uploads static serving as we are using Vercel Blob
 
 // Rate Limiter
 const apiLimiter = rateLimit({
@@ -152,6 +147,10 @@ app.post('/api/upload-pdf-file', apiLimiter, fileUpload.single('pdf'), async (re
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server is running on http://localhost:${PORT}`);
+  });
+}
+
+export default app;
