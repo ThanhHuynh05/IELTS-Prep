@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, List, FileText, Wand2, Edit2 } from 'lucide-react';
 import { upload } from '@vercel/blob/client';
 import QuestionBuilder from '../components/common/QuestionBuilder';
-import PdfExtractorModal from '../components/common/PdfExtractorModal';
 
 const DEFAULT_READING_JSON = `[
   {
@@ -35,7 +34,6 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState('reading');
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [showPdfModal, setShowPdfModal] = useState(false);
 
   // Manage Content State
   const [manageType, setManageType] = useState('reading');
@@ -65,7 +63,9 @@ export default function AdminPanel() {
   // Listening State
   const [lTitle, setLTitle] = useState('');
   const [lAudio, setLAudio] = useState('');
+  const [lPdfUrl, setLPdfUrl] = useState('');
   const [lTranscript, setLTranscript] = useState('');
+  const [pastedListeningAnswers, setPastedListeningAnswers] = useState('');
   const [lSections, setLSections] = useState(() => JSON.parse(DEFAULT_LISTENING_JSON));
 
   // Writing State
@@ -120,7 +120,7 @@ export default function AdminPanel() {
     } catch (err) { setError(err.message); }
   };
 
-  const handleFileUpload = async (e) => {
+  const handlePdfUpload = async (e, setPdfUrl) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -133,7 +133,7 @@ export default function AdminPanel() {
         handleUploadUrl: `${API_URL}/upload-pdf-file/token`,
       });
       
-      setRTestPdfUrl(newBlob.url);
+      setPdfUrl(newBlob.url);
       setSuccess(`Test PDF Uploaded Successfully!`);
     } catch (err) {
       console.error(err);
@@ -223,22 +223,98 @@ export default function AdminPanel() {
     }
   };
 
+  const handleQuickPasteListening = () => {
+    if (!pastedListeningAnswers.trim()) return;
+
+    try {
+      const lines = pastedListeningAnswers.split('\n').map(l => l.trim()).filter(l => l);
+      let extracted = [];
+      let currentNumber = null;
+      let currentText = "";
+      
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i];
+        const match = line.match(/^0?(\d+)[.)\s]+(.*)$/i);
+        
+        if (match) {
+          if (currentNumber !== null) {
+            extracted.push({ num: currentNumber, text: currentText.trim() });
+          }
+          currentNumber = parseInt(match[1]);
+          currentText = match[2];
+        } else if (currentNumber !== null) {
+          currentText += " " + line;
+        }
+      }
+      
+      if (currentNumber !== null) {
+        extracted.push({ num: currentNumber, text: currentText.trim() });
+      }
+
+      if (extracted.length === 0) {
+         throw new Error("No numbered answers found in the pasted text.");
+      }
+
+      extracted.sort((a,b) => a.num - b.num);
+
+      const newQuestions = extracted.map(ans => ({
+        id: `q-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+        question: '',
+        answer: ans.text
+      }));
+
+      const newSections = [...lSections];
+      
+      if (newSections.length === 0) {
+        newSections.push({
+          id: `sec-${Date.now()}`,
+          title: 'Answer Overview',
+          instructions: '',
+          type: 'mixed',
+          questions: newQuestions
+        });
+      } else {
+        newSections[0].questions = [
+          ...(newSections[0].questions || []),
+          ...newQuestions
+        ];
+      }
+      
+      setLSections(newSections);
+      setSuccess(`Successfully added ${extracted.length} answers to Listening Test!`);
+      setPastedListeningAnswers('');
+    } catch (err) {
+      setError('Failed to parse answers. Please check the format.');
+    }
+  };
+
   const handleSaveListening = async () => {
     setError(''); setSuccess('');
     try {
       if (!lTitle || !lAudio) throw new Error("Title and Audio URL are required.");
       const sections = lSections;
-      const newTest = { id: `custom-list-${Date.now()}`, title: lTitle, audioUrl: lAudio, transcript: lTranscript, sections };
+      const newTest = { 
+        id: editingId || `custom-list-${Date.now()}`, 
+        title: lTitle, 
+        audioUrl: lAudio, 
+        pdfUrl: lPdfUrl,
+        transcript: lTranscript, 
+        sections 
+      };
       
-      const res = await fetch(`${API_URL}/content/listening`, {
-        method: 'POST',
+      const url = editingId ? `${API_URL}/content/listening/${editingId}` : `${API_URL}/content/listening`;
+      const method = editingId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newTest)
       });
       if (!res.ok) throw new Error('Failed to save to database');
       
-      setSuccess(`Listening Test "${lTitle}" added!`);
-      setLTitle(''); setLAudio(''); setLTranscript(''); setLSections(JSON.parse(DEFAULT_LISTENING_JSON));
+      setSuccess(`Listening Test "${lTitle}" ${editingId ? 'updated' : 'added'}!`);
+      setLTitle(''); setLAudio(''); setLPdfUrl(''); setLTranscript(''); setLSections(JSON.parse(DEFAULT_LISTENING_JSON));
+      setEditingId(null);
     } catch (err) { setError(err.message); }
   };
 
@@ -343,6 +419,7 @@ export default function AdminPanel() {
     } else if (manageType === 'listening') {
       setLTitle(item.title || '');
       setLAudio(item.audioUrl || '');
+      setLPdfUrl(item.pdfUrl || '');
       setLTranscript(item.transcript || '');
       setLSections(item.sections || JSON.parse(DEFAULT_LISTENING_JSON));
       setEditingId(item._id);
@@ -385,14 +462,6 @@ export default function AdminPanel() {
           <button onClick={() => {setActiveTab('speaking'); setError(''); setSuccess(''); if(manageType !== 'speaking') setEditingId(null);}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'speaking' ? 'bg-pink-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><Mic size={16} className="mr-2" /> Speaking</button>
           <button onClick={() => {setActiveTab('manage'); setError(''); setSuccess(''); setEditingId(null);}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'manage' ? 'bg-gray-800 text-white dark:bg-gray-700' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><List size={16} className="mr-2" /> Manage Content</button>
         </div>
-
-        <button 
-          onClick={() => setShowPdfModal(true)}
-          className="flex items-center px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg font-medium text-sm transition-colors whitespace-nowrap shadow-sm border border-slate-200 dark:border-slate-700 w-fit"
-        >
-          <FileText size={16} className="mr-2 text-blue-500" />
-          Extract PDF Text
-        </button>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors">
@@ -448,7 +517,7 @@ export default function AdminPanel() {
                   <input 
                     type="file" 
                     accept="application/pdf"
-                    onChange={handleFileUpload}
+                    onChange={(e) => handlePdfUpload(e, setRTestPdfUrl)}
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   />
                   {rTestPdfUrl && (
@@ -537,15 +606,65 @@ export default function AdminPanel() {
           )}
 
           {activeTab === 'listening' && (
-            <>
+            <div className="space-y-6">
               <div><label htmlFor="lTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Test Title</label><input id="lTitle" type="text" value={lTitle} onChange={(e) => setLTitle(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500" placeholder="e.g. Campus Library Orientation" /></div>
               <div><label htmlFor="lAudio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Audio URL (.mp3)</label><input id="lAudio" type="url" value={lAudio} onChange={(e) => setLAudio(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500" placeholder="https://example.com/audio.mp3" /></div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Questions PDF Upload (Optional)</label>
+                <div className="flex items-center space-x-4">
+                  <input 
+                    type="file" 
+                    accept="application/pdf"
+                    onChange={(e) => handlePdfUpload(e, setLPdfUrl)}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                  />
+                  {lPdfUrl && (
+                    <span className="text-green-600 text-sm font-medium whitespace-nowrap">
+                      ✅ PDF Uploaded
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Upload a PDF containing the questions to display alongside the audio.</p>
+              </div>
+
               <div><label htmlFor="lTranscript" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Audio Transcript (Optional)</label><textarea id="lTranscript" value={lTranscript} onChange={(e) => setLTranscript(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500" placeholder="Paste the transcript..." /></div>
+              
+              <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-5 mt-6 mb-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-3 opacity-20">
+                  <Wand2 size={64} className="text-purple-500" />
+                </div>
+                <h3 className="text-lg font-bold text-purple-800 dark:text-purple-300 mb-2 flex items-center">
+                  <Wand2 size={20} className="mr-2" />
+                  Quick Paste Answers
+                </h3>
+                <p className="text-sm text-purple-700 dark:text-purple-400 mb-4 max-w-2xl">
+                  Paste your copied answers below (e.g. <code>1 London</code>). We will instantly parse them and add them as new sections!
+                </p>
+                
+                <div className="flex flex-col space-y-3">
+                  <textarea
+                    value={pastedListeningAnswers}
+                    onChange={(e) => setPastedListeningAnswers(e.target.value)}
+                    placeholder="1 London&#10;2 10 am&#10;3 TRUE..."
+                    className="w-full p-3 h-24 border border-purple-200 dark:border-purple-700 rounded-lg bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-purple-500 font-mono"
+                  />
+                  <div className="flex justify-end">
+                    <button 
+                      onClick={handleQuickPasteListening}
+                      className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded shadow-sm transition-colors"
+                    >
+                      Parse & Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <div className="mt-8 border-t dark:border-gray-700 pt-6">
                 <QuestionBuilder sections={lSections} onChange={setLSections} />
               </div>
-              <div className="flex justify-end pt-4"><button onClick={handleSaveListening} className="flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-sm"><Save size={20} className="mr-2" />Save Listening Test</button></div>
-            </>
+              <div className="flex justify-end pt-4"><button onClick={handleSaveListening} className="flex items-center px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-sm"><Save size={20} className="mr-2" />{editingId ? 'Update Listening Test' : 'Save Listening Test'}</button></div>
+            </div>
           )}
 
           {activeTab === 'writing' && (
@@ -676,11 +795,6 @@ export default function AdminPanel() {
           </div>
         </div>
       )}
-
-      <PdfExtractorModal 
-        isOpen={showPdfModal} 
-        onClose={() => setShowPdfModal(false)} 
-      />
     </div>
   );
 }

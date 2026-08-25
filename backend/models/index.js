@@ -43,6 +43,7 @@ const customListeningSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   title: { type: String, required: true },
   audioUrl: { type: String, required: true },
+  pdfUrl: { type: String }, // Optional PDF for the test questions
   transcript: { type: String },
   sections: { type: Array, required: true },
   createdAt: { type: Date, default: Date.now }
