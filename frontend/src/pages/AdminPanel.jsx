@@ -3,32 +3,9 @@ import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, L
 import { upload } from '@vercel/blob/client';
 import QuestionBuilder from '../components/common/QuestionBuilder';
 
-const DEFAULT_READING_JSON = `[
-  {
-    "id": "sec-1",
-    "title": "Answer Overview",
-    "instructions": "",
-    "type": "mixed",
-    "options": [],
-    "questions": []
-  }
-]`;
+const DEFAULT_READING_JSON = `[]`;
 
-const DEFAULT_LISTENING_JSON = `[
-  {
-    "id": "sec-1",
-    "title": "Questions 1-3",
-    "instructions": "Complete the notes below. Write NO MORE THAN TWO WORDS.",
-    "type": "fill-in-blank",
-    "questions": [
-      {
-        "id": "q1",
-        "question": "The meeting is at ________",
-        "answer": "10 am"
-      }
-    ]
-  }
-]`;
+const DEFAULT_LISTENING_JSON = `[]`;
 
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState('reading');
