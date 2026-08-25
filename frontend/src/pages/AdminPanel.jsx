@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, List, FileText, Wand2, Edit2, XCircle } from 'lucide-react';
+import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, List, FileText, Wand2, Edit2, XCircle, Loader2 } from 'lucide-react';
 import { upload } from '@vercel/blob/client';
 import QuestionBuilder from '../components/common/QuestionBuilder';
 
@@ -495,17 +495,25 @@ export default function AdminPanel() {
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in">
               <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl max-w-sm w-full mx-4 border border-green-100 dark:border-green-900/30 transform transition-all animate-in zoom-in duration-200">
                 <div className="flex flex-col items-center text-center">
-                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center mb-4">
-                    <Shield className="text-green-600 dark:text-green-400" size={24} />
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${success.includes('Uploading') ? 'bg-blue-100 dark:bg-blue-900/50' : 'bg-green-100 dark:bg-green-900/50'}`}>
+                    {success.includes('Uploading') ? (
+                      <Loader2 className="text-blue-600 dark:text-blue-400 animate-spin" size={24} />
+                    ) : (
+                      <Shield className="text-green-600 dark:text-green-400" size={24} />
+                    )}
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Success!</h3>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    {success.includes('Uploading') ? 'Working on it...' : 'Success!'}
+                  </h3>
                   <p className="text-gray-600 dark:text-gray-300 mb-6">{success}</p>
-                  <button 
-                    onClick={() => setSuccess('')}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 rounded-lg transition-colors focus:ring-4 focus:ring-green-100 dark:focus:ring-green-900/20"
-                  >
-                    Awesome
-                  </button>
+                  {!success.includes('Uploading') && (
+                    <button 
+                      onClick={() => setSuccess('')}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 rounded-lg transition-colors focus:ring-4 focus:ring-green-100 dark:focus:ring-green-900/20"
+                    >
+                      Awesome
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

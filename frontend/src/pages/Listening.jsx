@@ -18,6 +18,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const [tests, setTests] = useState([]);
   const [selectedTest, setSelectedTest] = useState(null);
   const [userAnswers, setUserAnswers] = useState({});
+  const [activeSectionIndex, setActiveSectionIndex] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showTips, setShowTips] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -80,14 +81,23 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
 
   if (isMockMode) {
     const hasLeftPanel = !selectedTest.isSectionMedia || selectedTest.pdfUrl;
-    
+    const currentAudioUrl = selectedTest.isSectionMedia 
+      ? selectedTest.sections[activeSectionIndex]?.audioUrl 
+      : selectedTest.audioUrl;
+
     return (
-      <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'lg:grid-cols-12' : 'lg:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 overflow-hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 h-full`}>
-        {hasLeftPanel && (
-          <div className={`flex flex-col border-r border-gray-200 pr-4 sm:pr-6 ${selectedTest.pdfUrl ? 'lg:col-span-9 h-full' : ''}`}>
-            {!selectedTest.isSectionMedia && (
-              <ListeningPlayer key={selectedTest.id} transcript={selectedTest.transcript} />
-            )}
+      <div className="flex flex-col h-full overflow-hidden bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="p-4 border-b border-gray-200 shrink-0 bg-slate-50">
+          <ListeningPlayer 
+            key={selectedTest.isSectionMedia ? `section-${activeSectionIndex}` : selectedTest.id} 
+            transcript={selectedTest.transcript} 
+            audioUrl={currentAudioUrl} 
+          />
+        </div>
+        <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'lg:grid-cols-12' : 'lg:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 p-4 sm:p-6 overflow-hidden`}>
+          {hasLeftPanel && (
+            <div className={`flex flex-col border-r border-gray-200 pr-4 sm:pr-6 ${selectedTest.pdfUrl ? 'lg:col-span-9 h-full' : ''}`}>
+
             <div className="mt-4 mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg shrink-0">
               <h4 className="font-bold text-yellow-800 mb-2">Test Instructions</h4>
               <ul className="text-sm text-yellow-700 space-y-2 list-disc pl-4">
@@ -108,12 +118,29 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           </div>
         )}
         <div className={`overflow-hidden flex flex-col ${hasLeftPanel && selectedTest.pdfUrl ? 'lg:col-span-3 h-full custom-scrollbar overflow-y-auto' : ''}`}>
+          <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
+             {selectedTest.sections.map((sec, idx) => (
+               <button
+                 key={idx}
+                 onClick={() => setActiveSectionIndex(idx)}
+                 className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${
+                   activeSectionIndex === idx 
+                     ? 'bg-white text-blue-600 shadow' 
+                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
+                 }`}
+               >
+                 Section {idx + 1}
+               </button>
+             ))}
+          </div>
           <ListeningQuestions 
             sections={selectedTest.sections} 
+            activeSectionIndex={activeSectionIndex}
             userAnswers={userAnswers}
             onAnswerChange={handleAnswerChange}
             onSubmit={handleSubmit}
           />
+        </div>
         </div>
       </div>
     );
@@ -122,6 +149,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const handleReset = () => {
     setUserAnswers({});
     setIsSubmitted(false);
+    setActiveSectionIndex(0);
   };
 
   const handleTestSelect = (test) => {

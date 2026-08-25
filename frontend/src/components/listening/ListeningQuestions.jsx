@@ -1,6 +1,6 @@
 import ListeningPlayer from './ListeningPlayer';
 
-export default function ListeningQuestions({ sections, userAnswers, onAnswerChange, onSubmit }) {
+export default function ListeningQuestions({ sections, activeSectionIndex = 0, userAnswers, onAnswerChange, onSubmit }) {
   if (!sections) return null;
 
   const handleInputChange = (questionId, value) => {
@@ -9,6 +9,9 @@ export default function ListeningQuestions({ sections, userAnswers, onAnswerChan
 
   const allQuestions = sections.flatMap(sec => sec.questions);
   const allAnswered = allQuestions.every(q => userAnswers[q.id] && userAnswers[q.id].trim() !== "");
+
+  const section = sections[activeSectionIndex];
+  if (!section) return null;
 
   return (
     <div className="h-full overflow-y-auto pr-2">
@@ -20,28 +23,21 @@ export default function ListeningQuestions({ sections, userAnswers, onAnswerChan
       </div>
 
       <div className="space-y-10 pb-12">
-        {sections.map((section) => (
-          <div key={section.id} className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
-            <div className="mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{section.title}</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm whitespace-pre-line">{section.instructions}</p>
-              
-              {section.audioUrl && (
-                <div className="mt-6 mb-4">
-                  <ListeningPlayer audioUrl={section.audioUrl} />
-                </div>
-              )}
+        <div key={section.id} className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
+          <div className="mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{section.title}</h3>
+            <p className="text-gray-600 dark:text-gray-300 text-sm whitespace-pre-line">{section.instructions}</p>
 
-              {section.imageUrl && (
-                <div className="mt-4">
-                  <img 
-                    src={section.imageUrl} 
-                    alt="Section Chart or Table" 
-                    className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm"
-                  />
-                </div>
-              )}
-            </div>
+            {section.imageUrl && (
+              <div className="mt-4">
+                <img 
+                  src={section.imageUrl} 
+                  alt="Section Chart or Table" 
+                  className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm"
+                />
+              </div>
+            )}
+          </div>
 
             <div className="space-y-6">
               {section.questions.map((q) => {
@@ -122,7 +118,6 @@ export default function ListeningQuestions({ sections, userAnswers, onAnswerChan
               })}
             </div>
           </div>
-        ))}
       </div>
 
       <div className="sticky bottom-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end mt-4 transition-colors">

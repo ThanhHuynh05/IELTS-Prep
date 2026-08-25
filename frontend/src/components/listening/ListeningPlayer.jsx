@@ -82,31 +82,35 @@ export default function ListeningPlayer({ transcript, audioUrl, onComplete }) {
   };
 
   return (
-    <div className="bg-slate-900 text-white rounded-xl p-6 shadow-lg mb-8">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <div className="bg-blue-500 p-2 rounded-full">
-            <Volume2 size={24} className="text-white" />
-          </div>
-          <div>
-            <h3 className="font-bold text-lg">Listening Audio Track</h3>
-            <p className="text-slate-400 text-sm">Control your playback below</p>
-          </div>
+    <div className="bg-slate-900 text-white rounded-xl p-3 flex flex-col md:flex-row items-center gap-4 shadow-sm w-full mb-6">
+      <div className="flex items-center gap-3 shrink-0">
+        <button
+          onClick={togglePlayPause}
+          disabled={hasPlayedSynth && !audioUrl}
+          className={`w-10 h-10 flex items-center justify-center rounded-full transition-all ${
+            hasPlayedSynth && !audioUrl 
+              ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-500 text-white shadow-md'
+          }`}
+        >
+          {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-0.5" />}
+        </button>
+        <div className="flex flex-col">
+          <span className="text-sm font-bold leading-tight">{audioUrl ? 'Listening Track' : 'Start Synthesis'}</span>
+          {isPlaying && (
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              </span>
+              <span className="text-[10px] text-red-400 font-bold uppercase tracking-wider">Playing</span>
+            </div>
+          )}
         </div>
-        
-        {isPlaying && (
-          <div className="flex items-center space-x-2">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-            </span>
-            <span className="text-red-400 text-sm font-semibold tracking-wider uppercase">Playing</span>
-          </div>
-        )}
       </div>
 
-      {audioUrl ? (
-        <div className="space-y-4 bg-slate-800 rounded-lg p-5 border border-slate-700">
+      {audioUrl && (
+        <>
           <audio
             ref={audioRef}
             src={audioUrl}
@@ -115,69 +119,36 @@ export default function ListeningPlayer({ transcript, audioUrl, onComplete }) {
             onEnded={() => { setIsPlaying(false); if(onComplete) onComplete(); }}
           />
 
-          {/* Custom Timeline */}
-          <div className="flex items-center space-x-3 text-sm font-mono text-slate-300">
-            <span>{formatTime(currentTime)}</span>
+          <div className="flex-1 flex items-center gap-3 w-full">
+            <span className="text-xs font-mono text-slate-400 w-10 text-right">{formatTime(currentTime)}</span>
             <input
               type="range"
               min="0"
               max={duration || 100}
               value={currentTime}
               onChange={handleSeek}
-              className="flex-1 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              className="flex-1 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
             />
-            <span>{formatTime(duration)}</span>
+            <span className="text-xs font-mono text-slate-400 w-10">{formatTime(duration)}</span>
           </div>
 
-          {/* Controls */}
-          <div className="flex items-center justify-center space-x-6 pt-2">
+          <div className="flex items-center gap-1 shrink-0 border-l border-slate-700 pl-3">
             <button 
               onClick={() => skip(-5)} 
-              className="p-2 text-slate-400 hover:text-white transition-colors flex flex-col items-center"
-              title="Rewind 5 seconds"
+              className="p-1.5 text-slate-400 hover:text-white transition-colors"
+              title="Rewind 5s"
             >
-              <RotateCcw size={20} />
-              <span className="text-[10px] mt-1 font-bold">-5s</span>
+              <RotateCcw size={16} />
             </button>
-
-            <button
-              onClick={togglePlayPause}
-              className="bg-blue-600 hover:bg-blue-500 text-white p-4 rounded-full shadow-lg transition-all"
-            >
-              {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
-            </button>
-
             <button 
               onClick={() => skip(5)} 
-              className="p-2 text-slate-400 hover:text-white transition-colors flex flex-col items-center"
-              title="Forward 5 seconds"
+              className="p-1.5 text-slate-400 hover:text-white transition-colors"
+              title="Forward 5s"
             >
-              <RotateCw size={20} />
-              <span className="text-[10px] mt-1 font-bold">+5s</span>
+              <RotateCw size={16} />
             </button>
           </div>
-        </div>
-      ) : (
-        <div className="bg-slate-800 rounded-lg p-4 flex items-center justify-center border border-slate-700">
-          <button
-            onClick={togglePlayPause}
-            disabled={hasPlayedSynth || isPlaying}
-            className={`flex items-center space-x-2 px-8 py-3 rounded-full font-bold transition-all ${
-              hasPlayedSynth 
-                ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg'
-            }`}
-          >
-            {hasPlayedSynth ? (
-              <span>Playback Complete</span>
-            ) : (
-              <>
-                {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-                <span>{isPlaying ? 'Playing Synthesis' : 'Start Audio (Synthesis)'}</span>
-              </>
-            )}
-          </button>
-        </div>
+        </>
       )}
     </div>
   );
