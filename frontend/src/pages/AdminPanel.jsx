@@ -131,10 +131,10 @@ export default function AdminPanel() {
       for (let i = 0; i < lines.length; i++) {
         let line = lines[i];
         
-        // Match numbers at start of line: "1 ", "14. ", "40)"
-        const match = line.match(/^0?(\d+)[.)\s]+(.*)$/i);
+        // Match numbers at start of line: "1 ", "14. ", "40)", "1.London", "1London"
+        const match = line.match(/^0?(\d+)[.)\s\-\:]*(.*)$/i);
         
-        if (match) {
+        if (match && match[2].trim() !== '') {
           if (currentNumber !== null) {
             extracted.push({ num: currentNumber, text: currentText.trim() });
           }
@@ -212,9 +212,9 @@ export default function AdminPanel() {
       
       for (let i = 0; i < lines.length; i++) {
         let line = lines[i];
-        const match = line.match(/^0?(\d+)[.)\s]+(.*)$/i);
+        const match = line.match(/^0?(\d+)[.)\s\-\:]*(.*)$/i);
         
-        if (match) {
+        if (match && match[2].trim() !== '') {
           if (currentNumber !== null) {
             extracted.push({ num: currentNumber, text: currentText.trim() });
           }
@@ -531,14 +531,14 @@ export default function AdminPanel() {
                     Quick Paste Answers for Passage {activePassageTab}
                   </h3>
                   <p className="text-sm text-blue-700 dark:text-blue-400 mb-4 max-w-2xl">
-                    Paste your copied answers for this specific passage below (e.g. <code>1 population</code>). We will instantly parse them and add them as new sections!
+                    Paste your copied answers for this specific passage below. Supported formats include: <code>1 population</code>, <code>1.population</code>, <code>1. population</code>, <code>1) population</code>. We will instantly parse them and add them as new sections!
                   </p>
                   
                   <div className="flex flex-col space-y-3">
                     <textarea
                       value={pastedAnswers}
                       onChange={(e) => setPastedAnswers(e.target.value)}
-                      placeholder="1 population&#10;2 suburbs&#10;3 FALSE..."
+                      placeholder="1 population&#10;2. suburbs&#10;3.FALSE..."
                       className="w-full p-3 h-24 border border-blue-200 dark:border-blue-700 rounded-lg bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-500 font-mono"
                     />
                     <div className="flex justify-end">
@@ -690,14 +690,14 @@ export default function AdminPanel() {
                   Quick Paste Answers
                 </h3>
                 <p className="text-sm text-purple-700 dark:text-purple-400 mb-4 max-w-2xl">
-                  Paste your copied answers below (e.g. <code>1 London</code>). We will instantly parse them and add them as new sections!
+                  Paste your copied answers below. Supported formats include: <code>1 London</code>, <code>1.London</code>, <code>1. London</code>, <code>1) London</code>. We will instantly parse them and add them to this passage!
                 </p>
                 
                 <div className="flex flex-col space-y-3">
                   <textarea
                     value={pastedListeningAnswers}
                     onChange={(e) => setPastedListeningAnswers(e.target.value)}
-                    placeholder="1 London&#10;2 10 am&#10;3 TRUE..."
+                    placeholder="1 London&#10;2. 10 am&#10;3.TRUE..."
                     className="w-full p-3 h-24 border border-purple-200 dark:border-purple-700 rounded-lg bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-purple-500 font-mono"
                   />
                   <div className="flex justify-end">
