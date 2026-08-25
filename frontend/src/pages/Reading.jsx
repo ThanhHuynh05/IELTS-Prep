@@ -90,30 +90,32 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   if (isMockMode) {
     return (
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-full relative">
-        {/* Passage Navigation for Mock Mode */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 flex space-x-2 bg-gray-100 p-1 rounded-lg shadow-sm z-10">
-           {[0, 1, 2].map((idx) => (
-              <button
-                key={idx}
-                onClick={() => setActivePassageIndex(idx)}
-                className={`px-4 py-1.5 rounded-md text-sm font-bold transition-all ${
-                  activePassageIndex === idx 
-                    ? 'bg-white text-blue-600 shadow-sm' 
-                    : 'text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                Passage {idx + 1}
-              </button>
-            ))}
-        </div>
-        
         <ReadingPassage passage={activePassage} />
-        <ReadingQuestions 
-          sections={activePassage.sections} 
-          userAnswers={userAnswers}
-          onAnswerChange={handleAnswerChange}
-          onSubmit={handleSubmit}
-        />
+        <div className="flex flex-col h-full overflow-hidden">
+          {/* Passage Navigation for Mock Mode */}
+          <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
+             {[0, 1, 2].map((idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActivePassageIndex(idx)}
+                  className={`flex-1 py-1.5 rounded-md text-sm font-bold transition-all ${
+                    activePassageIndex === idx 
+                      ? 'bg-white text-blue-600 shadow-sm' 
+                      : 'text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  Passage {idx + 1}
+                </button>
+              ))}
+          </div>
+          
+          <ReadingQuestions 
+            sections={activePassage.sections} 
+            userAnswers={userAnswers}
+            onAnswerChange={handleAnswerChange}
+            onSubmit={handleSubmit}
+          />
+        </div>
       </div>
     );
   }
@@ -164,25 +166,6 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           ))}
         </div>
       </div>
-      {/* Passage Navigation for normal mode */}
-      <div className="flex justify-center mb-6">
-        <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg shadow-sm">
-           {[0, 1, 2].map((idx) => (
-              <button
-                key={idx}
-                onClick={() => setActivePassageIndex(idx)}
-                className={`px-6 py-2 rounded-md text-sm font-bold transition-all ${
-                  activePassageIndex === idx 
-                    ? 'bg-white text-blue-600 shadow-sm' 
-                    : 'text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                Passage {idx + 1}
-              </button>
-            ))}
-        </div>
-      </div>
-
       {/* Split Screen Layout */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200" style={{ minHeight: '82vh' }}>
         
@@ -193,6 +176,23 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
 
         {/* Right Side: Questions */}
         <div className="lg:col-span-3 h-full overflow-hidden flex flex-col border-l border-gray-100 pl-4 lg:pl-6">
+          {/* Passage Navigation for normal mode */}
+          <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
+             {[0, 1, 2].map((idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActivePassageIndex(idx)}
+                  className={`flex-1 py-1.5 rounded-md text-sm font-bold transition-all ${
+                    activePassageIndex === idx 
+                      ? 'bg-white text-blue-600 shadow-sm' 
+                      : 'text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  Passage {idx + 1}
+                </button>
+              ))}
+          </div>
+
           {!isSubmitted ? (
             <ReadingQuestions 
               sections={activePassage.sections} 
