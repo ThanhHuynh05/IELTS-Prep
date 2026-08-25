@@ -3,7 +3,7 @@ import SpeakingPrompt from '../components/speaking/SpeakingPrompt';
 import AudioRecorder from '../components/speaking/AudioRecorder';
 import SpeakingFeedback from '../components/speaking/SpeakingFeedback';
 import { gradeSpeaking } from '../services/groqApi';
-import { CheckCircle2, Clock, SkipForward } from 'lucide-react';
+import { CheckCircle2, Clock, SkipForward, Loader2 } from 'lucide-react';
 import TipsModal from '../components/common/TipsModal';
 import LoadingSkeleton from '../components/common/LoadingSkeleton';
 
@@ -29,6 +29,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const [currentTranscript, setCurrentTranscript] = useState('');
   const [prepPhase, setPrepPhase] = useState('prep');
   const [prepSeconds, setPrepSeconds] = useState(60);
+  const [isLoading, setIsLoading] = useState(true);
 
   useImperativeHandle(ref, () => ({
     forceSubmit: () => {
@@ -69,6 +70,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   useEffect(() => {
     const fetchCustomTopics = async () => {
       try {
+        setIsLoading(true);
         const res = await fetch('/api/content/speaking');
         if (res.ok) {
           const custom = await res.json();
@@ -79,10 +81,20 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         }
       } catch (err) {
         console.error('Failed to load custom speaking topics', err);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchCustomTopics();
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-80px)]">
+        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+      </div>
+    );
+  }
 
   if (!selectedTopic) {
     return (

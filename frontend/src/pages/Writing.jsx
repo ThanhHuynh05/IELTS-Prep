@@ -5,6 +5,7 @@ import WritingFeedback from '../components/writing/WritingFeedback';
 import { gradeWriting } from '../services/groqApi';
 import TipsModal from '../components/common/TipsModal';
 import LoadingSkeleton from '../components/common/LoadingSkeleton';
+import { Loader2 } from 'lucide-react';
 
 
 const WRITING_TIPS = [
@@ -26,6 +27,7 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const [submittedEssay, setSubmittedEssay] = useState('');
   const [showTips, setShowTips] = useState(false);
   const [currentEssay, setCurrentEssay] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   useImperativeHandle(ref, () => ({
     forceSubmit: () => {
@@ -40,6 +42,7 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   useEffect(() => {
     const fetchCustomTests = async () => {
       try {
+        setIsLoading(true);
         const res = await fetch('/api/content/writing');
         if (res.ok) {
           const custom = await res.json();
@@ -51,6 +54,8 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         }
       } catch (err) {
         console.error('Failed to load custom writing tests', err);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchCustomTests();
@@ -63,6 +68,14 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     setFeedback(null);
     setError(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-80px)]">
+        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+      </div>
+    );
+  }
 
   if (!selectedTest) {
     return (

@@ -3,6 +3,7 @@ import ReadingPassage from '../components/reading/ReadingPassage';
 import ReadingQuestions from '../components/reading/ReadingQuestions';
 import ReadingFeedback from '../components/reading/ReadingFeedback';
 import TipsModal from '../components/common/TipsModal';
+import { Loader2 } from 'lucide-react';
 
 const READING_TIPS = [
   "Skim the text quickly (2-3 minutes) before looking at the questions to get the main idea.",
@@ -19,10 +20,12 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const [userAnswers, setUserAnswers] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showTips, setShowTips] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchCustomTests = async () => {
       try {
+        setIsLoading(true);
         const res = await fetch('/api/content/reading');
         if (res.ok) {
           const custom = await res.json();
@@ -33,6 +36,8 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         }
       } catch (err) {
         console.error('Failed to load custom reading tests', err);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchCustomTests();
@@ -73,6 +78,14 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       setIsSubmitted(true);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-80px)]">
+        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+      </div>
+    );
+  }
 
   if (!selectedTest || !selectedTest.passages || selectedTest.passages.length === 0) {
     return (

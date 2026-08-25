@@ -3,6 +3,7 @@ import ListeningPlayer from '../components/listening/ListeningPlayer';
 import ListeningQuestions from '../components/listening/ListeningQuestions';
 import ListeningFeedback from '../components/listening/ListeningFeedback';
 import TipsModal from '../components/common/TipsModal';
+import { Loader2 } from 'lucide-react';
 
 const LISTENING_TIPS = [
   "Read the questions during the short pauses BEFORE the recording begins.",
@@ -18,10 +19,12 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const [userAnswers, setUserAnswers] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showTips, setShowTips] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchCustomTests = async () => {
       try {
+        setIsLoading(true);
         const res = await fetch('/api/content/listening');
         if (res.ok) {
           const custom = await res.json();
@@ -32,6 +35,8 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         }
       } catch (err) {
         console.error('Failed to load custom listening tests', err);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchCustomTests();
@@ -108,6 +113,14 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     setSelectedTest(test);
     handleReset();
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-80px)]">
+        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+      </div>
+    );
+  }
 
   if (!selectedTest) {
     return (

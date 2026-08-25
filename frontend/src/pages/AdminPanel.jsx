@@ -42,6 +42,7 @@ export default function AdminPanel() {
   const [contentList, setContentList] = useState([]);
   const [isLoadingContent, setIsLoadingContent] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   // Reading State
   const [rTestTitle, setRTestTitle] = useState('');
@@ -304,10 +305,14 @@ export default function AdminPanel() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this content?")) return;
+  const handleDeleteRequest = (item) => {
+    setDeleteConfirm(item);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
     try {
-      const res = await fetch(`${API_URL}/content/${manageType}/${id}`, {
+      const res = await fetch(`${API_URL}/content/${manageType}/${deleteConfirm._id}`, {
         method: 'DELETE'
       });
       if (!res.ok) throw new Error('Failed to delete content');
@@ -316,6 +321,8 @@ export default function AdminPanel() {
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setDeleteConfirm(null);
     }
   };
 
@@ -621,7 +628,7 @@ export default function AdminPanel() {
                           <Edit2 size={20} />
                         </button>
                         <button 
-                          onClick={() => handleDelete(item._id)}
+                          onClick={() => handleDeleteRequest(item)}
                           className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors"
                           title="Delete"
                           aria-label={`Delete ${item.title}`}
@@ -639,6 +646,37 @@ export default function AdminPanel() {
         </div>
       </div>
       
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl max-w-sm w-full border border-red-100 dark:border-red-900/30 transform transition-all animate-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/50 rounded-full flex items-center justify-center mb-4 text-red-600 dark:text-red-400">
+                <Trash2 size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Delete Content?</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-1">
+                Are you sure you want to delete <strong className="text-gray-900 dark:text-white">{deleteConfirm.title}</strong>?
+              </p>
+              <p className="text-xs text-red-500 mb-6">This action cannot be undone.</p>
+              <div className="flex w-full space-x-3">
+                <button 
+                  onClick={() => setDeleteConfirm(null)}
+                  className="flex-1 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={confirmDelete}
+                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors focus:ring-4 focus:ring-red-100 dark:focus:ring-red-900/20"
+                >
+                  Yes, Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <PdfExtractorModal 
         isOpen={showPdfModal} 
         onClose={() => setShowPdfModal(false)} 
