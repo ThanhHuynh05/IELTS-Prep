@@ -103,7 +103,16 @@ export default function QuestionBuilder({ sections = [], onChange, startIndex = 
           {/* Questions within Section */}
           <div className="mt-2 pt-2">
             <div className="flex justify-between items-center mb-3">
-              <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300">Questions</h4>
+              <div className="flex items-center space-x-3">
+                <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300">Section {sIdx + 1} Questions</h4>
+                <button 
+                  onClick={() => handleRemoveSection(sIdx)}
+                  className="text-gray-400 hover:text-red-500 transition-colors"
+                  title="Delete Section"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
               <button 
                 onClick={() => handleAddQuestion(sIdx)}
                 className="flex items-center text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
