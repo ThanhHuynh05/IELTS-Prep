@@ -136,10 +136,7 @@ app.post('/api/upload-pdf-file/token', async (req, res) => {
         return {
           allowedContentTypes: ['application/pdf'],
         };
-      },
-      onUploadCompleted: async ({ blob, tokenPayload }) => {
-        console.log('Upload completed:', blob.url);
-      },
+      }
     });
     res.json(jsonResponse);
   } catch (error) {
