@@ -99,7 +99,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-700 rounded-md py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  placeholder="admin123 or user123"
+                  placeholder="Your password here"
                 />
               </div>
               <div className="flex items-center justify-end mt-2">
