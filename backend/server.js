@@ -133,9 +133,7 @@ app.post('/api/upload-file/token', async (req, res) => {
       body: req.body,
       request: req,
       onBeforeGenerateToken: async (pathname) => {
-        return {
-          allowedContentTypes: ['application/pdf', 'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-m4a'],
-        };
+        return {};
       }
     });
     res.json(jsonResponse);

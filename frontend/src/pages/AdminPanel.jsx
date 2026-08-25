@@ -5,7 +5,12 @@ import QuestionBuilder from '../components/common/QuestionBuilder';
 
 const DEFAULT_READING_JSON = `[]`;
 
-const DEFAULT_LISTENING_JSON = `[]`;
+const DEFAULT_LISTENING_JSON = JSON.stringify([
+  { id: 'sec-1', title: 'Section 1', instructions: '', type: 'mixed', options: [], questions: [] },
+  { id: 'sec-2', title: 'Section 2', instructions: '', type: 'mixed', options: [], questions: [] },
+  { id: 'sec-3', title: 'Section 3', instructions: '', type: 'mixed', options: [], questions: [] },
+  { id: 'sec-4', title: 'Section 4', instructions: '', type: 'mixed', options: [], questions: [] }
+]);
 
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState('reading');
@@ -241,15 +246,29 @@ export default function AdminPanel() {
         answer: ans.text
       }));
 
+      // Ensure we have at least 4 sections
       const newSections = [...lSections];
-      
-      newSections.push({
-        id: `sec-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-        title: `Section ${newSections.length + 1}`,
-        instructions: '',
-        type: 'mixed',
-        questions: newQuestions
-      });
+      while (newSections.length < 4) {
+        newSections.push({
+          id: `sec-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+          title: `Section ${newSections.length + 1}`,
+          instructions: '',
+          type: 'mixed',
+          options: [],
+          questions: []
+        });
+      }
+
+      // If they paste 40 questions, distribute 10 per section. Otherwise just dump them into Section 1.
+      if (newQuestions.length > 20) {
+        newSections.forEach(s => s.questions = []);
+        newQuestions.forEach((q, index) => {
+          const sectionIndex = Math.min(Math.floor(index / 10), 3);
+          newSections[sectionIndex].questions.push(q);
+        });
+      } else {
+        newSections[0].questions = [...(newSections[0].questions || []), ...newQuestions];
+      }
       
       setLSections(newSections);
       setSuccess(`Successfully added ${extracted.length} answers to Listening Test!`);

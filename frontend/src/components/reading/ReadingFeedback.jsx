@@ -1,6 +1,7 @@
 import { CheckCircle2, XCircle } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { saveResult } from '../../utils/storage';
+import { checkAnswer } from '../../utils/answerChecker';
 
 export default function ReadingFeedback({ sections, userAnswers, onReset }) {
   if (!sections || !userAnswers) return null;
@@ -9,15 +10,7 @@ export default function ReadingFeedback({ sections, userAnswers, onReset }) {
   let correctCount = 0;
   
   const results = allQuestions.map((q) => {
-    // For text inputs we do a simple case-insensitive exact match
-    // In a real app, this would be more robust (regex or multiple acceptable answers)
-    const userAnswerStr = (userAnswers[q.id] || "").trim().toLowerCase();
-    
-    // For multiple choice, the answer might be "B. It allowed..." but user selects "B. It allowed..." so it matches exactly.
-    // For matching headings, user types "A", answer is "A".
-    const correctAnswerStr = q.answer.trim().toLowerCase();
-    
-    const isCorrect = userAnswerStr === correctAnswerStr;
+    const isCorrect = checkAnswer(userAnswers[q.id], q.answer);
     if (isCorrect) correctCount++;
     
     return { ...q, isCorrect, userAnswer: userAnswers[q.id] };

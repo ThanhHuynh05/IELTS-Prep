@@ -4,6 +4,7 @@ import ListeningQuestions from '../components/listening/ListeningQuestions';
 import ListeningFeedback from '../components/listening/ListeningFeedback';
 import TipsModal from '../components/common/TipsModal';
 import { Loader2 } from 'lucide-react';
+import { checkAnswer } from '../utils/answerChecker';
 
 const LISTENING_TIPS = [
   "Read the questions during the short pauses BEFORE the recording begins.",
@@ -58,7 +59,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       const allQuestions = selectedTest.sections.flatMap(sec => sec.questions);
       let correctCount = 0;
       allQuestions.forEach(q => {
-        if ((userAnswers[q.id] || "").trim().toLowerCase() === q.answer.trim().toLowerCase()) {
+        if (checkAnswer(userAnswers[q.id], q.answer)) {
           correctCount++;
         }
       });

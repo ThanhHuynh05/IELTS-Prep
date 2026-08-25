@@ -4,13 +4,14 @@ import ReadingQuestions from '../components/reading/ReadingQuestions';
 import ReadingFeedback from '../components/reading/ReadingFeedback';
 import TipsModal from '../components/common/TipsModal';
 import { Loader2 } from 'lucide-react';
+import { checkAnswer } from '../utils/answerChecker';
 
 const READING_TIPS = [
-  "Skim the text quickly (2-3 minutes) before looking at the questions to get the main idea.",
-  "Underline keywords in the questions and scan the text for synonyms.",
-  "For True/False/Not Given: 'Not Given' means the information is impossible to verify from the text alone.",
-  "Don't spend more than 1.5 minutes on a single question. Move on and come back later if needed.",
-  "Be careful with spelling in short-answer questions. Exact matches are required."
+  "Skim the passage quickly before looking at the questions.",
+  "Underline keywords like names, dates, and places.",
+  "Don't spend too much time on one question. Move on and come back later if needed.",
+  "Pay attention to 'NOT GIVEN' vs 'FALSE'. FALSE means the text contradicts the statement.",
+  "Check spelling carefully, especially for 'Fill in the blanks' questions."
 ];
 
 const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
@@ -35,7 +36,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           }
         }
       } catch (err) {
-        console.error('Failed to load custom reading tests', err);
+        console.error('Failed to load custom tests', err);
       } finally {
         setIsLoading(false);
       }
@@ -60,7 +61,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     if (isMockMode) {
       let correctCount = 0;
       allQuestions.forEach(q => {
-        if ((userAnswers[q.id] || "").trim().toLowerCase() === q.answer.trim().toLowerCase()) {
+        if (checkAnswer(userAnswers[q.id], q.answer)) {
           correctCount++;
         }
       });

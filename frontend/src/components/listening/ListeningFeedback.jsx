@@ -1,6 +1,7 @@
 import { CheckCircle2, XCircle, FileText } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { saveResult } from '../../utils/storage';
+import { checkAnswer } from '../../utils/answerChecker';
 
 export default function ListeningFeedback({ sections, userAnswers, transcript, onReset }) {
   const [showTranscript, setShowTranscript] = useState(false);
@@ -11,10 +12,7 @@ export default function ListeningFeedback({ sections, userAnswers, transcript, o
   let correctCount = 0;
   
   const results = allQuestions.map((q) => {
-    const userAnswerStr = (userAnswers[q.id] || "").trim().toLowerCase();
-    const correctAnswerStr = q.answer.trim().toLowerCase();
-    
-    const isCorrect = userAnswerStr === correctAnswerStr;
+    const isCorrect = checkAnswer(userAnswers[q.id], q.answer);
     if (isCorrect) correctCount++;
     
     return { ...q, isCorrect, userAnswer: userAnswers[q.id] };

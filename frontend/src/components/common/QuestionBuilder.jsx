@@ -84,6 +84,12 @@ export default function QuestionBuilder({ sections = [], onChange, startIndex = 
         <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200">
           {passageNumber ? `Passage ${passageNumber} Answer Overview` : 'Answer Overview'}
         </h2>
+        <button 
+          onClick={handleAddSection} 
+          className="flex items-center text-sm text-blue-600 hover:text-blue-800 font-medium"
+        >
+          <PlusCircle size={16} className="mr-1" /> Add Section
+        </button>
       </div>
 
       {sections.length === 0 && (
