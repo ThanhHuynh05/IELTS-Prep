@@ -128,7 +128,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                   : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'
               }`}
             >
-              Luyện Part {p}
+              Practice Part {p}
             </button>
           ))}
           <div className="ml-auto flex gap-4">
@@ -219,7 +219,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                         }}
                         className="px-6 py-2 rounded-full border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors flex items-center gap-2"
                       >
-                        <span className="text-lg">▶</span> Luyện topic này
+                        <span className="text-lg">▶</span> Practice this topic
                       </button>
                     </div>
                   </div>
