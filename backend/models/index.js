@@ -65,9 +65,13 @@ export const CustomWriting = mongoose.model('CustomWriting', customWritingSchema
 const customSpeakingSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   title: { type: String, required: true },
-  part1: { type: Array, required: true },
-  part2: { type: String, required: true },
-  part3: { type: Array, required: true },
+  part: { type: Number }, // 1, 2, or 3 (if omitted, assumed to be a legacy full test)
+  questions: { type: Array }, // Used for part 1 and 3
+  prompt: { type: String }, // Used for part 2
+  // Legacy fields to not break existing data
+  part1: { type: Array },
+  part2: { type: String },
+  part3: { type: Array },
   createdAt: { type: Date, default: Date.now }
 });
 

@@ -58,6 +58,7 @@ export default function AdminPanel() {
   const [wTask2, setWTask2] = useState('');
 
   // Speaking State
+  const [sPartType, setSPartType] = useState(1);
   const [sTitle, setSTitle] = useState('');
   const [sPart1, setSPart1] = useState(['']);
   const [sPart2, setSPart2] = useState('');
@@ -353,14 +354,24 @@ export default function AdminPanel() {
   const handleSaveSpeaking = async () => {
     setError(''); setSuccess('');
     try {
-      if (!sTitle || !sPart1.some(q => q.trim()) || !sPart2 || !sPart3.some(q => q.trim())) throw new Error("All fields are required.");
+      if (!sTitle) throw new Error("Title is required.");
+      
       const newTest = { 
         id: `custom-speak-${Date.now()}`, 
-        title: sTitle, 
-        part1: sPart1.filter(q => q.trim()), 
-        part2: sPart2, 
-        part3: sPart3.filter(q => q.trim()) 
+        title: sTitle,
+        part: sPartType
       };
+
+      if (sPartType === 1) {
+        if (!sPart1.some(q => q.trim())) throw new Error("At least one question is required for Part 1.");
+        newTest.questions = sPart1.filter(q => q.trim());
+      } else if (sPartType === 2) {
+        if (!sPart2.trim()) throw new Error("Prompt is required for Part 2.");
+        newTest.prompt = sPart2;
+      } else if (sPartType === 3) {
+        if (!sPart3.some(q => q.trim())) throw new Error("At least one question is required for Part 3.");
+        newTest.questions = sPart3.filter(q => q.trim());
+      }
       
       const res = await fetch(`${API_URL}/content/speaking`, {
         method: 'POST',
@@ -369,7 +380,7 @@ export default function AdminPanel() {
       });
       if (!res.ok) throw new Error('Failed to save to database');
 
-      setSuccess(`Speaking Topic "${sTitle}" added!`);
+      setSuccess(`Speaking Part ${sPartType} Topic "${sTitle}" added!`);
       setSTitle(''); setSPart1(['']); setSPart2(''); setSPart3(['']);
     } catch (err) { setError(err.message); }
   };
@@ -816,40 +827,55 @@ export default function AdminPanel() {
 
           {activeTab === 'speaking' && (
             <>
-              <div><label htmlFor="sTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Topic Title</label><input id="sTitle" type="text" value={sTitle} onChange={(e) => setSTitle(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="e.g. Technology & Internet" /></div>
-              
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Part 1 Questions</label>
-                  <button type="button" onClick={() => setSPart1([...sPart1, ''])} className="text-xs text-pink-600 hover:text-pink-800 dark:text-pink-400 font-medium">+ Add Question</button>
-                </div>
-                <div className="space-y-2">
-                  {sPart1.map((q, i) => (
-                    <div key={i} className="flex gap-2">
-                      <input type="text" value={q} onChange={(e) => { const newP = [...sPart1]; newP[i] = e.target.value; setSPart1(newP); }} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="Question text..." />
-                      <button type="button" onClick={() => setSPart1(sPart1.filter((_, idx) => idx !== i))} className="text-gray-400 hover:text-red-500 px-2"><Trash2 size={18}/></button>
-                    </div>
-                  ))}
-                </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Part Type</label>
+                <select value={sPartType} onChange={e => setSPartType(Number(e.target.value))} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500">
+                  <option value={1}>Part 1 (Introduction & Interview)</option>
+                  <option value={2}>Part 2 (Long Turn / Cue Card)</option>
+                  <option value={3}>Part 3 (Discussion)</option>
+                </select>
               </div>
 
-              <div><label htmlFor="sPart2" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Part 2 Prompt (Cue Card)</label><textarea id="sPart2" value={sPart2} onChange={(e) => setSPart2(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="Describe a useful website you have visited..." /></div>
+              <div><label htmlFor="sTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Topic Title</label><input id="sTitle" type="text" value={sTitle} onChange={(e) => setSTitle(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder={sPartType === 2 ? "e.g. Describe a person..." : "e.g. Hometown"} /></div>
               
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Part 3 Questions</label>
-                  <button type="button" onClick={() => setSPart3([...sPart3, ''])} className="text-xs text-pink-600 hover:text-pink-800 dark:text-pink-400 font-medium">+ Add Question</button>
+              {sPartType === 1 && (
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Part 1 Questions</label>
+                    <button type="button" onClick={() => setSPart1([...sPart1, ''])} className="text-xs text-pink-600 hover:text-pink-800 dark:text-pink-400 font-medium">+ Add Question</button>
+                  </div>
+                  <div className="space-y-2">
+                    {sPart1.map((q, i) => (
+                      <div key={i} className="flex gap-2">
+                        <input type="text" value={q} onChange={(e) => { const newP = [...sPart1]; newP[i] = e.target.value; setSPart1(newP); }} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="Question text..." />
+                        <button type="button" onClick={() => setSPart1(sPart1.filter((_, idx) => idx !== i))} className="text-gray-400 hover:text-red-500 px-2"><Trash2 size={18}/></button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  {sPart3.map((q, i) => (
-                    <div key={i} className="flex gap-2">
-                      <input type="text" value={q} onChange={(e) => { const newP = [...sPart3]; newP[i] = e.target.value; setSPart3(newP); }} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="Question text..." />
-                      <button type="button" onClick={() => setSPart3(sPart3.filter((_, idx) => idx !== i))} className="text-gray-400 hover:text-red-500 px-2"><Trash2 size={18}/></button>
-                    </div>
-                  ))}
+              )}
+
+              {sPartType === 2 && (
+                <div><label htmlFor="sPart2" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Part 2 Prompt (Cue Card)</label><textarea id="sPart2" value={sPart2} onChange={(e) => setSPart2(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="Describe a useful website you have visited..." /></div>
+              )}
+              
+              {sPartType === 3 && (
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Part 3 Questions</label>
+                    <button type="button" onClick={() => setSPart3([...sPart3, ''])} className="text-xs text-pink-600 hover:text-pink-800 dark:text-pink-400 font-medium">+ Add Question</button>
+                  </div>
+                  <div className="space-y-2">
+                    {sPart3.map((q, i) => (
+                      <div key={i} className="flex gap-2">
+                        <input type="text" value={q} onChange={(e) => { const newP = [...sPart3]; newP[i] = e.target.value; setSPart3(newP); }} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="Question text..." />
+                        <button type="button" onClick={() => setSPart3(sPart3.filter((_, idx) => idx !== i))} className="text-gray-400 hover:text-red-500 px-2"><Trash2 size={18}/></button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="flex justify-end pt-4"><button onClick={handleSaveSpeaking} className="flex items-center px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-lg shadow-sm"><Save size={20} className="mr-2" />Save Speaking Topic</button></div>
+              )}
+              <div className="flex justify-end pt-4"><button onClick={handleSaveSpeaking} className="flex items-center px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-lg shadow-sm"><Save size={20} className="mr-2" />Save Speaking Part {sPartType}</button></div>
             </>
           )}
 

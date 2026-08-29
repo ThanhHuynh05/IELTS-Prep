@@ -48,8 +48,6 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           const custom = await res.json();
           if (custom.length > 0) {
             setTests(custom);
-            setSelectedTest(custom[0]);
-            setTask2Question(custom[0].task2);
           }
         }
       } catch (err) {
@@ -78,11 +76,46 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   }
 
   if (!selectedTest) {
+    if (!tests || tests.length === 0) {
+      return (
+        <div className="max-w-[1400px] mx-auto p-8 flex items-center justify-center h-[calc(100vh-80px)]">
+          <div className="text-center bg-white p-12 rounded-xl shadow-sm border border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">No Writing Tests Available</h2>
+            <p className="text-gray-600">Please add some tests in the Admin Panel.</p>
+          </div>
+        </div>
+      );
+    }
+    
     return (
-      <div className="max-w-7xl mx-auto p-8 flex items-center justify-center h-[calc(100vh-80px)]">
-        <div className="text-center bg-white p-12 rounded-xl shadow-sm border border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">No Writing Tests Available</h2>
-          <p className="text-gray-600">Please add some writing tests in the Admin Panel.</p>
+      <div className="w-full max-w-6xl mx-auto px-4 py-8 h-[calc(100vh-80px)] overflow-y-auto animate-in fade-in">
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Writing Practice</h1>
+        <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">Select a test to begin your practice.</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tests.map((test, index) => (
+            <div 
+              key={test.id || index}
+              onClick={() => {
+                setSelectedTest(test);
+                setTask2Question(test.task2 || '');
+              }}
+              className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md cursor-pointer transition-all hover:border-orange-500 hover:ring-1 hover:ring-orange-500 group flex flex-col h-full"
+            >
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 group-hover:text-orange-600 transition-colors mb-2">
+                  {test.title || `Test ${index + 1}`}
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-3">
+                  Task 1 and Task 2 prompts included. Get AI feedback on your writing.
+                </p>
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center text-sm font-medium text-orange-600 dark:text-orange-400">
+                <span>Start Test</span>
+                <span>→</span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -140,15 +173,15 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
             </button>
           </div>
           <div className="flex items-center space-x-4">
-            <select 
-              value={selectedTest.id}
-              onChange={handleTestSelect}
-              className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            <button
+              onClick={() => {
+                setSelectedTest(null);
+                setFeedback(null);
+              }}
+              className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {tests.map(test => (
-                <option key={test.id} value={test.id}>{test.title}</option>
-              ))}
-            </select>
+              ← Back to Tests
+            </button>
             
             {!feedback && !isGrading && (
               <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg inline-flex">

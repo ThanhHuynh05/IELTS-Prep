@@ -33,7 +33,6 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           const custom = await res.json();
           if (custom.length > 0) {
             setTests(custom);
-            setSelectedTest(custom[0]);
           }
         }
       } catch (err) {
@@ -158,11 +157,43 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   }
 
   if (!selectedTest) {
+    if (!tests || tests.length === 0) {
+      return (
+        <div className="max-w-[1400px] mx-auto p-8 flex items-center justify-center h-[calc(100vh-80px)]">
+          <div className="text-center bg-white p-12 rounded-xl shadow-sm border border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">No Listening Tests Available</h2>
+            <p className="text-gray-600">Please add some tests in the Admin Panel.</p>
+          </div>
+        </div>
+      );
+    }
+    
     return (
-      <div className="max-w-[1400px] mx-auto p-8 flex items-center justify-center h-[calc(100vh-80px)]">
-        <div className="text-center bg-white p-12 rounded-xl shadow-sm border border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">No Listening Tests Available</h2>
-          <p className="text-gray-600">Please add some tests in the Admin Panel.</p>
+      <div className="w-full max-w-6xl mx-auto px-4 py-8 h-[calc(100vh-80px)] overflow-y-auto animate-in fade-in">
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Listening Practice</h1>
+        <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">Select a test to begin your practice.</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tests.map((test, index) => (
+            <div 
+              key={test.id || index}
+              onClick={() => handleTestSelect(test)}
+              className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md cursor-pointer transition-all hover:border-blue-500 hover:ring-1 hover:ring-blue-500 group flex flex-col h-full"
+            >
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 group-hover:text-blue-600 transition-colors mb-2">
+                  {test.title || `Test ${index + 1}`}
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-3">
+                  Audio tracks and questions included. Prepare for the IELTS Listening section.
+                </p>
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center text-sm font-medium text-blue-600 dark:text-blue-400">
+                <span>Start Test</span>
+                <span>→</span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -214,19 +245,15 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           </div>
         </div>
         <div className="flex space-x-2">
-          {tests.map((test, index) => (
-            <button
-              key={test.id}
-              onClick={() => handleTestSelect(test)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                selectedTest.id === test.id 
-                  ? 'bg-blue-600 text-white shadow-sm' 
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
-              }`}
-            >
-              {test.title.startsWith('Test') ? `Test ${index + 1}` : test.title}
-            </button>
-          ))}
+          <button
+            onClick={() => {
+              setSelectedTest(null);
+              handleReset();
+            }}
+            className="px-4 py-2 rounded-md text-sm font-medium transition-colors bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
+          >
+            ← Back to Tests
+          </button>
         </div>
       </div>
 

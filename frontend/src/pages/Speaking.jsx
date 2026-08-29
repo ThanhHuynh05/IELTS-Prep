@@ -76,7 +76,6 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           const custom = await res.json();
           if (custom.length > 0) {
             setTopics(custom);
-            setSelectedTopic(custom[0]);
           }
         }
       } catch (err) {
@@ -97,11 +96,95 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   }
 
   if (!selectedTopic) {
+    if (!topics || topics.length === 0) {
+      return (
+        <div className="max-w-[1400px] mx-auto p-8 flex items-center justify-center h-[calc(100vh-80px)]">
+          <div className="text-center bg-white p-12 rounded-xl shadow-sm border border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">No Speaking Topics Available</h2>
+            <p className="text-gray-600">Please add some speaking topics in the Admin Panel.</p>
+          </div>
+        </div>
+      );
+    }
+    
     return (
-      <div className="max-w-7xl mx-auto p-8 flex items-center justify-center h-[calc(100vh-80px)]">
-        <div className="text-center bg-white p-12 rounded-xl shadow-sm border border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">No Speaking Topics Available</h2>
-          <p className="text-gray-600">Please add some speaking topics in the Admin Panel.</p>
+      <div className="w-full max-w-6xl mx-auto px-4 py-8 h-[calc(100vh-80px)] overflow-y-auto animate-in fade-in">
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Speaking Practice</h1>
+        <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">Generate a random full exam or select specific topics to practice.</p>
+
+        <div className="mb-12">
+          <button
+            onClick={() => {
+              // Get all parts from DB (some might be legacy full tests, some might be specific parts)
+              const part1s = topics.filter(t => t.part === 1 || t.part1?.length > 0);
+              const part2s = topics.filter(t => t.part === 2 || t.part2);
+              const part3s = topics.filter(t => t.part === 3 || t.part3?.length > 0);
+
+              if (part1s.length === 0 || part2s.length === 0 || part3s.length === 0) {
+                alert("Not enough topics in the database to generate a full exam! Please add at least one Part 1, Part 2, and Part 3 topic in the Admin Panel.");
+                return;
+              }
+
+              const randomPart1 = part1s[Math.floor(Math.random() * part1s.length)];
+              const randomPart2 = part2s[Math.floor(Math.random() * part2s.length)];
+              const randomPart3 = part3s[Math.floor(Math.random() * part3s.length)];
+
+              const generatedExam = {
+                id: `random-exam-${Date.now()}`,
+                title: "Random Full Exam",
+                part1: randomPart1.questions || randomPart1.part1,
+                part2: randomPart2.prompt || randomPart2.part2,
+                part3: randomPart3.questions || randomPart3.part3
+              };
+
+              setSelectedTopic(generatedExam);
+            }}
+            className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold text-xl py-6 rounded-2xl shadow-md transition-all hover:shadow-lg transform hover:-translate-y-1"
+          >
+            🎲 Start Random Full Exam (Real Test Simulation)
+          </button>
+        </div>
+        
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Practice Specific Topics</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {topics.map((topic, index) => (
+            <div 
+              key={topic.id || index}
+              onClick={() => {
+                // If it's a specific part, we create a temporary mock full test with just that part
+                // so the UI doesn't crash expecting all 3 parts.
+                const mockTopic = {
+                  id: topic.id,
+                  title: `Part ${topic.part || '1-3'}: ${topic.title}`,
+                  part1: topic.part === 1 ? topic.questions : (topic.part1 || []),
+                  part2: topic.part === 2 ? topic.prompt : (topic.part2 || ''),
+                  part3: topic.part === 3 ? topic.questions : (topic.part3 || [])
+                };
+                setSelectedTopic(mockTopic);
+                setTaskPart(topic.part === 2 ? 'part2' : (topic.part === 3 ? 'part3' : 'part1'));
+              }}
+              className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md cursor-pointer transition-all hover:border-pink-500 hover:ring-1 hover:ring-pink-500 group flex flex-col h-full"
+            >
+              <div className="flex-1">
+                <span className="inline-block px-2 py-1 bg-pink-100 text-pink-700 text-xs font-bold rounded mb-3">
+                  {topic.part ? `Part ${topic.part}` : 'Full Test'}
+                </span>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 group-hover:text-pink-600 transition-colors mb-2">
+                  {topic.title || `Test ${index + 1}`}
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-3">
+                  {topic.part === 1 && "Introduction & Interview questions."}
+                  {topic.part === 2 && "Long turn / Cue card prompt."}
+                  {topic.part === 3 && "Discussion questions."}
+                  {!topic.part && "Part 1, 2, and 3 questions included."}
+                </p>
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center text-sm font-medium text-pink-600 dark:text-pink-400">
+                <span>Start Practice</span>
+                <span>→</span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -139,7 +222,16 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     <div className="max-w-7xl mx-auto pb-12 p-8 flex h-[calc(100vh-80px)]">
       {/* Sidebar - Topic Selector */}
       {!isMockMode && (
-        <div className="w-64 border-r border-gray-200 pr-6 overflow-y-auto">
+        <div className="w-64 border-r border-gray-200 dark:border-gray-700 pr-6 overflow-y-auto">
+          <button
+            onClick={() => {
+              setSelectedTopic(null);
+              setFeedback(null);
+            }}
+            className="w-full mb-6 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            ← Back to Tests
+          </button>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Forecast Topics</h2>
           <ul className="space-y-2">
             {topics.map((topic) => (
@@ -189,24 +281,30 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           </div>
           {(!feedback && practiceMode && !isMockMode && !isGrading) && (
             <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg inline-flex">
-              <button 
-                onClick={() => { setTaskPart('part1'); setCurrentQuestionIndex(0); }}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${taskPart === 'part1' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
-              >
-                Part 1
-              </button>
-              <button 
-                onClick={() => { setTaskPart('part2'); setCurrentQuestionIndex(0); }}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${taskPart === 'part2' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
-              >
-                Part 2
-              </button>
-              <button 
-                onClick={() => { setTaskPart('part3'); setCurrentQuestionIndex(0); }}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${taskPart === 'part3' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
-              >
-                Part 3
-              </button>
+              {selectedTopic.part1 && selectedTopic.part1.length > 0 && (
+                <button 
+                  onClick={() => { setTaskPart('part1'); setCurrentQuestionIndex(0); }}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${taskPart === 'part1' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                >
+                  Part 1
+                </button>
+              )}
+              {selectedTopic.part2 && (
+                <button 
+                  onClick={() => { setTaskPart('part2'); setCurrentQuestionIndex(0); }}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${taskPart === 'part2' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                >
+                  Part 2
+                </button>
+              )}
+              {selectedTopic.part3 && selectedTopic.part3.length > 0 && (
+                <button 
+                  onClick={() => { setTaskPart('part3'); setCurrentQuestionIndex(0); }}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${taskPart === 'part3' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                >
+                  Part 3
+                </button>
+              )}
             </div>
           )}
         </div>
