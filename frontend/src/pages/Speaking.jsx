@@ -18,6 +18,7 @@ const SPEAKING_TIPS = [
 const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const [topics, setTopics] = useState([]);
   const [selectedTopic, setSelectedTopic] = useState(null);
+  const [selectedFilterPart, setSelectedFilterPart] = useState(1);
   const [taskPart, setTaskPart] = useState('part1');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [practiceMode, setPracticeMode] = useState(isMockMode || false);
@@ -107,84 +108,131 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       );
     }
     
+    const filteredTopics = topics.filter(t => t.part === selectedFilterPart || (!t.part && (
+      (selectedFilterPart === 1 && t.part1?.length > 0) ||
+      (selectedFilterPart === 2 && t.part2) ||
+      (selectedFilterPart === 3 && t.part3?.length > 0)
+    )));
+
     return (
-      <div className="w-full max-w-6xl mx-auto px-4 py-8 h-[calc(100vh-80px)] overflow-y-auto animate-in fade-in">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Speaking Practice</h1>
-        <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">Generate a random full exam or select specific topics to practice.</p>
-
-        <div className="mb-12">
-          <button
-            onClick={() => {
-              // Get all parts from DB (some might be legacy full tests, some might be specific parts)
-              const part1s = topics.filter(t => t.part === 1 || t.part1?.length > 0);
-              const part2s = topics.filter(t => t.part === 2 || t.part2);
-              const part3s = topics.filter(t => t.part === 3 || t.part3?.length > 0);
-
-              if (part1s.length === 0 || part2s.length === 0 || part3s.length === 0) {
-                alert("Not enough topics in the database to generate a full exam! Please add at least one Part 1, Part 2, and Part 3 topic in the Admin Panel.");
-                return;
-              }
-
-              const randomPart1 = part1s[Math.floor(Math.random() * part1s.length)];
-              const randomPart2 = part2s[Math.floor(Math.random() * part2s.length)];
-              const randomPart3 = part3s[Math.floor(Math.random() * part3s.length)];
-
-              const generatedExam = {
-                id: `random-exam-${Date.now()}`,
-                title: "Random Full Exam",
-                part1: randomPart1.questions || randomPart1.part1,
-                part2: randomPart2.prompt || randomPart2.part2,
-                part3: randomPart3.questions || randomPart3.part3
-              };
-
-              setSelectedTopic(generatedExam);
-            }}
-            className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold text-xl py-6 rounded-2xl shadow-md transition-all hover:shadow-lg transform hover:-translate-y-1"
-          >
-            🎲 Start Random Full Exam (Real Test Simulation)
-          </button>
-        </div>
-        
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Practice Specific Topics</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {topics.map((topic, index) => (
-            <div 
-              key={topic.id || index}
-              onClick={() => {
-                // If it's a specific part, we create a temporary mock full test with just that part
-                // so the UI doesn't crash expecting all 3 parts.
-                const mockTopic = {
-                  id: topic.id,
-                  title: `Part ${topic.part || '1-3'}: ${topic.title}`,
-                  part1: topic.part === 1 ? topic.questions : (topic.part1 || []),
-                  part2: topic.part === 2 ? topic.prompt : (topic.part2 || ''),
-                  part3: topic.part === 3 ? topic.questions : (topic.part3 || [])
-                };
-                setSelectedTopic(mockTopic);
-                setTaskPart(topic.part === 2 ? 'part2' : (topic.part === 3 ? 'part3' : 'part1'));
-              }}
-              className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md cursor-pointer transition-all hover:border-pink-500 hover:ring-1 hover:ring-pink-500 group flex flex-col h-full"
+      <div className="flex flex-col h-[calc(100vh-80px)] bg-gray-50 dark:bg-gray-900 animate-in fade-in">
+        {/* Top Header Filter */}
+        <div className="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shrink-0">
+          {[1, 2, 3].map(p => (
+            <button
+              key={p}
+              onClick={() => setSelectedFilterPart(p)}
+              className={`px-6 py-2 rounded-full border text-sm font-medium transition-colors ${
+                selectedFilterPart === p 
+                  ? 'border-purple-600 text-purple-700 bg-purple-50 dark:bg-purple-900/30 dark:text-purple-300'
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'
+              }`}
             >
-              <div className="flex-1">
-                <span className="inline-block px-2 py-1 bg-pink-100 text-pink-700 text-xs font-bold rounded mb-3">
-                  {topic.part ? `Part ${topic.part}` : 'Full Test'}
-                </span>
-                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 group-hover:text-pink-600 transition-colors mb-2">
-                  {topic.title || `Test ${index + 1}`}
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-3">
-                  {topic.part === 1 && "Introduction & Interview questions."}
-                  {topic.part === 2 && "Long turn / Cue card prompt."}
-                  {topic.part === 3 && "Discussion questions."}
-                  {!topic.part && "Part 1, 2, and 3 questions included."}
-                </p>
-              </div>
-              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center text-sm font-medium text-pink-600 dark:text-pink-400">
-                <span>Start Practice</span>
-                <span>→</span>
-              </div>
-            </div>
+              Luyện Part {p}
+            </button>
           ))}
+          <div className="ml-auto flex gap-4">
+             <button
+               onClick={() => {
+                 const part1s = topics.filter(t => t.part === 1 || t.part1?.length > 0);
+                 const part2s = topics.filter(t => t.part === 2 || t.part2);
+                 const part3s = topics.filter(t => t.part === 3 || t.part3?.length > 0);
+
+                 if (part1s.length === 0 || part2s.length === 0 || part3s.length === 0) {
+                   alert("Not enough topics to generate a full exam! Please add at least one Part 1, 2, and 3.");
+                   return;
+                 }
+
+                 const randomPart1 = part1s[Math.floor(Math.random() * part1s.length)];
+                 const randomPart2 = part2s[Math.floor(Math.random() * part2s.length)];
+                 const randomPart3 = part3s[Math.floor(Math.random() * part3s.length)];
+
+                 const generatedExam = {
+                   id: `random-exam-${Date.now()}`,
+                   title: "Random Full Exam",
+                   part1: randomPart1.questions || randomPart1.part1,
+                   part2: randomPart2.prompt || randomPart2.part2,
+                   part3: randomPart3.questions || randomPart3.part3
+                 };
+
+                 setSelectedTopic(generatedExam);
+                 setTaskPart('part1');
+               }}
+               className="px-6 py-2 rounded-full border border-pink-500 bg-pink-500 text-white font-medium hover:bg-pink-600 transition-colors flex items-center gap-2"
+             >
+               🎲 Random Full Exam
+             </button>
+          </div>
+        </div>
+
+        <div className="flex flex-1 overflow-hidden">
+          {/* Left Sidebar */}
+          <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto p-4 shrink-0 hidden md:block">
+            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Forecast</h3>
+            <div className="space-y-2">
+              {filteredTopics.map((t, index) => (
+                <a 
+                  key={t.id || index}
+                  href={`#topic-${t.id}`}
+                  className="block px-4 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 dark:hover:text-purple-300 border border-transparent hover:border-purple-100 dark:hover:border-purple-800 transition-colors truncate"
+                >
+                  {t.title || `Test ${index + 1}`}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Main Content List */}
+          <div className="flex-1 overflow-y-auto p-6 space-y-8 scroll-smooth">
+            {filteredTopics.map((t, index) => {
+              const questions = selectedFilterPart === 1 
+                ? (t.questions || t.part1 || []) 
+                : selectedFilterPart === 3 
+                  ? (t.questions || t.part3 || [])
+                  : (t.prompt || t.part2 ? [t.prompt || t.part2] : []);
+              
+              return (
+                <div id={`topic-${t.id}`} key={t.id || index} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden scroll-mt-6">
+                  <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">{t.title || `Test ${index + 1}`}</h2>
+                  </div>
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                      {questions.map((q, i) => (
+                        <div key={i} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-4 rounded-lg flex flex-col min-h-[80px]">
+                          <p className="text-gray-800 dark:text-gray-200">{q}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex justify-center">
+                      <button 
+                        onClick={() => {
+                          const mockTopic = {
+                            id: t.id,
+                            title: `Part ${selectedFilterPart}: ${t.title}`,
+                            part1: selectedFilterPart === 1 ? questions : [],
+                            part2: selectedFilterPart === 2 ? questions[0] : '',
+                            part3: selectedFilterPart === 3 ? questions : []
+                          };
+                          setSelectedTopic(mockTopic);
+                          setTaskPart(`part${selectedFilterPart}`);
+                        }}
+                        className="px-6 py-2 rounded-full border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors flex items-center gap-2"
+                      >
+                        <span className="text-lg">▶</span> Luyện topic này
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            
+            {filteredTopics.length === 0 && (
+              <div className="text-center py-12 text-gray-500">
+                No topics found for Part {selectedFilterPart}.
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
