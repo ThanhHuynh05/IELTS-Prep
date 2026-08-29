@@ -117,21 +117,23 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     return (
       <div className="flex flex-col h-[calc(100vh-80px)] bg-gray-50 dark:bg-gray-900 animate-in fade-in">
         {/* Top Header Filter */}
-        <div className="flex items-center gap-4 p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shrink-0">
-          {[1, 2, 3].map(p => (
-            <button
-              key={p}
-              onClick={() => setSelectedFilterPart(p)}
-              className={`px-6 py-2 rounded-full border text-sm font-medium transition-colors ${
-                selectedFilterPart === p 
-                  ? 'border-purple-600 text-purple-700 bg-purple-50 dark:bg-purple-900/30 dark:text-purple-300'
-                  : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'
-              }`}
-            >
-              Practice Part {p}
-            </button>
-          ))}
-          <div className="ml-auto flex gap-4">
+        <div className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shrink-0">
+          <div className="flex overflow-x-auto w-full md:w-auto gap-2 md:gap-4 pb-2 md:pb-0 no-scrollbar">
+            {[1, 2, 3].map(p => (
+              <button
+                key={p}
+                onClick={() => setSelectedFilterPart(p)}
+                className={`whitespace-nowrap px-4 md:px-6 py-2 rounded-full border text-sm font-medium transition-colors ${
+                  selectedFilterPart === p 
+                    ? 'border-purple-600 text-purple-700 bg-purple-50 dark:bg-purple-900/30 dark:text-purple-300'
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'
+                }`}
+              >
+                Practice Part {p}
+              </button>
+            ))}
+          </div>
+          <div className="w-full md:w-auto md:ml-auto flex gap-4">
              <button
                onClick={() => {
                  const part1s = topics.filter(t => t.part === 1 || t.part1?.length > 0);
@@ -158,7 +160,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                  setSelectedTopic(generatedExam);
                  setTaskPart('part1');
                }}
-               className="px-6 py-2 rounded-full border border-pink-500 bg-pink-500 text-white font-medium hover:bg-pink-600 transition-colors flex items-center gap-2"
+               className="w-full justify-center md:w-auto px-6 py-2 rounded-full border border-pink-500 bg-pink-500 text-white font-medium hover:bg-pink-600 transition-colors flex items-center gap-2"
              >
                🎲 Random Full Exam
              </button>
@@ -267,10 +269,23 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
 
 
   return (
-    <div className="max-w-7xl mx-auto pb-12 p-8 flex h-[calc(100vh-80px)]">
+    <div className="max-w-7xl mx-auto pb-12 p-4 md:p-8 flex flex-col md:flex-row h-[calc(100vh-80px)]">
+      {/* Mobile Back Button */}
+      {!isMockMode && (
+        <button
+          onClick={() => {
+            setSelectedTopic(null);
+            setFeedback(null);
+          }}
+          className="md:hidden w-full mb-4 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+        >
+          <span>←</span> Back to Tests
+        </button>
+      )}
+      
       {/* Sidebar - Topic Selector */}
       {!isMockMode && (
-        <div className="w-64 border-r border-gray-200 dark:border-gray-700 pr-6 overflow-y-auto">
+        <div className="hidden md:block w-64 border-r border-gray-200 dark:border-gray-700 pr-6 overflow-y-auto shrink-0">
           <button
             onClick={() => {
               setSelectedTopic(null);
@@ -306,14 +321,14 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 pl-8 overflow-y-auto">
+      <div className="flex-1 pl-0 md:pl-8 overflow-y-auto w-full">
         <TipsModal 
           isOpen={showTips} 
           onClose={() => setShowTips(false)} 
           title="IELTS Speaking Tips"
           tips={SPEAKING_TIPS}
         />
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 md:gap-0">
           <div className="flex items-center space-x-4">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               {practiceMode ? 'Speaking Practice' : `Topic: ${selectedTopic.title}`}
@@ -328,11 +343,11 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
             )}
           </div>
           {(!feedback && practiceMode && !isMockMode && !isGrading) && (
-            <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg inline-flex">
+            <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg flex overflow-x-auto w-full md:w-auto no-scrollbar shrink-0 mt-4 md:mt-0">
               {selectedTopic.part1 && selectedTopic.part1.length > 0 && (
                 <button 
                   onClick={() => { setTaskPart('part1'); setCurrentQuestionIndex(0); }}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${taskPart === 'part1' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                  className={`whitespace-nowrap px-4 py-2 rounded-md text-sm font-medium transition-colors flex-1 md:flex-none ${taskPart === 'part1' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
                 >
                   Part 1
                 </button>
@@ -340,7 +355,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               {selectedTopic.part2 && (
                 <button 
                   onClick={() => { setTaskPart('part2'); setCurrentQuestionIndex(0); }}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${taskPart === 'part2' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                  className={`whitespace-nowrap px-4 py-2 rounded-md text-sm font-medium transition-colors flex-1 md:flex-none ${taskPart === 'part2' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
                 >
                   Part 2
                 </button>
@@ -348,7 +363,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               {selectedTopic.part3 && selectedTopic.part3.length > 0 && (
                 <button 
                   onClick={() => { setTaskPart('part3'); setCurrentQuestionIndex(0); }}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${taskPart === 'part3' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                  className={`whitespace-nowrap px-4 py-2 rounded-md text-sm font-medium transition-colors flex-1 md:flex-none ${taskPart === 'part3' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
                 >
                   Part 3
                 </button>
