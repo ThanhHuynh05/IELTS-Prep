@@ -60,9 +60,9 @@ export default function AdminPanel() {
   // Speaking State
   const [sPartType, setSPartType] = useState(1);
   const [sTitle, setSTitle] = useState('');
-  const [sPart1, setSPart1] = useState(['']);
+  const [sPart1, setSPart1] = useState(['', '', '', '']);
   const [sPart2, setSPart2] = useState('');
-  const [sPart3, setSPart3] = useState(['']);
+  const [sPart3, setSPart3] = useState(['', '', '']);
 
   const API_URL = '/api';
 
@@ -381,7 +381,7 @@ export default function AdminPanel() {
       if (!res.ok) throw new Error('Failed to save to database');
 
       setSuccess(`Speaking Part ${sPartType} Topic "${sTitle}" added!`);
-      setSTitle(''); setSPart1(['']); setSPart2(''); setSPart3(['']);
+      setSTitle(''); setSPart1(['', '', '', '']); setSPart2(''); setSPart3(['', '', '']);
     } catch (err) { setError(err.message); }
   };
 
@@ -458,10 +458,12 @@ export default function AdminPanel() {
       setEditingId(item._id);
       setActiveTab('writing');
     } else if (manageType === 'speaking') {
+      const pType = item.part || 1;
+      setSPartType(pType);
       setSTitle(item.title || '');
-      setSPart1(item.part1 || ['']);
-      setSPart2(item.part2 || '');
-      setSPart3(item.part3 || ['']);
+      setSPart1(pType === 1 ? (item.questions?.length ? item.questions : (item.part1?.length ? item.part1 : ['', '', '', ''])) : ['', '', '', '']);
+      setSPart2(pType === 2 ? (item.prompt || item.part2 || '') : '');
+      setSPart3(pType === 3 ? (item.questions?.length ? item.questions : (item.part3?.length ? item.part3 : ['', '', ''])) : ['', '', '']);
       setEditingId(item._id);
       setActiveTab('speaking');
     }
