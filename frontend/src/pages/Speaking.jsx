@@ -159,6 +159,8 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
 
                  setSelectedTopic(generatedExam);
                  setTaskPart('part1');
+                 setPracticeMode(true);
+                 setCurrentQuestionIndex(0);
                }}
                className="w-full justify-center md:w-auto px-6 py-2 rounded-full border border-pink-500 bg-pink-500 text-white font-medium hover:bg-pink-600 transition-colors flex items-center gap-2"
              >
@@ -218,6 +220,8 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                           };
                           setSelectedTopic(mockTopic);
                           setTaskPart(`part${selectedFilterPart}`);
+                          setPracticeMode(true);
+                          setCurrentQuestionIndex(0);
                         }}
                         className="px-6 py-2 rounded-full border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors flex items-center gap-2"
                       >
@@ -264,7 +268,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const handleReset = () => {
     setFeedback(null);
     setSubmittedTranscript('');
-    setPracticeMode(false);
+    setPracticeMode(true);
   };
 
 
@@ -301,8 +305,22 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               <li key={topic.id}>
                 <button
                   onClick={() => {
-                    setSelectedTopic(topic);
-                    setPracticeMode(false);
+                    // Map the DB topic to the legacy format expected by the practice view
+                    const isPart1 = topic.part === 1 || (!topic.part && topic.part1?.length > 0);
+                    const isPart2 = topic.part === 2 || (!topic.part && topic.part2);
+                    const isPart3 = topic.part === 3 || (!topic.part && topic.part3?.length > 0);
+                    
+                    const mockTopic = {
+                      id: topic.id,
+                      title: topic.part ? `Part ${topic.part}: ${topic.title}` : topic.title,
+                      part1: topic.part === 1 ? (topic.questions || []) : (topic.part1 || []),
+                      part2: topic.part === 2 ? (topic.prompt || '') : (topic.part2 || ''),
+                      part3: topic.part === 3 ? (topic.questions || []) : (topic.part3 || [])
+                    };
+
+                    setSelectedTopic(mockTopic);
+                    setTaskPart(isPart1 ? 'part1' : (isPart2 ? 'part2' : 'part3'));
+                    setPracticeMode(true);
                     setFeedback(null);
                     setCurrentQuestionIndex(0);
                   }}
@@ -388,56 +406,10 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           <div className="mt-8 max-w-3xl">
             <LoadingSkeleton text="Grading your speech..." />
           </div>
-        ) : !practiceMode ? (
-          /* Topic Preview View */
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-            <div className="mb-8 border-b pb-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Part 1</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {selectedTopic.part1.map((q, i) => (
-                  <div key={i} className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-gray-700">{q}</div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="mb-8 border-b pb-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Part 2</h2>
-              <div className="bg-blue-50 p-6 rounded-lg border border-blue-100 text-blue-900 font-medium">
-                {selectedTopic.part2}
-              </div>
-            </div>
-
-            <div className="mb-8 pb-4">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Part 3</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {selectedTopic.part3.map((q, i) => (
-                  <div key={i} className="bg-gray-50 p-4 rounded-lg border border-gray-100 text-gray-700">{q}</div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex justify-center mt-4">
-              <button 
-                onClick={() => {
-                  setPracticeMode(true);
-                  setCurrentQuestionIndex(0);
-                }}
-                className="bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold py-3 px-8 rounded-full shadow-md transition-transform transform hover:scale-105 flex items-center border border-fuchsia-600"
-              >
-                <CheckCircle2 className="mr-2" size={20} />
-                Practice this topic
-              </button>
-            </div>
-          </div>
         ) : !feedback ? (
           /* Practice View */
           <div className="max-w-3xl">
-            <button 
-              onClick={() => setPracticeMode(false)}
-              className="mb-6 text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center"
-            >
-              ← Back to Topic Preview
-            </button>
+
             
             {taskPart !== 'part2' && (
               <div className="flex justify-between items-center mb-4 bg-gray-50 p-2 rounded border">
