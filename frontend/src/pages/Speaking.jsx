@@ -149,12 +149,20 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                  const randomPart2 = part2s[Math.floor(Math.random() * part2s.length)];
                  const randomPart3 = part3s[Math.floor(Math.random() * part3s.length)];
 
+                 const p2Questions = randomPart2.questions?.length ? randomPart2.questions : (randomPart2.prompt ? [randomPart2.prompt] : (Array.isArray(randomPart2.part2) ? randomPart2.part2 : [randomPart2.part2]));
+                 
+                 let p3Questions = randomPart3.questions || randomPart3.part3 || [];
+                 if (p3Questions.length > 0 && typeof p3Questions[0] === 'object') {
+                   const randomSub = p3Questions[Math.floor(Math.random() * p3Questions.length)];
+                   p3Questions = randomSub.questions || [];
+                 }
+                 
                  const generatedExam = {
                    id: `random-exam-${Date.now()}`,
                    title: "Random Full Exam",
                    part1: randomPart1.questions || randomPart1.part1,
-                   part2: randomPart2.prompt || randomPart2.part2,
-                   part3: randomPart3.questions || randomPart3.part3
+                   part2: p2Questions[Math.floor(Math.random() * p2Questions.length)] || '',
+                   part3: p3Questions
                  };
 
                  setSelectedTopic(generatedExam);
@@ -193,7 +201,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                 ? (t.questions || t.part1 || []) 
                 : selectedFilterPart === 3 
                   ? (t.questions || t.part3 || [])
-                  : (t.prompt || t.part2 ? [t.prompt || t.part2] : []);
+                  : (t.questions?.length ? t.questions : (t.prompt ? [t.prompt] : (t.part2 ? (Array.isArray(t.part2) ? t.part2 : [t.part2]) : [])));
               
               return (
                 <div id={`topic-${t.id}`} key={t.id || index} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden scroll-mt-6">
@@ -201,33 +209,100 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                     <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">{t.title || `Test ${index + 1}`}</h2>
                   </div>
                   <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                      {questions.map((q, i) => (
-                        <div key={i} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-4 rounded-lg flex flex-col min-h-[80px]">
-                          <p className="text-gray-800 dark:text-gray-200">{q}</p>
+                    {selectedFilterPart === 2 ? (
+                      <div className="space-y-6">
+                        {questions.map((q, i) => (
+                          <div key={i} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-6 rounded-lg flex flex-col">
+                            <p className="text-gray-800 dark:text-gray-200 mb-6 whitespace-pre-wrap">{q}</p>
+                            <div className="flex justify-center border-t border-gray-100 dark:border-gray-800 pt-4">
+                              <button 
+                                onClick={() => {
+                                  const mockTopic = {
+                                    id: `${t.id}-${i}`,
+                                    title: `Part 2: ${t.title}`,
+                                    part1: [],
+                                    part2: q,
+                                    part3: []
+                                  };
+                                  setSelectedTopic(mockTopic);
+                                  setTaskPart('part2');
+                                  setPracticeMode(true);
+                                  setCurrentQuestionIndex(0);
+                                }}
+                                className="px-6 py-2 rounded-full border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors flex items-center gap-2"
+                              >
+                                <span className="text-lg">▶</span> Practice this topic
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : selectedFilterPart === 3 && questions.length > 0 && typeof questions[0] === 'object' ? (
+                      <div className="space-y-6">
+                        {questions.map((sub, i) => (
+                          <div key={i} className="bg-white dark:bg-gray-900 border-2 border-fuchsia-300 dark:border-fuchsia-800 p-6 rounded-xl flex flex-col">
+                            <h3 className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-4">Part 3: {sub.subTopic}</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                              {(sub.questions || []).map((q, qIdx) => (
+                                <div key={qIdx} className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-4 rounded-lg flex flex-col">
+                                  <p className="text-gray-800 dark:text-gray-200">{q}</p>
+                                </div>
+                              ))}
+                            </div>
+                            <div className="flex justify-center pt-2">
+                              <button 
+                                onClick={() => {
+                                  const mockTopic = {
+                                    id: `${t.id}-${i}`,
+                                    title: `Part 3: ${sub.subTopic}`,
+                                    part1: [],
+                                    part2: '',
+                                    part3: sub.questions || []
+                                  };
+                                  setSelectedTopic(mockTopic);
+                                  setTaskPart('part3');
+                                  setPracticeMode(true);
+                                  setCurrentQuestionIndex(0);
+                                }}
+                                className="px-6 py-2 rounded-full border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors flex items-center gap-2"
+                              >
+                                <span className="text-lg">▶</span> Practice this topic
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                          {questions.map((q, i) => (
+                            <div key={i} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-4 rounded-lg flex flex-col min-h-[80px]">
+                              <p className="text-gray-800 dark:text-gray-200">{typeof q === 'string' ? q : (q.subTopic || '')}</p>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                    <div className="flex justify-center">
-                      <button 
-                        onClick={() => {
-                          const mockTopic = {
-                            id: t.id,
-                            title: `Part ${selectedFilterPart}: ${t.title}`,
-                            part1: selectedFilterPart === 1 ? questions : [],
-                            part2: selectedFilterPart === 2 ? questions[0] : '',
-                            part3: selectedFilterPart === 3 ? questions : []
-                          };
-                          setSelectedTopic(mockTopic);
-                          setTaskPart(`part${selectedFilterPart}`);
-                          setPracticeMode(true);
-                          setCurrentQuestionIndex(0);
-                        }}
-                        className="px-6 py-2 rounded-full border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors flex items-center gap-2"
-                      >
-                        <span className="text-lg">▶</span> Practice this topic
-                      </button>
-                    </div>
+                        <div className="flex justify-center">
+                          <button 
+                            onClick={() => {
+                              const mockTopic = {
+                                id: t.id,
+                                title: `Part ${selectedFilterPart}: ${t.title}`,
+                                part1: selectedFilterPart === 1 ? questions : [],
+                                part2: '',
+                                part3: selectedFilterPart === 3 ? questions : []
+                              };
+                              setSelectedTopic(mockTopic);
+                              setTaskPart(`part${selectedFilterPart}`);
+                              setPracticeMode(true);
+                              setCurrentQuestionIndex(0);
+                            }}
+                            className="px-6 py-2 rounded-full border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors flex items-center gap-2"
+                          >
+                            <span className="text-lg">▶</span> Practice this topic
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               );
@@ -310,12 +385,19 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                     const isPart2 = topic.part === 2 || (!topic.part && topic.part2);
                     const isPart3 = topic.part === 3 || (!topic.part && topic.part3?.length > 0);
                     
+                    const p2Questions = topic.questions?.length ? topic.questions : (topic.prompt ? [topic.prompt] : (topic.part2 ? (Array.isArray(topic.part2) ? topic.part2 : [topic.part2]) : []));
+                    
+                    let p3Questions = topic.part === 3 ? (topic.questions || []) : (topic.part3 || []);
+                    if (p3Questions.length > 0 && typeof p3Questions[0] === 'object') {
+                      p3Questions = p3Questions[0].questions || [];
+                    }
+                    
                     const mockTopic = {
                       id: topic.id,
                       title: topic.part ? `Part ${topic.part}: ${topic.title}` : topic.title,
                       part1: topic.part === 1 ? (topic.questions || []) : (topic.part1 || []),
-                      part2: topic.part === 2 ? (topic.prompt || '') : (topic.part2 || ''),
-                      part3: topic.part === 3 ? (topic.questions || []) : (topic.part3 || [])
+                      part2: topic.part === 2 ? (p2Questions[0] || '') : (topic.part2 || ''),
+                      part3: p3Questions
                     };
 
                     setSelectedTopic(mockTopic);

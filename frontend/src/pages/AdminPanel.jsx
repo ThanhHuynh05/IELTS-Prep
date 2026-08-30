@@ -61,8 +61,37 @@ export default function AdminPanel() {
   const [sPartType, setSPartType] = useState(1);
   const [sTitle, setSTitle] = useState('');
   const [sPart1, setSPart1] = useState(['', '', '', '']);
-  const [sPart2, setSPart2] = useState('');
-  const [sPart3, setSPart3] = useState(['', '', '']);
+  const [sPart2, setSPart2] = useState(['']);
+  const [sPart3, setSPart3] = useState([{ subTopic: '', questions: ['', '', ''] }]);
+  const [part2Topics, setPart2Topics] = useState([]);
+
+  useEffect(() => {
+    if (activeTab === 'speaking' && sPartType === 3) {
+      fetch(`${API_URL}/content/speaking`)
+        .then(res => res.json())
+        .then(data => setPart2Topics(data.filter(t => t.part === 2 || t.part2)))
+        .catch(err => console.error('Failed to fetch Part 2 topics', err));
+    }
+  }, [activeTab, sPartType]);
+
+  const handleAutoPopulatePart3 = (topicId) => {
+    if (!topicId) return;
+    const topic = part2Topics.find(t => t._id === topicId);
+    if (!topic) return;
+    
+    setSTitle(topic.title || ''); // Sync title
+    
+    // Extract Part 2 prompts
+    const p2Prompts = topic.questions?.length ? topic.questions : (topic.prompt ? [topic.prompt] : (topic.part2 ? (Array.isArray(topic.part2) ? topic.part2 : [topic.part2]) : []));
+    
+    if (p2Prompts.length > 0) {
+        const newSPart3 = p2Prompts.map(prompt => ({
+            subTopic: typeof prompt === 'string' ? prompt : '',
+            questions: ['', '', '']
+        }));
+        setSPart3(newSPart3);
+    }
+  };
 
   const API_URL = '/api';
 
@@ -366,11 +395,15 @@ export default function AdminPanel() {
         if (!sPart1.some(q => q.trim())) throw new Error("At least one question is required for Part 1.");
         newTest.questions = sPart1.filter(q => q.trim());
       } else if (sPartType === 2) {
-        if (!sPart2.trim()) throw new Error("Prompt is required for Part 2.");
-        newTest.prompt = sPart2;
+        if (!sPart2.some(q => q.trim())) throw new Error("At least one prompt is required for Part 2.");
+        newTest.questions = sPart2.filter(q => q.trim());
       } else if (sPartType === 3) {
-        if (!sPart3.some(q => q.trim())) throw new Error("At least one question is required for Part 3.");
-        newTest.questions = sPart3.filter(q => q.trim());
+        const validPart3 = sPart3.filter(item => item.subTopic?.trim() && item.questions?.some(q => q.trim()));
+        if (validPart3.length === 0) throw new Error("At least one sub-topic with one question is required for Part 3.");
+        newTest.questions = validPart3.map(item => ({
+          subTopic: item.subTopic.trim(),
+          questions: item.questions.filter(q => q.trim())
+        }));
       }
       
       const res = await fetch(`${API_URL}/content/speaking`, {
@@ -381,7 +414,7 @@ export default function AdminPanel() {
       if (!res.ok) throw new Error('Failed to save to database');
 
       setSuccess(`Speaking Part ${sPartType} Topic "${sTitle}" added!`);
-      setSTitle(''); setSPart1(['', '', '', '']); setSPart2(''); setSPart3(['', '', '']);
+      setSTitle(''); setSPart1(['', '', '', '']); setSPart2(['']); setSPart3([{ subTopic: '', questions: ['', '', ''] }]);
     } catch (err) { setError(err.message); }
   };
 
@@ -462,8 +495,19 @@ export default function AdminPanel() {
       setSPartType(pType);
       setSTitle(item.title || '');
       setSPart1(pType === 1 ? (item.questions?.length ? item.questions : (item.part1?.length ? item.part1 : ['', '', '', ''])) : ['', '', '', '']);
-      setSPart2(pType === 2 ? (item.prompt || item.part2 || '') : '');
-      setSPart3(pType === 3 ? (item.questions?.length ? item.questions : (item.part3?.length ? item.part3 : ['', '', ''])) : ['', '', '']);
+      setSPart2(pType === 2 ? (item.questions?.length ? item.questions : (item.prompt ? [item.prompt] : (item.part2 ? [item.part2] : ['']))) : ['']);
+      let loadedPart3 = [{ subTopic: '', questions: ['', '', ''] }];
+      if (pType === 3) {
+        const sourcePart3 = item.questions?.length ? item.questions : (item.part3?.length ? item.part3 : []);
+        if (sourcePart3.length > 0) {
+          if (typeof sourcePart3[0] === 'string') {
+            loadedPart3 = [{ subTopic: item.title, questions: sourcePart3 }];
+          } else {
+            loadedPart3 = sourcePart3;
+          }
+        }
+      }
+      setSPart3(loadedPart3);
       setEditingId(item._id);
       setActiveTab('speaking');
     }
@@ -838,7 +882,9 @@ export default function AdminPanel() {
                 </select>
               </div>
 
-              <div><label htmlFor="sTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Topic Title</label><input id="sTitle" type="text" value={sTitle} onChange={(e) => setSTitle(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder={sPartType === 2 ? "e.g. Describe a person..." : "e.g. Hometown"} /></div>
+              {sPartType !== 3 && (
+                <div><label htmlFor="sTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Topic Title</label><input id="sTitle" type="text" value={sTitle} onChange={(e) => setSTitle(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder={sPartType === 2 ? "e.g. Describe a person..." : "e.g. Hometown"} /></div>
+              )}
               
               {sPartType === 1 && (
                 <div>
@@ -858,20 +904,57 @@ export default function AdminPanel() {
               )}
 
               {sPartType === 2 && (
-                <div><label htmlFor="sPart2" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Part 2 Prompt (Cue Card)</label><textarea id="sPart2" value={sPart2} onChange={(e) => setSPart2(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="Describe a useful website you have visited..." /></div>
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Part 2 Prompts (Cue Cards)</label>
+                    <button type="button" onClick={() => setSPart2([...sPart2, ''])} className="text-xs text-pink-600 hover:text-pink-800 dark:text-pink-400 font-medium">+ Add Prompt</button>
+                  </div>
+                  <div className="space-y-4">
+                    {sPart2.map((q, i) => (
+                      <div key={i} className="flex gap-2 items-start">
+                        <textarea value={q} onChange={(e) => { const newP = [...sPart2]; newP[i] = e.target.value; setSPart2(newP); }} rows={3} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="Describe a useful website you have visited..." />
+                        <button type="button" onClick={() => setSPart2(sPart2.filter((_, idx) => idx !== i))} className="text-gray-400 hover:text-red-500 px-2 mt-2"><Trash2 size={18}/></button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
               
               {sPartType === 3 && (
                 <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Part 3 Questions</label>
-                    <button type="button" onClick={() => setSPart3([...sPart3, ''])} className="text-xs text-pink-600 hover:text-pink-800 dark:text-pink-400 font-medium">+ Add Question</button>
+                  <div className="mb-6 p-4 bg-pink-50 dark:bg-pink-900/10 border border-pink-100 dark:border-pink-900/30 rounded-xl">
+                    <label className="block text-sm font-medium text-pink-800 dark:text-pink-300 mb-2">Topic</label>
+                    <select
+                      onChange={(e) => handleAutoPopulatePart3(e.target.value)}
+                      className="w-full p-2 border border-pink-200 dark:border-pink-800 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    >
+                      <option value="">-- Select a Part 2 Category (e.g. Person, Object) --</option>
+                      {part2Topics.map(t => (
+                        <option key={t._id} value={t._id}>{t.title}</option>
+                      ))}
+                    </select>
                   </div>
-                  <div className="space-y-2">
-                    {sPart3.map((q, i) => (
-                      <div key={i} className="flex gap-2">
-                        <input type="text" value={q} onChange={(e) => { const newP = [...sPart3]; newP[i] = e.target.value; setSPart3(newP); }} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-pink-500" placeholder="Question text..." />
-                        <button type="button" onClick={() => setSPart3(sPart3.filter((_, idx) => idx !== i))} className="text-gray-400 hover:text-red-500 px-2"><Trash2 size={18}/></button>
+
+                  <div className="flex justify-between items-center mb-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Part 3 Sub-topics</label>
+                    <button type="button" onClick={() => setSPart3([...sPart3, { subTopic: '', questions: ['', '', ''] }])} className="text-sm px-3 py-1 bg-pink-100 text-pink-600 rounded-full hover:bg-pink-200 dark:bg-pink-900/30 dark:text-pink-400 font-medium">+ Add Sub-topic</button>
+                  </div>
+                  <div className="space-y-6">
+                    {sPart3.map((sub, sIdx) => (
+                      <div key={sIdx} className="p-4 border dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                        <div className="flex justify-between items-center mb-3">
+                          <input type="text" value={sub.subTopic} onChange={(e) => { const newP = [...sPart3]; newP[sIdx].subTopic = e.target.value; setSPart3(newP); }} className="w-full font-semibold p-2 border-b dark:border-gray-700 bg-transparent text-gray-900 dark:text-white focus:outline-none focus:border-pink-500" placeholder="Sub-topic (e.g. A person who helps...)" />
+                          <button type="button" onClick={() => setSPart3(sPart3.filter((_, idx) => idx !== sIdx))} className="text-gray-400 hover:text-red-500 ml-4"><Trash2 size={18}/></button>
+                        </div>
+                        <div className="space-y-2 pl-4 border-l-2 border-gray-200 dark:border-gray-700 mt-4">
+                          {sub.questions.map((q, qIdx) => (
+                            <div key={qIdx} className="flex gap-2">
+                              <input type="text" value={q} onChange={(e) => { const newP = [...sPart3]; newP[sIdx].questions[qIdx] = e.target.value; setSPart3(newP); }} className="w-full p-2 border dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-1 focus:ring-pink-500" placeholder="Question text..." />
+                              <button type="button" onClick={() => { const newP = [...sPart3]; newP[sIdx].questions = sub.questions.filter((_, idx) => idx !== qIdx); setSPart3(newP); }} className="text-gray-400 hover:text-red-500 px-2"><Trash2 size={16}/></button>
+                            </div>
+                          ))}
+                          <button type="button" onClick={() => { const newP = [...sPart3]; newP[sIdx].questions.push(''); setSPart3(newP); }} className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium mt-2 block">+ Add Question to this Sub-topic</button>
+                        </div>
                       </div>
                     ))}
                   </div>
