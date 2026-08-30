@@ -24,14 +24,31 @@ export default function WritingFeedback({ feedback, onReset, originalEssay }) {
               newElements.push(
                 <span 
                   key={`${index}-${i}`} 
-                  onClick={() => setActiveError(err)}
-                  className={`cursor-pointer rounded px-1 font-medium border-b-2 transition-colors ${
+                  onClick={(e) => { e.stopPropagation(); setActiveError(activeError === err ? null : err); }}
+                  className={`group relative cursor-pointer rounded px-1 font-medium border-b-2 transition-colors ${
                     err.type === 'grammar' 
                       ? 'bg-red-100 border-red-400 text-red-900 hover:bg-red-200' 
                       : 'bg-orange-100 border-orange-400 text-orange-900 hover:bg-orange-200'
                   }`}
                 >
                   {err.originalText}
+                  
+                  {/* Inline Tooltip (Hover & Click) */}
+                  <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-4 bg-white border border-gray-200 rounded-xl shadow-2xl z-[100] text-left font-normal text-sm transform transition-all origin-bottom ${activeError === err ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible group-hover:opacity-100 group-hover:scale-100 group-hover:visible'} pointer-events-none group-hover:pointer-events-auto`}>
+                    <div className="mb-2">
+                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded ${err.type === 'grammar' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
+                        {err.type} Error
+                      </span>
+                    </div>
+                    <div className="mb-2">
+                      <p className="text-red-500 line-through mb-1">"{err.originalText}"</p>
+                      <p className="text-green-600 font-bold">→ "{err.correction}"</p>
+                    </div>
+                    <p className="text-gray-600 text-xs leading-relaxed bg-gray-50 p-2 rounded border border-gray-100">{err.explanation}</p>
+                    {/* Downward triangle pointer */}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px w-0 h-0 border-[6px] border-transparent border-t-white"></div>
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-[1px] w-0 h-0 border-[7px] border-transparent border-t-gray-200 -z-10"></div>
+                  </div>
                 </span>
               );
             }
@@ -80,27 +97,6 @@ export default function WritingFeedback({ feedback, onReset, originalEssay }) {
           <div className="p-4 bg-gray-50 rounded-md border border-gray-100 relative">
             {renderHighlightedEssay(originalEssay, feedback.errors || [])}
             
-            {/* Error Tooltip */}
-            {activeError && (
-              <div className="mt-4 p-4 bg-white border border-gray-200 rounded-lg shadow-lg relative">
-                <button 
-                  onClick={() => setActiveError(null)}
-                  className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
-                >
-                  ✕
-                </button>
-                <div className="mb-2">
-                  <span className="text-sm font-semibold uppercase tracking-wider text-gray-500">
-                    {activeError.type} Error
-                  </span>
-                </div>
-                <div className="mb-3">
-                  <p className="text-red-600 line-through mb-1">{activeError.originalText}</p>
-                  <p className="text-green-600 font-medium">{activeError.correction}</p>
-                </div>
-                <p className="text-gray-700 text-sm bg-gray-50 p-3 rounded">{activeError.explanation}</p>
-              </div>
-            )}
           </div>
         </div>
       )}
