@@ -76,16 +76,7 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   }
 
   if (!selectedTest) {
-    if (!tests || tests.length === 0) {
-      return (
-        <div className="max-w-[1400px] mx-auto p-8 flex items-center justify-center h-[calc(100vh-80px)]">
-          <div className="text-center bg-white p-12 rounded-xl shadow-sm border border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">No Writing Tests Available</h2>
-            <p className="text-gray-600">Please add some tests in the Admin Panel.</p>
-          </div>
-        </div>
-      );
-    }
+
     
     return (
       <div className="w-full max-w-6xl mx-auto px-4 py-8 h-[calc(100vh-80px)] overflow-y-auto animate-in fade-in">
@@ -93,6 +84,28 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">Select a test to begin your practice.</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div 
+            onClick={() => {
+              setSelectedTest({ id: 'custom-test', title: 'Custom Practice', task1: '', task2: '' });
+              setTask2Question('');
+              setTaskType('task2');
+            }}
+            className="bg-orange-50 dark:bg-orange-900/20 p-6 rounded-2xl border border-orange-200 dark:border-orange-800 shadow-sm hover:shadow-md cursor-pointer transition-all hover:border-orange-500 hover:ring-1 hover:ring-orange-500 group flex flex-col h-full"
+          >
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-orange-800 dark:text-orange-300 group-hover:text-orange-600 transition-colors mb-2 flex items-center gap-2">
+                ✍️ Custom Practice
+              </h3>
+              <p className="text-sm text-orange-700/80 dark:text-orange-200/80 mb-4 line-clamp-3">
+                Have your own essay question? Paste it here and get instant AI feedback on your writing without saving it to the database.
+              </p>
+            </div>
+            <div className="mt-4 pt-4 border-t border-orange-200/50 dark:border-orange-800/50 flex justify-between items-center text-sm font-medium text-orange-600 dark:text-orange-400">
+              <span>Write now</span>
+              <span>→</span>
+            </div>
+          </div>
+          
           {tests.map((test, index) => (
             <div 
               key={test.id || index}
@@ -185,12 +198,14 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
             
             {!feedback && !isGrading && (
               <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg inline-flex">
-                <button 
-                  onClick={() => setTaskType('task1')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${taskType === 'task1' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
-                >
-                  Task 1
-                </button>
+                {selectedTest?.id !== 'custom-test' && (
+                  <button 
+                    onClick={() => setTaskType('task1')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${taskType === 'task1' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                  >
+                    Task 1
+                  </button>
+                )}
                 <button 
                   onClick={() => setTaskType('task2')}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${taskType === 'task2' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
