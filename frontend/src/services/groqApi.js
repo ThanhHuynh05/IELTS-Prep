@@ -41,7 +41,27 @@ export async function gradeWriting(taskType, question, essay) {
   }
 
   const data = await response.json();
-  return JSON.parse(data.choices[0].message.content);
+  const result = JSON.parse(data.choices[0].message.content);
+  
+  // Manually calculate overall band based on criteria
+  if (result.criteria) {
+    const c = result.criteria;
+    const avg = (
+      parseFloat(c.taskAchievement?.band || 0) + 
+      parseFloat(c.coherenceCohesion?.band || 0) + 
+      parseFloat(c.lexicalResource?.band || 0) + 
+      parseFloat(c.grammaticalRange?.band || 0)
+    ) / 4;
+    
+    const remainder = avg % 1;
+    let rounded = Math.floor(avg);
+    if (remainder >= 0.75) rounded += 1;
+    else if (remainder >= 0.25) rounded += 0.5;
+    
+    result.overallBand = rounded;
+  }
+  
+  return result;
 }
 
 export async function gradeSpeaking(part, prompt, transcript) {
@@ -87,5 +107,25 @@ export async function gradeSpeaking(part, prompt, transcript) {
   }
 
   const data = await response.json();
-  return JSON.parse(data.choices[0].message.content);
+  const result = JSON.parse(data.choices[0].message.content);
+  
+  // Manually calculate overall band based on criteria
+  if (result.criteria) {
+    const c = result.criteria;
+    const avg = (
+      parseFloat(c.fluencyCoherence?.band || 0) + 
+      parseFloat(c.lexicalResource?.band || 0) + 
+      parseFloat(c.grammaticalRange?.band || 0) + 
+      parseFloat(c.pronunciation?.band || 0)
+    ) / 4;
+    
+    const remainder = avg % 1;
+    let rounded = Math.floor(avg);
+    if (remainder >= 0.75) rounded += 1;
+    else if (remainder >= 0.25) rounded += 0.5;
+    
+    result.overallBand = rounded;
+  }
+  
+  return result;
 }

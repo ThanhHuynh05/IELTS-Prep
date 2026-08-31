@@ -84,7 +84,18 @@ export default function Dashboard() {
     if (l4 !== '-') { sum += parseFloat(l4); count++; }
     
     if (count === 0) return '-';
-    return (sum / count).toFixed(1);
+    
+    const average = sum / count;
+    const whole = Math.floor(average);
+    const fraction = average - whole;
+    
+    if (fraction < 0.25) {
+      return whole.toFixed(1);
+    } else if (fraction >= 0.25 && fraction < 0.75) {
+      return (whole + 0.5).toFixed(1);
+    } else {
+      return (whole + 1.0).toFixed(1);
+    }
   };
 
   const maxLength = Math.max(readingData.length, listeningData.length, writingData.length, speakingData.length);
