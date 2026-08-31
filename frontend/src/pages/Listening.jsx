@@ -57,7 +57,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const handleSubmit = () => {
     if (isMockMode) {
       window.speechSynthesis.cancel();
-      const allQuestions = selectedTest.sections.flatMap(sec => sec.questions);
+      const allQuestions = selectedTest.sections.flatMap(sec => sec.questions || []);
       let correctCount = 0;
       allQuestions.forEach(q => {
         if (checkAnswer(userAnswers[q.id], q.answer)) {
@@ -144,7 +144,13 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
 
   const handleTestSelect = (test) => {
     window.speechSynthesis.cancel();
-    setSelectedTest(test);
+    const safeTest = {
+      ...test,
+      sections: test.sections?.length > 0 ? test.sections : [
+        { title: 'Section 1 (Empty)', instructions: '', type: 'mixed', options: [], questions: [] }
+      ]
+    };
+    setSelectedTest(safeTest);
     handleReset();
   };
 

@@ -55,7 +55,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
 
   const handleSubmit = () => {
     // Get all questions from all passages
-    const allQuestions = selectedTest.passages.flatMap(p => p.sections.flatMap(sec => sec.questions));
+    const allQuestions = selectedTest.passages.flatMap(p => (p.sections || []).flatMap(sec => sec.questions || []));
     
     if (isMockMode) {
       let correctCount = 0;
@@ -77,6 +77,25 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     } else {
       setIsSubmitted(true);
     }
+  };
+
+  const handleReset = () => {
+    setUserAnswers({});
+    setIsSubmitted(false);
+    setActivePassageIndex(0);
+  };
+
+  const handleTestSelect = (test) => {
+    const safeTest = {
+      ...test,
+      passages: test.passages?.length > 0 ? test.passages : [
+        { title: 'Passage 1 (Empty)', text: '', sections: [] },
+        { title: 'Passage 2 (Empty)', text: '', sections: [] },
+        { title: 'Passage 3 (Empty)', text: '', sections: [] }
+      ]
+    };
+    setSelectedTest(safeTest);
+    handleReset();
   };
 
   if (isLoading) {
@@ -165,17 +184,6 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     );
   }
 
-  const handleReset = () => {
-    setUserAnswers({});
-    setIsSubmitted(false);
-    setActivePassageIndex(0);
-  };
-
-  const handleTestSelect = (test) => {
-    setSelectedTest(test);
-    handleReset();
-  };
-
   return (
     <div className="w-full px-4 md:px-8 pb-6 h-auto lg:h-[calc(100vh-80px)] flex flex-col">
       <TipsModal 
@@ -236,8 +244,8 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
 
           {!isSubmitted ? (
             <ReadingQuestions 
-              sections={activePassage.sections} 
-              allTestQuestions={selectedTest.passages.flatMap(p => p.sections.flatMap(s => s.questions))}
+              sections={activePassage.sections || []} 
+              allTestQuestions={selectedTest.passages.flatMap(p => (p.sections || []).flatMap(s => s.questions || []))}
               userAnswers={userAnswers}
               onAnswerChange={handleAnswerChange}
               onSubmit={handleSubmit}
