@@ -145,13 +145,13 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-[1400px] mx-auto p-4 md:p-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8">
         <div>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Your Progress Dashboard</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">Track your IELTS band scores and identify areas for improvement.</p>
         </div>
         {settings && (
-        <div className="mt-4 md:mt-0 flex flex-wrap gap-3">
+        <div className="mt-4 lg:mt-0 flex flex-wrap gap-3 shrink-0">
             {settings.targetBand !== undefined && (
               <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <Target size={20} className="text-blue-500" />

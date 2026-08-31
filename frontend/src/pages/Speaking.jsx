@@ -117,13 +117,13 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     return (
       <div className="flex flex-col h-[calc(100vh-80px)] bg-gray-50 dark:bg-gray-900 animate-in fade-in">
         {/* Top Header Filter */}
-        <div className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shrink-0">
-          <div className="flex overflow-x-auto w-full md:w-auto gap-2 md:gap-4 pb-2 md:pb-0 no-scrollbar">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4 p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shrink-0">
+          <div className="flex overflow-x-auto w-full lg:w-auto gap-2 lg:gap-4 pb-2 lg:pb-0 no-scrollbar shrink-0">
             {[1, 2, 3].map(p => (
               <button
                 key={p}
                 onClick={() => setSelectedFilterPart(p)}
-                className={`whitespace-nowrap px-4 md:px-6 py-2 rounded-full border text-sm font-medium transition-colors ${
+                className={`whitespace-nowrap px-4 lg:px-6 py-2 rounded-full border text-sm font-medium transition-colors ${
                   selectedFilterPart === p 
                     ? 'border-purple-600 text-purple-700 bg-purple-50 dark:bg-purple-900/30 dark:text-purple-300'
                     : 'border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'
@@ -133,7 +133,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               </button>
             ))}
           </div>
-          <div className="w-full md:w-auto md:ml-auto flex gap-4">
+          <div className="w-full lg:w-auto lg:ml-auto flex gap-4 shrink-0">
              <button
                onClick={() => {
                  const part1s = topics.filter(t => t.part === 1 || t.part1?.length > 0);
