@@ -177,25 +177,41 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           </div>
         </div>
 
-        <div className="flex flex-1 overflow-hidden">
-          {/* Left Sidebar */}
-          <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto p-4 shrink-0 hidden md:block">
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Forecast</h3>
-            <div className="space-y-2">
+        <div className="flex flex-col flex-1 overflow-hidden">
+          {/* Mobile/Tablet horizontal topic pills */}
+          {filteredTopics.length > 0 && (
+            <div className="lg:hidden border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 flex overflow-x-auto gap-2 no-scrollbar shrink-0">
               {filteredTopics.map((t, index) => (
-                <a 
+                <a
                   key={t.id || index}
                   href={`#topic-${t.id}`}
-                  className="block px-4 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 dark:hover:text-purple-300 border border-transparent hover:border-purple-100 dark:hover:border-purple-800 transition-colors truncate"
+                  className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-100 dark:border-purple-800 hover:bg-purple-100 transition-colors"
                 >
-                  {t.title || `Test ${index + 1}`}
+                  {t.title || `Topic ${index + 1}`}
                 </a>
               ))}
             </div>
-          </div>
+          )}
 
-          {/* Main Content List */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-8 scroll-smooth">
+          <div className="flex flex-1 overflow-hidden">
+            {/* Left Sidebar - desktop only */}
+            <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto p-4 shrink-0 hidden lg:block">
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Forecast</h3>
+              <div className="space-y-2">
+                {filteredTopics.map((t, index) => (
+                  <a 
+                    key={t.id || index}
+                    href={`#topic-${t.id}`}
+                    className="block px-4 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700 dark:hover:text-purple-300 border border-transparent hover:border-purple-100 dark:hover:border-purple-800 transition-colors truncate"
+                  >
+                    {t.title || `Test ${index + 1}`}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Main Content List */}
+            <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-8 scroll-smooth">
             {filteredTopics.map((t, index) => {
               const questions = selectedFilterPart === 1 
                 ? (t.questions || t.part1 || []) 
@@ -314,6 +330,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               </div>
             )}
           </div>
+        </div>
         </div>
       </div>
     );

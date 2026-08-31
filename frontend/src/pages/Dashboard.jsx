@@ -136,11 +136,11 @@ export default function Dashboard() {
     <div className="max-w-[1400px] mx-auto p-4 md:p-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Your Progress Dashboard</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Your Progress Dashboard</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">Track your IELTS band scores and identify areas for improvement.</p>
         </div>
         {settings && (
-          <div className="mt-4 md:mt-0 flex space-x-4">
+        <div className="mt-4 md:mt-0 flex flex-wrap gap-3">
             {settings.targetBand !== undefined && (
               <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
                 <Target size={20} className="text-blue-500" />
@@ -187,7 +187,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-xl shadow-md text-white flex flex-col justify-between lg:col-span-1">
+        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-xl shadow-md text-white flex flex-col justify-between md:col-span-2 lg:col-span-1">
           <div className="flex justify-between items-start mb-4">
             <div className="p-3 bg-white/20 rounded-lg">
               <Activity size={24} />
@@ -235,7 +235,7 @@ export default function Dashboard() {
           <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Band Score Progression</h2>
           {chartData.length > 0 ? (
-            <div className="h-[400px] w-full">
+          <div className="h-[250px] md:h-[400px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />

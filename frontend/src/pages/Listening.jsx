@@ -205,7 +205,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     : selectedTest?.audioUrl;
 
   return (
-    <div className="w-full px-4 md:px-8 pb-6 pt-4 h-[calc(100vh-80px)] flex flex-col">
+    <div className="w-full px-4 md:px-8 pb-6 pt-4 h-auto lg:h-[calc(100vh-80px)] flex flex-col">
       <TipsModal 
         isOpen={showTips} 
         onClose={() => setShowTips(false)} 
@@ -226,9 +226,9 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       />
       
       {/* Header and Test Selector */}
-      <div className="flex justify-between items-center mb-6 shrink-0">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Listening Practice</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 shrink-0">
+        <div className="flex items-center gap-3 flex-wrap">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Listening Practice</h1>
           <div className="flex items-center space-x-2">
             <button 
               onClick={() => setShowTips(true)}
@@ -258,7 +258,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       </div>
 
       {/* Main Layout */}
-      <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'lg:grid-cols-12' : 'lg:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 overflow-hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 h-full`}>
+      <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'lg:grid-cols-12' : 'lg:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 overflow-y-auto lg:overflow-hidden`}>
         
         {/* Left Side: Audio Player & PDF */}
         {hasLeftPanel && (

@@ -177,7 +177,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   };
 
   return (
-    <div className="w-full px-4 md:px-8 pb-6 h-[calc(100vh-80px)] flex flex-col">
+    <div className="w-full px-4 md:px-8 pb-6 h-auto lg:h-[calc(100vh-80px)] flex flex-col">
       <TipsModal 
         isOpen={showTips} 
         onClose={() => setShowTips(false)} 
@@ -185,9 +185,9 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         tips={READING_TIPS}
       />
       {/* Header and Topic Selector */}
-      <div className="flex justify-between items-center mb-6 shrink-0">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Reading Practice</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 shrink-0">
+        <div className="flex items-center gap-3 flex-wrap">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Reading Practice</h1>
           <button 
             onClick={() => setShowTips(true)}
             className="text-sm font-medium text-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-400 px-3 py-1 rounded-full hover:bg-blue-100 transition-colors"
@@ -208,15 +208,15 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         </div>
       </div>
       {/* Split Screen Layout */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200" style={{ minHeight: '82vh' }}>
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 overflow-y-auto lg:overflow-hidden">
         
         {/* Left Side: Passage text */}
-        <div className="lg:col-span-9 h-full overflow-hidden flex flex-col">
+        <div className="lg:col-span-9 max-h-[50vh] lg:max-h-none lg:h-full overflow-hidden flex flex-col">
           <ReadingPassage passage={activePassage} testPdfUrl={selectedTest?.pdfUrl} />
         </div>
 
         {/* Right Side: Questions */}
-        <div className="lg:col-span-3 h-full overflow-hidden flex flex-col border-l border-gray-100 pl-4 lg:pl-6">
+        <div className="lg:col-span-3 h-full overflow-hidden flex flex-col border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-6">
           {/* Passage Navigation for normal mode */}
           <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
              {[0, 1, 2].map((idx) => (
