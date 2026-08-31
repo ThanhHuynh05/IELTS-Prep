@@ -52,6 +52,7 @@ export default function AdminPanel() {
   const [isSectionMedia, setIsSectionMedia] = useState(false);
 
   // Writing State
+  const [wTestType, setWTestType] = useState('task1'); // 'task1', 'task2'
   const [wTitle, setWTitle] = useState('');
   const [wTask1, setWTask1] = useState('');
   const [wTask1Image, setWTask1Image] = useState('');
@@ -365,8 +366,23 @@ export default function AdminPanel() {
   const handleSaveWriting = async () => {
     setError(''); setSuccess('');
     try {
-      if (!wTitle || !wTask1 || !wTask2) throw new Error("All fields are required.");
-      const newTest = { id: `custom-writ-${Date.now()}`, title: wTitle, task1: wTask1, task1Image: wTask1Image, task2: wTask2 };
+      if (!wTitle) throw new Error("Title is required.");
+      if (wTestType === 'task1' && !wTask1) throw new Error("Task 1 prompt is required.");
+      if (wTestType === 'task2' && !wTask2) throw new Error("Task 2 prompt is required.");
+
+      const newTest = { 
+        id: `custom-writ-${Date.now()}`, 
+        title: wTitle,
+        type: wTestType
+      };
+
+      if (wTestType === 'task1') {
+        newTest.task1 = wTask1;
+        newTest.task1Image = wTask1Image;
+      }
+      if (wTestType === 'task2') {
+        newTest.task2 = wTask2;
+      }
       
       const res = await fetch(`${API_URL}/content/writing`, {
         method: 'POST',
@@ -376,7 +392,7 @@ export default function AdminPanel() {
       if (!res.ok) throw new Error('Failed to save to database');
 
       setSuccess(`Writing Test "${wTitle}" added!`);
-      setWTitle(''); setWTask1(''); setWTask1Image(''); setWTask2('');
+      setWTitle(''); setWTask1(''); setWTask1Image(''); setWTask2(''); setWTestType('task1');
     } catch (err) { setError(err.message); }
   };
 
@@ -485,6 +501,7 @@ export default function AdminPanel() {
       setActiveTab('listening');
     } else if (manageType === 'writing') {
       setWTitle(item.title || '');
+      setWTestType(item.type || 'task1');
       setWTask1(item.task1 || '');
       setWTask1Image(item.task1Image || '');
       setWTask2(item.task2 || '');
@@ -862,13 +879,29 @@ export default function AdminPanel() {
           )}
 
           {activeTab === 'writing' && (
-            <>
+            <div className="space-y-6">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Writing Test Type</label>
+                <select value={wTestType} onChange={e => setWTestType(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500">
+                  <option value="task1">Task 1 Only</option>
+                  <option value="task2">Task 2 Only</option>
+                </select>
+              </div>
+
               <div><label htmlFor="wTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Test Title</label><input id="wTitle" type="text" value={wTitle} onChange={(e) => setWTitle(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="e.g. Academic Practice 1" /></div>
-              <div><label htmlFor="wTask1" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 1 Prompt</label><textarea id="wTask1" value={wTask1} onChange={(e) => setWTask1(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="The chart below shows..." /></div>
-              <div><label htmlFor="wTask1Image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 1 Chart Image URL</label><input id="wTask1Image" type="url" value={wTask1Image} onChange={(e) => setWTask1Image(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="https://example.com/chart.png" /></div>
-              <div><label htmlFor="wTask2" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 2 Prompt</label><textarea id="wTask2" value={wTask2} onChange={(e) => setWTask2(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="Some people believe..." /></div>
+              
+              {wTestType === 'task1' && (
+                <>
+                  <div><label htmlFor="wTask1" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 1 Prompt</label><textarea id="wTask1" value={wTask1} onChange={(e) => setWTask1(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="The chart below shows..." /></div>
+                  <div><label htmlFor="wTask1Image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 1 Chart Image URL</label><input id="wTask1Image" type="url" value={wTask1Image} onChange={(e) => setWTask1Image(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="https://example.com/chart.png" /></div>
+                </>
+              )}
+
+              {wTestType === 'task2' && (
+                <div><label htmlFor="wTask2" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 2 Prompt</label><textarea id="wTask2" value={wTask2} onChange={(e) => setWTask2(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="Some people believe..." /></div>
+              )}
               <div className="flex justify-end pt-4"><button onClick={handleSaveWriting} className="flex items-center px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg shadow-sm"><Save size={20} className="mr-2" />Save Writing Test</button></div>
-            </>
+            </div>
           )}
 
           {activeTab === 'speaking' && (

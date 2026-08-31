@@ -55,8 +55,9 @@ export const CustomListening = mongoose.model('CustomListening', customListening
 const customWritingSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   title: { type: String, required: true },
-  task1: { type: String, required: true },
-  task2: { type: String, required: true },
+  type: { type: String, enum: ['task1', 'task2'], default: 'task1' },
+  task1: { type: String },
+  task2: { type: String },
   createdAt: { type: Date, default: Date.now }
 });
 

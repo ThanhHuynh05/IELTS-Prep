@@ -112,6 +112,7 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               onClick={() => {
                 setSelectedTest(test);
                 setTask2Question(test.task2 || '');
+                setTaskType(test.type === 'task2' ? 'task2' : 'task1');
               }}
               className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md cursor-pointer transition-all hover:border-orange-500 hover:ring-1 hover:ring-orange-500 group flex flex-col h-full"
             >
@@ -120,7 +121,7 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                   {test.title || `Test ${index + 1}`}
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-3">
-                  Task 1 and Task 2 prompts included. Get AI feedback on your writing.
+                  {test.type === 'task1' ? 'Task 1 prompt included.' : test.type === 'task2' ? 'Task 2 prompt included.' : 'Task 1 and Task 2 prompts included.'} Get AI feedback on your writing.
                 </p>
               </div>
               <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center text-sm font-medium text-orange-600 dark:text-orange-400">
@@ -198,7 +199,7 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
             
             {!feedback && !isGrading && (
               <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg inline-flex">
-                {selectedTest?.id !== 'custom-test' && (
+                {selectedTest?.id !== 'custom-test' && selectedTest?.type !== 'task2' && (
                   <button 
                     onClick={() => setTaskType('task1')}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${taskType === 'task1' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
@@ -206,12 +207,14 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                     Task 1
                   </button>
                 )}
-                <button 
-                  onClick={() => setTaskType('task2')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${taskType === 'task2' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
-                >
-                  Task 2
-                </button>
+                {selectedTest?.type !== 'task1' && (
+                  <button 
+                    onClick={() => setTaskType('task2')}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${taskType === 'task2' ? 'bg-white dark:bg-gray-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                  >
+                    Task 2
+                  </button>
+                )}
               </div>
             )}
           </div>
