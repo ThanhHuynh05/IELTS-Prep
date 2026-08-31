@@ -114,6 +114,35 @@ router.delete('/:type/:id', async (req, res) => {
       return res.status(404).json({ message: 'Content not found' });
     }
     
+    // Find and delete any associated Vercel Blob files
+    try {
+      const { del } = await import('@vercel/blob');
+      const plainDoc = doc.toObject();
+      
+      const extractUrls = (obj) => {
+        let urls = [];
+        if (typeof obj === 'string') {
+          if (obj.includes('.public.blob.vercel-storage.com')) {
+            urls.push(obj);
+          }
+        } else if (Array.isArray(obj)) {
+          for (const item of obj) urls.push(...extractUrls(item));
+        } else if (obj !== null && typeof obj === 'object') {
+          for (const key in obj) urls.push(...extractUrls(obj[key]));
+        }
+        return urls;
+      };
+
+      const urlsToDelete = extractUrls(plainDoc);
+      if (urlsToDelete.length > 0) {
+        console.log('Deleting associated blobs:', urlsToDelete);
+        await del(urlsToDelete);
+      }
+    } catch (blobErr) {
+      console.error('Failed to delete associated blobs:', blobErr);
+      // We don't fail the request if blob deletion fails, but we log it
+    }
+
     res.json({ message: 'Content deleted successfully', id });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

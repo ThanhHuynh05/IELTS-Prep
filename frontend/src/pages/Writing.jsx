@@ -18,9 +18,16 @@ const WRITING_TIPS = [
 
 const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const [tests, setTests] = useState([]);
-  const [selectedTest, setSelectedTest] = useState(null);
-  const [taskType, setTaskType] = useState('task2');
-  const [task2Question, setTask2Question] = useState('');
+  const [selectedTest, setSelectedTest] = useState(() => {
+    const saved = sessionStorage.getItem('writing_selectedTest');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [taskType, setTaskType] = useState(() => {
+    return sessionStorage.getItem('writing_taskType') || 'task2';
+  });
+  const [task2Question, setTask2Question] = useState(() => {
+    return sessionStorage.getItem('writing_task2Question') || '';
+  });
   const [isGrading, setIsGrading] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [error, setError] = useState(null);
@@ -59,10 +66,21 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     fetchCustomTests();
   }, []);
 
+  useEffect(() => {
+    if (selectedTest) {
+      sessionStorage.setItem('writing_selectedTest', JSON.stringify(selectedTest));
+    } else {
+      sessionStorage.removeItem('writing_selectedTest');
+    }
+    sessionStorage.setItem('writing_taskType', taskType);
+    sessionStorage.setItem('writing_task2Question', task2Question);
+  }, [selectedTest, taskType, task2Question]);
+
   const handleTestSelect = (e) => {
     const test = tests.find(t => t.id === e.target.value);
     setSelectedTest(test);
-    setTask2Question(test.task2);
+    setTask2Question(test.task2 || '');
+    setTaskType(test.type === 'task2' ? 'task2' : 'task1');
     setFeedback(null);
     setError(null);
   };
