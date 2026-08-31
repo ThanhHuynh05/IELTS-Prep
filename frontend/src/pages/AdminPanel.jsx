@@ -370,29 +370,40 @@ export default function AdminPanel() {
       if (wTestType === 'task1' && !wTask1) throw new Error("Task 1 prompt is required.");
       if (wTestType === 'task2' && !wTask2) throw new Error("Task 2 prompt is required.");
 
+      let finalImageUrl = wTask1Image;
+      if (wTestType === 'task1' && wTask1Image instanceof File) {
+        setSuccess('Uploading image to storage... Please wait.');
+        const newBlob = await upload(wTask1Image.name, wTask1Image, { access: 'public', handleUploadUrl: `${API_URL}/upload-file/token` });
+        finalImageUrl = newBlob.url;
+      }
+
       const newTest = { 
-        id: `custom-writ-${Date.now()}`, 
+        id: editingId || `custom-writ-${Date.now()}`, 
         title: wTitle,
         type: wTestType
       };
 
       if (wTestType === 'task1') {
         newTest.task1 = wTask1;
-        newTest.task1Image = wTask1Image;
+        newTest.task1Image = finalImageUrl;
       }
       if (wTestType === 'task2') {
         newTest.task2 = wTask2;
       }
       
-      const res = await fetch(`${API_URL}/content/writing`, {
-        method: 'POST',
+      const url = editingId ? `${API_URL}/content/writing/${editingId}` : `${API_URL}/content/writing`;
+      const method = editingId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newTest)
       });
       if (!res.ok) throw new Error('Failed to save to database');
 
-      setSuccess(`Writing Test "${wTitle}" added!`);
+      setSuccess(`Writing Test "${wTitle}" ${editingId ? 'updated' : 'added'}!`);
       setWTitle(''); setWTask1(''); setWTask1Image(''); setWTask2(''); setWTestType('task1');
+      setEditingId(null);
     } catch (err) { setError(err.message); }
   };
 
@@ -893,14 +904,43 @@ export default function AdminPanel() {
               {wTestType === 'task1' && (
                 <>
                   <div><label htmlFor="wTask1" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 1 Prompt</label><textarea id="wTask1" value={wTask1} onChange={(e) => setWTask1(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="The chart below shows..." /></div>
-                  <div><label htmlFor="wTask1Image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 1 Chart Image URL</label><input id="wTask1Image" type="url" value={wTask1Image} onChange={(e) => setWTask1Image(e.target.value)} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="https://example.com/chart.png" /></div>
+                  <div>
+                    <label htmlFor="wTask1Image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 1 Chart Image URL</label>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <div className="flex-1 flex relative">
+                        <input 
+                          id="wTask1Image" 
+                          type="text" 
+                          value={wTask1Image instanceof File ? wTask1Image.name : wTask1Image || ''} 
+                          onChange={(e) => setWTask1Image(e.target.value)} 
+                          className="w-full p-3 pr-10 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" 
+                          placeholder="https://example.com/chart.png" 
+                        />
+                        {wTask1Image && (
+                          <button onClick={() => setWTask1Image('')} className="absolute right-3 top-3.5 text-gray-400 hover:text-red-500" title="Clear Image">
+                            <XCircle size={20} />
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex items-center shrink-0 border border-gray-300 dark:border-gray-600 rounded-lg px-2 overflow-hidden bg-gray-50 dark:bg-gray-800">
+                        <span className="text-sm text-gray-500 dark:text-gray-400 mr-2 shrink-0">OR Upload:</span>
+                        <input 
+                          key={wTask1Image ? 'has-file' : 'no-file'}
+                          type="file" 
+                          accept="image/*"
+                          onChange={(e) => handleFileUpload(e, setWTask1Image, 'Image')}
+                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 max-w-[220px]"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </>
               )}
 
               {wTestType === 'task2' && (
                 <div><label htmlFor="wTask2" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 2 Prompt</label><textarea id="wTask2" value={wTask2} onChange={(e) => setWTask2(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="Some people believe..." /></div>
               )}
-              <div className="flex justify-end pt-4"><button onClick={handleSaveWriting} className="flex items-center px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg shadow-sm"><Save size={20} className="mr-2" />Save Writing Test</button></div>
+              <div className="flex justify-end pt-4"><button onClick={handleSaveWriting} className="flex items-center px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg shadow-sm"><Save size={20} className="mr-2" />{editingId ? 'Update Writing Test' : 'Save Writing Test'}</button></div>
             </div>
           )}
 

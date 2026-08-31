@@ -57,6 +57,7 @@ const customWritingSchema = new mongoose.Schema({
   title: { type: String, required: true },
   type: { type: String, enum: ['task1', 'task2'], default: 'task1' },
   task1: { type: String },
+  task1Image: { type: String },
   task2: { type: String },
   createdAt: { type: Date, default: Date.now }
 });
