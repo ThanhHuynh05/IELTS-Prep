@@ -76,6 +76,16 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     sessionStorage.setItem('writing_task2Question', task2Question);
   }, [selectedTest, taskType, task2Question]);
 
+  useEffect(() => {
+    // Cleanup on component unmount (e.g. user navigates to another tab)
+    // This will NOT run on F5 refresh, which perfectly preserves state for refresh!
+    return () => {
+      sessionStorage.removeItem('writing_selectedTest');
+      sessionStorage.removeItem('writing_taskType');
+      sessionStorage.removeItem('writing_task2Question');
+    };
+  }, []);
+
   const handleTestSelect = (e) => {
     const test = tests.find(t => t.id === e.target.value);
     setSelectedTest(test);
