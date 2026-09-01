@@ -96,7 +96,7 @@ export default function History() {
               });
               
               return (
-                <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
+                <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
                     <div>
                       <h4 className="font-semibold text-lg text-gray-900 dark:text-white">{result.title || `${activeTabInfo.label} Practice`}</h4>
