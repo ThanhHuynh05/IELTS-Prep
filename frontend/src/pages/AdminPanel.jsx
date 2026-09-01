@@ -410,6 +410,30 @@ export default function AdminPanel() {
     } catch (err) { setError(err.message); }
   };
 
+  const handleQuickPasteSpeakingPart3 = (subTopicIndex, text) => {
+    if (!text.trim()) return;
+    try {
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+      const cleanedLines = lines.map(line => {
+        const match = line.match(/^\d+[\.\)]\s*(.*)$/);
+        return match ? match[1].trim() : line;
+      });
+
+      let newPart3 = [...sPart3];
+      if (newPart3[subTopicIndex]) {
+        newPart3[subTopicIndex].questions = [
+          ...newPart3[subTopicIndex].questions.filter(q => q.trim()),
+          ...cleanedLines
+        ];
+      }
+      
+      setSPart3(newPart3);
+      setSuccess(`Successfully parsed and added ${cleanedLines.length} questions to the sub-topic!`);
+    } catch (err) {
+      setError('Failed to parse text. Please check the format.');
+    }
+  };
+
   const handleQuickPasteSpeaking = () => {
     if (!pastedSpeakingText.trim()) return;
 
@@ -425,17 +449,6 @@ export default function AdminPanel() {
         setSPart1([...sPart1.filter(q => q.trim()), ...cleanedLines]);
       } else if (sPartType === 2) {
         setSPart2([...sPart2.filter(q => q.trim()), ...cleanedLines]);
-      } else if (sPartType === 3) {
-        const newPart3 = [...sPart3];
-        if (newPart3.length === 0) {
-           newPart3.push({ subTopic: 'Parsed Questions', questions: cleanedLines });
-        } else {
-           if (!newPart3[0].subTopic.trim()) {
-               newPart3[0].subTopic = 'Parsed Questions';
-           }
-           newPart3[0].questions = [...newPart3[0].questions.filter(q => q.trim()), ...cleanedLines];
-        }
-        setSPart3(newPart3);
       }
       
       setSuccess(`Successfully parsed and added ${cleanedLines.length} items to Part ${sPartType}! Switch back to manual mode to edit them.`);
@@ -1010,7 +1023,7 @@ export default function AdminPanel() {
                 </label>
               </div>
 
-              {isSpeakingParseMode ? (
+              {isSpeakingParseMode && sPartType !== 3 ? (
                 <div className="bg-pink-50 dark:bg-pink-900/20 border border-pink-200 dark:border-pink-800 rounded-lg p-5 mb-6 relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-3 opacity-20">
                     <Wand2 size={64} className="text-pink-500" />
@@ -1103,13 +1116,39 @@ export default function AdminPanel() {
                               <button type="button" onClick={() => setSPart3(sPart3.filter((_, idx) => idx !== sIdx))} className="text-gray-400 hover:text-red-500 ml-4"><Trash2 size={18}/></button>
                             </div>
                             <div className="space-y-2 pl-4 border-l-2 border-gray-200 dark:border-gray-700 mt-4">
-                              {sub.questions.map((q, qIdx) => (
-                                <div key={qIdx} className="flex gap-2">
-                                  <input type="text" value={q} onChange={(e) => { const newP = [...sPart3]; newP[sIdx].questions[qIdx] = e.target.value; setSPart3(newP); }} className="w-full p-2 border dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-1 focus:ring-pink-500" placeholder="Question text..." />
-                                  <button type="button" onClick={() => { const newP = [...sPart3]; newP[sIdx].questions = sub.questions.filter((_, idx) => idx !== qIdx); setSPart3(newP); }} className="text-gray-400 hover:text-red-500 px-2"><Trash2 size={16}/></button>
+                              {isSpeakingParseMode ? (
+                                <div className="bg-pink-50 dark:bg-pink-900/10 p-4 rounded-lg border border-pink-100 dark:border-pink-800/30">
+                                  <p className="text-xs text-pink-700 dark:text-pink-400 mb-2">Paste questions here (one per line) to parse into this sub-topic.</p>
+                                  <textarea 
+                                    id={`paste-spart3-${sIdx}`}
+                                    placeholder="Do you think technology is helpful?\nHow has it changed?"
+                                    className="w-full p-2 text-sm border border-pink-200 dark:border-pink-700 rounded bg-white dark:bg-gray-800 focus:ring-1 focus:ring-pink-500 font-mono h-24 mb-2"
+                                  />
+                                  <div className="flex justify-end">
+                                    <button 
+                                      type="button"
+                                      onClick={() => {
+                                        const val = document.getElementById(`paste-spart3-${sIdx}`).value;
+                                        handleQuickPasteSpeakingPart3(sIdx, val);
+                                        document.getElementById(`paste-spart3-${sIdx}`).value = '';
+                                      }}
+                                      className="text-xs bg-pink-600 hover:bg-pink-700 text-white px-3 py-1.5 rounded transition-colors"
+                                    >
+                                      Parse & Add
+                                    </button>
+                                  </div>
                                 </div>
-                              ))}
-                              <button type="button" onClick={() => { const newP = [...sPart3]; newP[sIdx].questions.push(''); setSPart3(newP); }} className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium mt-2 block">+ Add Question to this Sub-topic</button>
+                              ) : (
+                                <>
+                                  {sub.questions.map((q, qIdx) => (
+                                    <div key={qIdx} className="flex gap-2">
+                                      <input type="text" value={q} onChange={(e) => { const newP = [...sPart3]; newP[sIdx].questions[qIdx] = e.target.value; setSPart3(newP); }} className="w-full p-2 border dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm focus:ring-1 focus:ring-pink-500" placeholder="Question text..." />
+                                      <button type="button" onClick={() => { const newP = [...sPart3]; newP[sIdx].questions = sub.questions.filter((_, idx) => idx !== qIdx); setSPart3(newP); }} className="text-gray-400 hover:text-red-500 px-2"><Trash2 size={16}/></button>
+                                    </div>
+                                  ))}
+                                  <button type="button" onClick={() => { const newP = [...sPart3]; newP[sIdx].questions.push(''); setSPart3(newP); }} className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium mt-2 block">+ Add Question to this Sub-topic</button>
+                                </>
+                              )}
                             </div>
                           </div>
                         ))}
