@@ -63,9 +63,9 @@ export default function MockTest() {
 
   if (!hasStarted) {
     return (
-      <div className="max-w-3xl mx-auto mt-12 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 text-center animate-in fade-in">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">IELTS Mock Test</h1>
-        <p className="text-gray-600 mb-8 leading-relaxed">
+      <div className="max-w-3xl mx-auto mt-12 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 text-center animate-in fade-in">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">IELTS Mock Test</h1>
+        <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
           You are about to start a full, timed IELTS mock exam. The test will run in the following order:
           <br/><br/>
           <strong>Listening</strong> (30 minutes)<br/>
@@ -91,21 +91,21 @@ export default function MockTest() {
   const CurrentComponent = currentSection.component;
 
   // Determine timer color based on time left
-  let timerColor = "text-gray-700";
-  if (timer.secondsRemaining < 300) timerColor = "text-orange-500"; // Under 5 mins
+  let timerColor = "text-gray-700 dark:text-gray-300";
+  if (timer.secondsRemaining < 300) timerColor = "text-orange-500 dark:text-orange-400"; // Under 5 mins
   if (timer.secondsRemaining < 60) timerColor = "text-red-600 animate-pulse"; // Under 1 min
 
   return (
     <div className="flex flex-col h-full relative">
       {/* Persistent Timer Header */}
-      <div className="sticky top-0 z-50 bg-white dark:bg-gray-800 border-b shadow-sm p-4 flex justify-between items-center shrink-0">
+      <div className="sticky top-0 z-50 bg-white dark:bg-gray-800 border-b dark:border-gray-700 shadow-sm p-4 flex justify-between items-center shrink-0">
         <div className="flex items-center space-x-4">
-          <div className="font-bold text-xl text-gray-900">{currentSection.title}</div>
+          <div className="font-bold text-xl text-gray-900 dark:text-white">{currentSection.title}</div>
           <div className="flex space-x-1">
             {SECTIONS.map((sec, idx) => (
               <div 
                 key={sec.id} 
-                className={`w-2 h-2 rounded-full ${idx === currentSectionIndex ? 'bg-blue-600' : idx < currentSectionIndex ? 'bg-green-500' : 'bg-gray-200'}`}
+                className={`w-2 h-2 rounded-full ${idx === currentSectionIndex ? 'bg-blue-600' : idx < currentSectionIndex ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-600'}`}
               />
             ))}
           </div>
@@ -123,7 +123,7 @@ export default function MockTest() {
           >
             End Test Early
           </button>
-          <div className={`flex items-center space-x-2 font-mono text-2xl font-bold bg-gray-50 px-4 py-2 rounded-lg border ${timerColor}`}>
+          <div className={`flex items-center space-x-2 font-mono text-2xl font-bold bg-gray-50 dark:bg-gray-900 px-4 py-2 rounded-lg border dark:border-gray-700 ${timerColor}`}>
             <Clock size={24} />
             <span>{timer.formattedTime}</span>
           </div>
