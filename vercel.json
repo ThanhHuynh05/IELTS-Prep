@@ -1,5 +1,6 @@
 {
   "framework": "vite",
+  "buildCommand": "npm run vercel-build",
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
