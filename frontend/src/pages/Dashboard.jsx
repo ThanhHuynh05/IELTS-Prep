@@ -109,11 +109,11 @@ export default function Dashboard() {
 
   const SectionCard = ({ title, icon: Icon, colorClass, data, link }) => (
     <Link to={link} className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex flex-col justify-between transition-colors hover:border-blue-500 dark:hover:border-blue-500 hover:shadow-md cursor-pointer block hover:bg-gray-50 dark:hover:bg-gray-700/50">
-      <div className="flex justify-between items-start mb-4">
-        <div className={`p-3 rounded-lg ${colorClass}`}>
+      <div className="flex items-center mb-4 gap-3">
+        <div className={`p-3 rounded-lg shrink-0 ${colorClass}`}>
           <Icon size={24} />
         </div>
-        <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{title}</span>
+        <span className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider line-clamp-1">{title}</span>
       </div>
       <div>
         <div className="text-4xl font-bold text-gray-900 dark:text-white">{getLatestBand(data)}</div>
@@ -199,11 +199,11 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-xl shadow-md text-white flex flex-col justify-between md:col-span-2 lg:col-span-1">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-3 bg-white/20 rounded-lg">
+          <div className="flex items-center mb-4 gap-3">
+            <div className="p-3 bg-white/20 rounded-lg shrink-0">
               <Activity size={24} />
             </div>
-            <span className="text-sm font-medium text-blue-100 uppercase tracking-wider">Overall</span>
+            <span className="text-sm font-medium text-blue-100 uppercase tracking-wider line-clamp-1">Overall</span>
           </div>
           <div>
             <div className="text-5xl font-bold">{getAverageBand()}</div>
