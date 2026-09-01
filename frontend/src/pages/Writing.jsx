@@ -35,6 +35,7 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const [showTips, setShowTips] = useState(false);
   const [currentEssay, setCurrentEssay] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [filterType, setFilterType] = useState('all');
 
   useImperativeHandle(ref, () => ({
     forceSubmit: () => {
@@ -65,6 +66,17 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     };
     fetchCustomTests();
   }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (selectedTest) {
+        setSelectedTest(null);
+        setFeedback(null);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [selectedTest]);
 
   useEffect(() => {
     if (selectedTest) {
@@ -109,14 +121,38 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     return (
       <div className="w-full max-w-6xl mx-auto px-4 py-8 h-[calc(100vh-80px)] overflow-y-auto animate-in fade-in">
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Writing Practice</h1>
-        <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">Select a test to begin your practice.</p>
+        <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">Select a test to begin your practice.</p>
+        
+        {/* Filter Radio Buttons */}
+        <div className="flex space-x-2 mb-8 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit shadow-sm">
+          <button
+            onClick={() => setFilterType('all')}
+            className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${filterType === 'all' ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+          >
+            All Tasks
+          </button>
+          <button
+            onClick={() => setFilterType('task1')}
+            className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${filterType === 'task1' ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+          >
+            Task 1
+          </button>
+          <button
+            onClick={() => setFilterType('task2')}
+            className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${filterType === 'task2' ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+          >
+            Task 2
+          </button>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div 
+          {(filterType === 'all' || filterType === 'task2') && (
+            <div 
             onClick={() => {
               setSelectedTest({ id: 'custom-test', title: 'Custom Practice', task1: '', task2: '' });
               setTask2Question('');
               setTaskType('task2');
+              window.history.pushState({ practiceActive: true }, '', window.location.pathname);
             }}
             className="bg-orange-50 dark:bg-orange-900/20 p-6 rounded-2xl border border-orange-200 dark:border-orange-800 shadow-sm hover:shadow-md cursor-pointer transition-all hover:border-orange-500 hover:ring-1 hover:ring-orange-500 group flex flex-col h-full"
           >
@@ -133,14 +169,16 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               <span>→</span>
             </div>
           </div>
+          )}
           
-          {tests.map((test, index) => (
+          {tests.filter(test => filterType === 'all' || test.type === filterType || test.type === 'both').map((test, index) => (
             <div 
               key={test.id || index}
               onClick={() => {
                 setSelectedTest(test);
                 setTask2Question(test.task2 || '');
                 setTaskType(test.type === 'task2' ? 'task2' : 'task1');
+                window.history.pushState({ practiceActive: true }, '', window.location.pathname);
               }}
               className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md cursor-pointer transition-all hover:border-orange-500 hover:ring-1 hover:ring-orange-500 group flex flex-col h-full"
             >
@@ -217,8 +255,13 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           <div className="flex items-center space-x-4">
             <button
               onClick={() => {
-                setSelectedTest(null);
-                setFeedback(null);
+                if (window.history.state?.practiceActive) {
+                  window.history.back();
+                } else {
+                  setSelectedTest(null);
+                  setFeedback(null);
+                  sessionStorage.removeItem('writing_selectedTest');
+                }
               }}
               className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >

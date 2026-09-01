@@ -43,6 +43,17 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     fetchCustomTests();
   }, []);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      if (selectedTest) {
+        setSelectedTest(null);
+        handleReset();
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [selectedTest]);
+
   const handleAnswerChange = (questionId, value) => {
     setUserAnswers(prev => ({ ...prev, [questionId]: value }));
   };
@@ -127,7 +138,10 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           {tests.map((test, index) => (
             <div 
               key={test.id || index}
-              onClick={() => handleTestSelect(test)}
+              onClick={() => {
+                handleTestSelect(test);
+                window.history.pushState({ practiceActive: true }, '', window.location.pathname);
+              }}
               className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md cursor-pointer transition-all hover:border-blue-500 hover:ring-1 hover:ring-blue-500 group flex flex-col h-full"
             >
               <div className="flex-1">
@@ -206,8 +220,12 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         <div className="flex space-x-2">
           <button
             onClick={() => {
-              setSelectedTest(null);
-              handleReset();
+              if (window.history.state?.practiceActive) {
+                window.history.back();
+              } else {
+                setSelectedTest(null);
+                handleReset();
+              }
             }}
             className="px-4 py-2 rounded-md text-sm font-medium transition-colors bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
           >

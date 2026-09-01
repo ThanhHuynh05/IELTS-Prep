@@ -44,6 +44,17 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     fetchCustomTests();
   }, []);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      if (selectedTest) {
+        setSelectedTest(null);
+        handleReset();
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [selectedTest]);
+
   const handleAnswerChange = (questionId, value) => {
     setUserAnswers(prev => ({ ...prev, [questionId]: value }));
   };
@@ -151,6 +162,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       ]
     };
     setSelectedTest(safeTest);
+    window.history.pushState({ practiceActive: true }, '', window.location.pathname);
     handleReset();
   };
 
@@ -253,8 +265,12 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         <div className="flex space-x-2">
           <button
             onClick={() => {
-              setSelectedTest(null);
-              handleReset();
+              if (window.history.state?.practiceActive) {
+                window.history.back();
+              } else {
+                setSelectedTest(null);
+                handleReset();
+              }
             }}
             className="px-4 py-2 rounded-md text-sm font-medium transition-colors bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
           >

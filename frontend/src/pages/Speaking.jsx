@@ -43,6 +43,18 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   }));
 
   useEffect(() => {
+    const handlePopState = () => {
+      if (selectedTopic) {
+        setSelectedTopic(null);
+        setFeedback(null);
+        setPracticeMode(false);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [selectedTopic]);
+
+  useEffect(() => {
     if (taskPart === 'part2') {
       setPrepPhase('prep');
       setPrepSeconds(60);
@@ -244,6 +256,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                                   setTaskPart('part2');
                                   setPracticeMode(true);
                                   setCurrentQuestionIndex(0);
+                                  window.history.pushState({ practiceActive: true }, '', window.location.pathname);
                                 }}
                                 className="px-6 py-2 rounded-full border border-pink-500 text-pink-500 font-medium hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors flex items-center gap-2"
                               >
@@ -370,8 +383,13 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       {!isMockMode && (
         <button
           onClick={() => {
-            setSelectedTopic(null);
-            setFeedback(null);
+            if (window.history.state?.practiceActive) {
+              window.history.back();
+            } else {
+              setSelectedTopic(null);
+              setFeedback(null);
+              setPracticeMode(false);
+            }
           }}
           className="md:hidden w-full mb-4 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
         >
@@ -384,8 +402,13 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         <div className="hidden md:block w-64 border-r border-gray-200 dark:border-gray-700 pr-6 overflow-y-auto shrink-0">
           <button
             onClick={() => {
-              setSelectedTopic(null);
-              setFeedback(null);
+              if (window.history.state?.practiceActive) {
+                window.history.back();
+              } else {
+                setSelectedTopic(null);
+                setFeedback(null);
+                setPracticeMode(false);
+              }
             }}
             className="w-full mb-6 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
@@ -422,6 +445,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                     setPracticeMode(true);
                     setFeedback(null);
                     setCurrentQuestionIndex(0);
+                    window.history.pushState({ practiceActive: true }, '', window.location.pathname);
                   }}
                   className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                     selectedTopic.id === topic.id
