@@ -100,7 +100,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     if (!topics || topics.length === 0) {
       return (
         <div className="max-w-[1400px] mx-auto p-8 flex items-center justify-center h-[calc(100vh-80px)]">
-          <div className="text-center bg-white p-12 rounded-xl shadow-sm border border-gray-200">
+          <div className="text-center bg-white dark:bg-gray-800 p-12 rounded-xl shadow-sm border border-gray-200">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">No Speaking Topics Available</h2>
             <p className="text-gray-600">Please add some speaking topics in the Admin Panel.</p>
           </div>
@@ -425,8 +425,8 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                   }}
                   className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                     selectedTopic.id === topic.id
-                      ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 shadow-sm'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent'
+                      ? 'bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-l-4 border-blue-600 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200 border-l-4 border-transparent'
                   }`}
                 >
                   {topic.title}
@@ -537,7 +537,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
             <SpeakingPrompt taskPart={taskPart} prompt={currentPrompt} />
             
             {taskPart === 'part2' && prepPhase === 'prep' ? (
-              <div className="bg-white p-8 rounded-xl shadow-sm border mb-6 flex flex-col items-center">
+              <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-sm border mb-6 flex flex-col items-center">
                 <h3 className="text-xl font-bold text-gray-800 mb-6">Preparation Time</h3>
                 <div className="relative w-32 h-32 flex items-center justify-center mb-6">
                   <svg className="absolute top-0 left-0 w-full h-full transform -rotate-90">

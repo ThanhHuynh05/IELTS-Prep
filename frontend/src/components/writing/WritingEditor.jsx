@@ -18,7 +18,7 @@ export default function WritingEditor({ taskType, onSubmit, isGrading, onContent
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
       <div className="flex justify-between items-center mb-1">
         <h3 className="font-semibold text-gray-800 dark:text-gray-200">Your Response</h3>
         <span className={`text-sm font-medium ${

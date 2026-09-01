@@ -14,13 +14,13 @@ export default function ReadingPassage({ passage, testPdfUrl }) {
           <iframe 
             src={testPdfUrl} 
             title={passage?.title || "Test PDF"}
-            className="w-full h-full"
+            className="w-full h-full rounded-md"
             type="application/pdf"
           />
         </div>
       ) : (
         <div className="overflow-y-auto pr-2">
-          <div className="prose prose-lg text-gray-700 leading-relaxed space-y-4">
+          <div className="prose prose-lg text-gray-700 dark:text-gray-300 dark:prose-invert leading-relaxed space-y-4">
             {passage.text.split('\n\n').map((paragraph, index) => (
               <p key={index} className="text-justify indent-8">
                 {paragraph}

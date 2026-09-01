@@ -45,7 +45,7 @@ export default function ListeningFeedback({ sections, userAnswers, transcript, o
   return (
     <div className="h-full overflow-y-auto pr-2 animate-in fade-in slide-in-from-right-4 duration-500">
       
-      <div className="bg-white p-6 rounded-xl shadow-sm border mb-8 text-center flex justify-around items-center">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border mb-8 text-center flex justify-around items-center">
         <div>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Raw Score</h2>
           <div className="text-4xl font-bold text-gray-800">

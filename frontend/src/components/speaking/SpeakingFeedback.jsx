@@ -65,14 +65,14 @@ export default function SpeakingFeedback({ feedback, onReset, originalTranscript
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Overall Score */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border text-center">
         <h2 className="text-lg text-gray-600 font-medium mb-2">Overall Speaking Band</h2>
         <div className="text-6xl font-bold text-blue-600">{Number(feedback.overallBand).toFixed(1)}</div>
       </div>
 
       {/* Transcript Review */}
       {originalTranscript && (
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
           <h3 className="font-semibold text-gray-800 mb-4 text-lg">Your Transcript Analysis</h3>
           <p className="text-sm text-gray-500 mb-4">
             Click on the <span className="bg-red-100 border-b-2 border-red-400 text-red-900 px-1 rounded">red</span> (grammar) or <span className="bg-orange-100 border-b-2 border-orange-400 text-orange-900 px-1 rounded">orange</span> (pronunciation) highlights to see corrections.
@@ -82,7 +82,7 @@ export default function SpeakingFeedback({ feedback, onReset, originalTranscript
             
             {/* Error Tooltip */}
             {activeError && (
-              <div className="mt-4 p-4 bg-white border border-gray-200 rounded-lg shadow-lg relative">
+              <div className="mt-4 p-4 bg-white dark:bg-gray-800 border border-gray-200 rounded-lg shadow-lg relative">
                 <button 
                   onClick={() => setActiveError(null)}
                   className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
@@ -110,7 +110,7 @@ export default function SpeakingFeedback({ feedback, onReset, originalTranscript
         {Object.entries(feedback.criteria).map(([key, data]) => {
           const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
           return (
-            <div key={key} className="bg-white p-5 rounded-lg shadow-sm border transition-all hover:shadow-md">
+            <div key={key} className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-sm border transition-all hover:shadow-md">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="font-semibold text-gray-800">{title}</h3>
                 <span className="bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-sm">
@@ -162,7 +162,7 @@ export default function SpeakingFeedback({ feedback, onReset, originalTranscript
             <span className="bg-blue-200 text-blue-800 p-1 rounded mr-2">💡</span>
             Vocabulary Upgrade
           </h3>
-          <div className="bg-white p-4 rounded border border-blue-200 text-blue-900 font-medium italic shadow-sm">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded border border-blue-200 text-blue-900 font-medium italic shadow-sm">
             "{feedback.betterPhrase}"
           </div>
         </div>
@@ -171,7 +171,7 @@ export default function SpeakingFeedback({ feedback, onReset, originalTranscript
       <div className="flex justify-center mt-8">
         <button
           onClick={onReset}
-          className="bg-white border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-800 font-medium py-3 px-8 rounded-lg transition-all shadow-sm"
+          className="bg-white dark:bg-gray-800 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-800 font-medium py-3 px-8 rounded-lg transition-all shadow-sm"
         >
           Try Another Question
         </button>

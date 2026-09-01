@@ -86,7 +86,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       : selectedTest.audioUrl;
 
     return (
-      <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'lg:grid-cols-12' : 'lg:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 overflow-hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 h-full`}>
+      <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'lg:grid-cols-12' : 'lg:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 overflow-hidden bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 h-full`}>
         {hasLeftPanel && (
           <div className={`flex flex-col h-full overflow-hidden border-r border-gray-200 pr-4 sm:pr-6 ${selectedTest.pdfUrl ? 'lg:col-span-9' : ''}`}>
             <div className="mb-4 shrink-0">
@@ -116,7 +116,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                  onClick={() => setActiveSectionIndex(idx)}
                  className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${
                    activeSectionIndex === idx 
-                     ? 'bg-white text-blue-600 shadow' 
+                     ? 'bg-white dark:bg-gray-800 text-blue-600 shadow' 
                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
                  }`}
                >
@@ -166,7 +166,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     if (!tests || tests.length === 0) {
       return (
         <div className="max-w-[1400px] mx-auto p-8 flex items-center justify-center h-[calc(100vh-80px)]">
-          <div className="text-center bg-white p-12 rounded-xl shadow-sm border border-gray-200">
+          <div className="text-center bg-white dark:bg-gray-800 p-12 rounded-xl shadow-sm border border-gray-200">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">No Listening Tests Available</h2>
             <p className="text-gray-600">Please add some tests in the Admin Panel.</p>
           </div>
@@ -264,7 +264,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       </div>
 
       {/* Main Layout */}
-      <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'lg:grid-cols-12' : 'lg:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 overflow-y-auto lg:overflow-hidden`}>
+      <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'lg:grid-cols-12' : 'lg:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-y-auto lg:overflow-hidden`}>
         
         {/* Left Side: Audio Player & PDF */}
         {hasLeftPanel && (
@@ -297,7 +297,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                  onClick={() => setActiveSectionIndex(idx)}
                  className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${
                    activeSectionIndex === idx 
-                     ? 'bg-white text-blue-600 shadow' 
+                     ? 'bg-white dark:bg-gray-800 text-blue-600 shadow' 
                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
                  }`}
                >

@@ -36,7 +36,7 @@ export default function MockTestResults({ results, onRestart }) {
   }, [results]);
 
   const ScoreCard = ({ title, score }) => (
-    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm text-center">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 shadow-sm text-center">
       <h3 className="text-gray-500 font-medium uppercase tracking-wider mb-2 text-sm">{title}</h3>
       <div className="text-4xl font-bold text-gray-800">{score.toFixed(1)}</div>
     </div>

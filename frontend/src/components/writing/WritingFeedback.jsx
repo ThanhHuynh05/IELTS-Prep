@@ -34,7 +34,7 @@ export default function WritingFeedback({ feedback, onReset, originalEssay }) {
                   {err.originalText}
                   
                   {/* Inline Tooltip (Hover & Click) */}
-                  <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-4 bg-white border border-gray-200 rounded-xl shadow-2xl z-[100] text-left font-normal text-sm transform transition-all origin-bottom ${activeError === err ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible group-hover:opacity-100 group-hover:scale-100 group-hover:visible'} pointer-events-none group-hover:pointer-events-auto`}>
+                  <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 p-4 bg-white dark:bg-gray-800 border border-gray-200 rounded-xl shadow-2xl z-[100] text-left font-normal text-sm transform transition-all origin-bottom ${activeError === err ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible group-hover:opacity-100 group-hover:scale-100 group-hover:visible'} pointer-events-none group-hover:pointer-events-auto`}>
                     <div className="mb-2">
                       <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded ${err.type === 'grammar' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
                         {err.type} Error
@@ -82,14 +82,14 @@ export default function WritingFeedback({ feedback, onReset, originalEssay }) {
   return (
     <div className="space-y-6">
       {/* Overall Score */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border text-center">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border text-center">
         <h2 className="text-lg text-gray-600 font-medium mb-2">Overall Band Score</h2>
         <div className="text-5xl font-bold text-blue-600">{Number(feedback.overallBand).toFixed(1)}</div>
       </div>
 
       {/* Highlighted Essay Section */}
       {originalEssay && (
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border">
           <h3 className="font-semibold text-gray-800 mb-4 text-lg">Your Essay Analysis</h3>
           <p className="text-sm text-gray-500 mb-4">
             Click on the <span className="bg-red-100 border-b-2 border-red-400 text-red-900 px-1 rounded">red</span> (grammar) or <span className="bg-orange-100 border-b-2 border-orange-400 text-orange-900 px-1 rounded">orange</span> (vocabulary) highlights to see corrections.
@@ -106,7 +106,7 @@ export default function WritingFeedback({ feedback, onReset, originalEssay }) {
         {Object.entries(feedback.criteria).map(([key, data]) => {
           const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
           return (
-            <div key={key} className="bg-white p-4 rounded-lg shadow-sm border">
+            <div key={key} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border">
               <div className="flex justify-between items-center mb-2">
                 <h3 className="font-semibold text-gray-800">{title}</h3>
                 <span className="bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-sm">
@@ -139,7 +139,7 @@ export default function WritingFeedback({ feedback, onReset, originalEssay }) {
       {feedback.sampleAnswer && (
         <div className="bg-blue-50 p-6 rounded-lg border border-blue-100 mt-6">
           <h3 className="font-semibold text-blue-800 mb-4 text-lg">Band 7.0 Sample Answer</h3>
-          <div className="bg-white p-4 rounded border border-blue-200 text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded border border-blue-200 text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
             {feedback.sampleAnswer}
           </div>
         </div>

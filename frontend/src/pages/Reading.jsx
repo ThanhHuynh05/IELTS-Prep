@@ -110,7 +110,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     if (!tests || tests.length === 0) {
       return (
         <div className="max-w-[1400px] mx-auto p-8 flex items-center justify-center h-[calc(100vh-80px)]">
-          <div className="text-center bg-white p-12 rounded-xl shadow-sm border border-gray-200">
+          <div className="text-center bg-white dark:bg-gray-800 p-12 rounded-xl shadow-sm border border-gray-200">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">No Reading Tests Available</h2>
             <p className="text-gray-600">Please add some reading tests in the Admin Panel.</p>
           </div>
@@ -153,7 +153,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
 
   if (isMockMode) {
     return (
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-full relative">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-hidden bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 h-full relative">
         <ReadingPassage passage={activePassage} />
         <div className="flex flex-col h-full overflow-hidden">
           {/* Passage Navigation for Mock Mode */}
@@ -164,7 +164,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                   onClick={() => setActivePassageIndex(idx)}
                   className={`flex-1 py-1.5 rounded-md text-sm font-bold transition-all ${
                     activePassageIndex === idx 
-                      ? 'bg-white text-blue-600 shadow-sm' 
+                      ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-sm' 
                       : 'text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -216,7 +216,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         </div>
       </div>
       {/* Split Screen Layout */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 overflow-y-auto lg:overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-y-auto lg:overflow-hidden">
         
         {/* Left Side: Passage text */}
         <div className="lg:col-span-9 max-h-[50vh] lg:max-h-none lg:h-full overflow-hidden flex flex-col">
@@ -233,7 +233,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                   onClick={() => setActivePassageIndex(idx)}
                   className={`flex-1 py-1.5 rounded-md text-sm font-bold transition-all ${
                     activePassageIndex === idx 
-                      ? 'bg-white text-blue-600 shadow-sm' 
+                      ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-sm' 
                       : 'text-gray-600 hover:bg-gray-200'
                   }`}
                 >

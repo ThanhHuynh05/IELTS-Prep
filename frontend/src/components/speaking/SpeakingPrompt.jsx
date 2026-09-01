@@ -24,7 +24,7 @@ export default function SpeakingPrompt({ taskPart, prompt }) {
   }, [isPrepActive, prepTimeLeft]);
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border mb-6">
       <h2 className="text-xl font-semibold mb-2 capitalize text-blue-800">
         Speaking {taskPart.replace(/([0-9]+)/, ' $1')}
       </h2>
@@ -39,7 +39,7 @@ export default function SpeakingPrompt({ taskPart, prompt }) {
         <p className="text-sm text-gray-500 mb-4">You will be asked further questions connected to the topic in Part 2. These questions will give you the opportunity to discuss more abstract issues and ideas.</p>
       )}
 
-      <div className="bg-gray-50 p-4 rounded-md border text-gray-800 whitespace-pre-wrap font-medium">
+      <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-md border dark:border-gray-700 text-gray-800 dark:text-gray-200 whitespace-pre-wrap font-medium">
         {prompt}
       </div>
 

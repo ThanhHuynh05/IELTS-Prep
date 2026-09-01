@@ -63,7 +63,7 @@ export default function MockTest() {
 
   if (!hasStarted) {
     return (
-      <div className="max-w-3xl mx-auto mt-12 p-8 bg-white rounded-xl shadow-sm border border-gray-200 text-center animate-in fade-in">
+      <div className="max-w-3xl mx-auto mt-12 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 text-center animate-in fade-in">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">IELTS Mock Test</h1>
         <p className="text-gray-600 mb-8 leading-relaxed">
           You are about to start a full, timed IELTS mock exam. The test will run in the following order:
@@ -98,7 +98,7 @@ export default function MockTest() {
   return (
     <div className="flex flex-col h-full relative">
       {/* Persistent Timer Header */}
-      <div className="sticky top-0 z-50 bg-white border-b shadow-sm p-4 flex justify-between items-center shrink-0">
+      <div className="sticky top-0 z-50 bg-white dark:bg-gray-800 border-b shadow-sm p-4 flex justify-between items-center shrink-0">
         <div className="flex items-center space-x-4">
           <div className="font-bold text-xl text-gray-900">{currentSection.title}</div>
           <div className="flex space-x-1">

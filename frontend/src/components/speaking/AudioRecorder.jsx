@@ -20,7 +20,7 @@ export default function AudioRecorder({ isGrading, onSubmit, onContentChange }) 
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border mb-6">
       <div className="flex flex-col items-center py-6">
         {/* Record Button */}
         <button
@@ -53,7 +53,7 @@ export default function AudioRecorder({ isGrading, onSubmit, onContentChange }) 
             <RotateCcw size={14} className="mr-1" /> Clear
           </button>
         </div>
-        <div className="w-full min-h-[160px] max-h-[300px] overflow-y-auto p-4 border rounded-md bg-gray-50 text-gray-700 leading-relaxed">
+        <div className="w-full min-h-[160px] max-h-[300px] overflow-y-auto p-4 border dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 leading-relaxed">
           {transcript ? transcript : <span className="text-gray-400 italic">Your speech will appear here...</span>}
         </div>
       </div>
