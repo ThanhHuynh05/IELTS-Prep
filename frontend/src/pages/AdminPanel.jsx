@@ -19,6 +19,7 @@ export default function AdminPanel() {
 
   // Manage Content State
   const [manageType, setManageType] = useState('reading');
+  const [manageFilter, setManageFilter] = useState('all'); // 'all', 'task1', 'task2', 1, 2, 3
   const [contentList, setContentList] = useState([]);
   const [isLoadingContent, setIsLoadingContent] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -1124,44 +1125,138 @@ export default function AdminPanel() {
           {activeTab === 'manage' && (
             <div className="space-y-6">
               <div className="flex space-x-4 border-b border-gray-200 dark:border-gray-700 pb-4">
-                <button onClick={() => setManageType('reading')} className={`pb-2 border-b-2 font-medium ${manageType === 'reading' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Reading</button>
-                <button onClick={() => setManageType('listening')} className={`pb-2 border-b-2 font-medium ${manageType === 'listening' ? 'border-purple-600 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Listening</button>
-                <button onClick={() => setManageType('writing')} className={`pb-2 border-b-2 font-medium ${manageType === 'writing' ? 'border-orange-600 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Writing</button>
-                <button onClick={() => setManageType('speaking')} className={`pb-2 border-b-2 font-medium ${manageType === 'speaking' ? 'border-pink-600 text-pink-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Speaking</button>
+                <button onClick={() => { setManageType('reading'); setManageFilter('all'); }} className={`pb-2 border-b-2 font-medium ${manageType === 'reading' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Reading</button>
+                <button onClick={() => { setManageType('listening'); setManageFilter('all'); }} className={`pb-2 border-b-2 font-medium ${manageType === 'listening' ? 'border-purple-600 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Listening</button>
+                <button onClick={() => { setManageType('writing'); setManageFilter('all'); }} className={`pb-2 border-b-2 font-medium ${manageType === 'writing' ? 'border-orange-600 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Writing</button>
+                <button onClick={() => { setManageType('speaking'); setManageFilter('all'); }} className={`pb-2 border-b-2 font-medium ${manageType === 'speaking' ? 'border-pink-600 text-pink-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>Speaking</button>
               </div>
+
+              {manageType === 'writing' && (
+                <div className="flex space-x-4 pb-2">
+                  <label className="inline-flex items-center">
+                    <input type="radio" value="all" checked={manageFilter === 'all'} onChange={(e) => setManageFilter(e.target.value)} className="text-orange-600 focus:ring-orange-500" />
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">All</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input type="radio" value="task1" checked={manageFilter === 'task1'} onChange={(e) => setManageFilter(e.target.value)} className="text-orange-600 focus:ring-orange-500" />
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Task 1</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input type="radio" value="task2" checked={manageFilter === 'task2'} onChange={(e) => setManageFilter(e.target.value)} className="text-orange-600 focus:ring-orange-500" />
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Task 2</span>
+                  </label>
+                </div>
+              )}
+
+              {manageType === 'speaking' && (
+                <div className="flex space-x-4 pb-2">
+                  <label className="inline-flex items-center">
+                    <input type="radio" value="all" checked={manageFilter === 'all'} onChange={(e) => setManageFilter(e.target.value)} className="text-pink-600 focus:ring-pink-500" />
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">All</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input type="radio" value="1" checked={manageFilter === '1'} onChange={(e) => setManageFilter(e.target.value)} className="text-pink-600 focus:ring-pink-500" />
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Part 1</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input type="radio" value="2" checked={manageFilter === '2'} onChange={(e) => setManageFilter(e.target.value)} className="text-pink-600 focus:ring-pink-500" />
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Part 2</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input type="radio" value="3" checked={manageFilter === '3'} onChange={(e) => setManageFilter(e.target.value)} className="text-pink-600 focus:ring-pink-500" />
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Part 3</span>
+                  </label>
+                </div>
+              )}
 
               {isLoadingContent ? (
                 <div className="text-center py-8 text-gray-500">Loading content...</div>
               ) : contentList.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">No custom {manageType} content found.</div>
               ) : (
-                <div className="space-y-4">
-                  {contentList.map(item => (
-                    <div key={item._id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
-                      <div>
-                        <h4 className="font-semibold text-gray-900 dark:text-white">{item.title}</h4>
-                        <p className="text-sm text-gray-500">ID: {item._id}</p>
-                      </div>
-                      <div className="flex space-x-2">
-                        <button 
-                          onClick={() => handleEdit(item)}
-                          className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-colors"
-                          title="Edit"
-                          aria-label={`Edit ${item.title}`}
-                        >
-                          <Edit2 size={20} />
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteRequest(item)}
-                          className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors"
-                          title="Delete"
-                          aria-label={`Delete ${item.title}`}
-                        >
-                          <Trash2 size={20} />
-                        </button>
-                      </div>
+                <div className="space-y-8">
+                  {manageType === 'writing' ? (
+                    <>
+                      {['task1', 'task2'].filter(t => manageFilter === 'all' || manageFilter === t).map(taskType => {
+                        const filtered = contentList.filter(item => (item.type || 'task1') === taskType);
+                        if (filtered.length === 0) return null;
+                        return (
+                          <div key={taskType} className="space-y-4">
+                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 border-b pb-2">
+                              {taskType === 'task1' ? 'Task 1' : 'Task 2'}
+                            </h3>
+                            {filtered.map(item => (
+                              <div key={item._id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
+                                <div>
+                                  <h4 className="font-semibold text-gray-900 dark:text-white">{item.title}</h4>
+                                  <p className="text-sm text-gray-500">ID: {item._id}</p>
+                                </div>
+                                <div className="flex space-x-2">
+                                  <button onClick={() => handleEdit(item)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-colors" title="Edit"><Edit2 size={20} /></button>
+                                  <button onClick={() => handleDeleteRequest(item)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors" title="Delete"><Trash2 size={20} /></button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </>
+                  ) : manageType === 'speaking' ? (
+                    <>
+                      {[1, 2, 3].filter(p => manageFilter === 'all' || manageFilter === p.toString()).map(partNum => {
+                        const filtered = contentList.filter(item => (item.part || 1) === partNum);
+                        if (filtered.length === 0) return null;
+                        return (
+                          <div key={partNum} className="space-y-4">
+                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 border-b pb-2">
+                              Part {partNum}
+                            </h3>
+                            {filtered.map(item => (
+                              <div key={item._id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
+                                <div>
+                                  <h4 className="font-semibold text-gray-900 dark:text-white">{item.title}</h4>
+                                  <p className="text-sm text-gray-500">ID: {item._id}</p>
+                                </div>
+                                <div className="flex space-x-2">
+                                  <button onClick={() => handleEdit(item)} className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-colors" title="Edit"><Edit2 size={20} /></button>
+                                  <button onClick={() => handleDeleteRequest(item)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors" title="Delete"><Trash2 size={20} /></button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </>
+                  ) : (
+                    <div className="space-y-4">
+                      {contentList.map(item => (
+                        <div key={item._id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors">
+                          <div>
+                            <h4 className="font-semibold text-gray-900 dark:text-white">{item.title}</h4>
+                            <p className="text-sm text-gray-500">ID: {item._id}</p>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button 
+                              onClick={() => handleEdit(item)}
+                              className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-colors"
+                              title="Edit"
+                              aria-label={`Edit ${item.title}`}
+                            >
+                              <Edit2 size={20} />
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteRequest(item)}
+                              className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-md transition-colors"
+                              title="Delete"
+                              aria-label={`Delete ${item.title}`}
+                            >
+                              <Trash2 size={20} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
