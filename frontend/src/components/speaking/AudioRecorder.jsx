@@ -41,24 +41,14 @@ export default function AudioRecorder({ isGrading, onSubmit, onContentChange }) 
         </button>
       </div>
 
-      {/* Transcript Display */}
-      <div className="mt-8">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="font-semibold text-gray-800">Live Transcript</h3>
-          <button 
-            onClick={resetTranscript}
-            disabled={isRecording || isGrading || !transcript}
-            className="text-gray-400 hover:text-gray-600 disabled:opacity-50 flex items-center text-sm"
-          >
-            <RotateCcw size={14} className="mr-1" /> Clear
-          </button>
-        </div>
-        <div className="w-full min-h-[160px] max-h-[300px] overflow-y-auto p-4 border dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-300 leading-relaxed">
-          {transcript ? transcript : <span className="text-gray-400 italic">Your speech will appear here...</span>}
-        </div>
-      </div>
-
-      <div className="mt-6 flex justify-end">
+      <div className="mt-6 flex justify-end space-x-4">
+        <button 
+          onClick={resetTranscript}
+          disabled={isRecording || isGrading || !transcript}
+          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 font-medium py-2 px-4 rounded-md disabled:opacity-50 flex items-center transition-colors"
+        >
+          <RotateCcw size={16} className="mr-2" /> Reset Audio
+        </button>
         <button
           onClick={handleManualSubmit}
           disabled={!transcript.trim() || isRecording || isGrading}
