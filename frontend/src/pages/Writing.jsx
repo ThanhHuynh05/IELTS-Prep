@@ -39,13 +39,32 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedChartTypes, setSelectedChartTypes] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedEssayTypes, setSelectedEssayTypes] = useState([]);
+  const [selectedTopics, setSelectedTopics] = useState([]);
+  const [showAllTopics, setShowAllTopics] = useState(false);
   const itemsPerPage = 10;
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedChartTypes, filterType]);
+  }, [searchQuery, selectedChartTypes, selectedEssayTypes, selectedTopics, filterType]);
 
   const CHART_TYPES = ['Bar chart', 'Line', 'Table', 'Map', 'Pie Chart', 'Process', 'Mixed'];
+  
+  const ESSAY_TYPES = [
+    'Agree & disagree',
+    'Discuss both views',
+    'Advantages & Disadvantages',
+    'Two-part questions',
+    'Problems-causes-solutions'
+  ];
+
+  const TOPICS = [
+    'Education', 'Lifestyle', 'Work', 'Entertainment', 'Environment',
+    'Technology', 'Social issues', 'Crime', 'Government', 'Advertisement',
+    'Sport', 'Transport', 'Food & Drinks', 'Business', 'Health',
+    'Science & Energy', 'Tourism', 'Family', 'Architecture', 'History',
+    'Art', 'Economics', 'Plant & Animals'
+  ];
 
   useImperativeHandle(ref, () => ({
     forceSubmit: () => {
@@ -142,6 +161,36 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         });
         if (!titleMatch) return false;
       }
+      if (selectedEssayTypes.length > 0) {
+        const typeMatch = selectedEssayTypes.some(type => {
+          const questionText = (test.task2 || '').toLowerCase();
+          
+          if (type === 'Agree & disagree') {
+            return questionText.includes('agree') || questionText.includes('disagree') || questionText.includes('opinion');
+          }
+          if (type === 'Discuss both views') {
+            return questionText.includes('discuss both') || questionText.includes('both views');
+          }
+          if (type === 'Advantages & Disadvantages') {
+            return questionText.includes('advantage') || questionText.includes('disadvantage') || questionText.includes('positive') || questionText.includes('negative') || questionText.includes('outweigh');
+          }
+          if (type === 'Problems-causes-solutions') {
+            return questionText.includes('problem') || questionText.includes('cause') || questionText.includes('solution') || questionText.includes('reason') || questionText.includes('measure');
+          }
+          if (type === 'Two-part questions') {
+            // Check if there are multiple question marks
+            const questionMarks = (questionText.match(/\?/g) || []).length;
+            return questionMarks >= 2;
+          }
+          
+          return questionText.includes(type.toLowerCase());
+        });
+        if (!typeMatch) return false;
+      }
+      if (selectedTopics.length > 0) {
+        const titleMatch = selectedTopics.some(topic => test.title?.toLowerCase().includes(topic.toLowerCase()));
+        if (!titleMatch) return false;
+      }
       if (filterType === 'custom') return false;
       if (filterType !== 'all' && test.type !== filterType && test.type !== 'both') return false;
       return true;
@@ -176,35 +225,105 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
             </div>
             
             {/* Filter */}
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-              <h3 className="font-bold text-gray-900 dark:text-white mb-1">Filter</h3>
-              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-4 uppercase tracking-wider">Chart Type ({CHART_TYPES.length})</p>
-              <div className="space-y-3">
-                {CHART_TYPES.map(type => (
-                  <label key={type} className="flex items-center justify-between cursor-pointer group">
-                    <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-orange-600 transition-colors">{type}</span>
-                    <input 
-                      type="checkbox" 
-                      className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-                      checked={selectedChartTypes.includes(type)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedChartTypes([...selectedChartTypes, type]);
-                        } else {
-                          setSelectedChartTypes(selectedChartTypes.filter(t => t !== type));
-                        }
-                      }}
-                    />
-                  </label>
-                ))}
+            {filterType !== 'custom' && (
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                <h3 className="font-bold text-gray-900 dark:text-white mb-4">Filter</h3>
+                
+                {filterType === 'task1' && (
+                  <div>
+                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Chart Type</p>
+                    <div className="space-y-3">
+                      {CHART_TYPES.map(type => (
+                        <label key={type} className="flex items-center justify-between cursor-pointer group">
+                          <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-orange-600 transition-colors">{type}</span>
+                          <input 
+                            type="checkbox" 
+                            className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                            checked={selectedChartTypes.includes(type)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedChartTypes([...selectedChartTypes, type]);
+                              } else {
+                                setSelectedChartTypes(selectedChartTypes.filter(t => t !== type));
+                              }
+                            }}
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {filterType === 'task2' && (
+                  <>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Essay Type</p>
+                      <div className="space-y-3">
+                        {ESSAY_TYPES.map(type => (
+                          <label key={type} className="flex items-center justify-between cursor-pointer group">
+                            <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-orange-600 transition-colors">{type}</span>
+                            <input 
+                              type="checkbox" 
+                              className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                              checked={selectedEssayTypes.includes(type)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedEssayTypes([...selectedEssayTypes, type]);
+                                } else {
+                                  setSelectedEssayTypes(selectedEssayTypes.filter(t => t !== type));
+                                }
+                              }}
+                            />
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
+                      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Topic ({TOPICS.length})</p>
+                      <div className="space-y-3">
+                        {(showAllTopics ? TOPICS : TOPICS.slice(0, 5)).map(topic => (
+                          <label key={topic} className="flex items-center justify-between cursor-pointer group">
+                            <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-orange-600 transition-colors">{topic}</span>
+                            <input 
+                              type="checkbox" 
+                              className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                              checked={selectedTopics.includes(topic)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedTopics([...selectedTopics, topic]);
+                                } else {
+                                  setSelectedTopics(selectedTopics.filter(t => t !== topic));
+                                }
+                              }}
+                            />
+                          </label>
+                        ))}
+                      </div>
+                      {TOPICS.length > 5 && (
+                        <button 
+                          className="mt-3 text-sm text-blue-600 font-medium hover:underline block"
+                          onClick={() => setShowAllTopics(!showAllTopics)}
+                        >
+                          {showAllTopics ? 'Show Less' : 'Show More'}
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                <button 
+                  className="mt-6 text-sm text-blue-600 font-medium hover:underline w-full text-center block pt-4 border-t border-gray-100 dark:border-gray-700"
+                  onClick={() => {
+                    setSelectedChartTypes([]);
+                    setSelectedEssayTypes([]);
+                    setSelectedTopics([]);
+                  }}
+                >
+                  Clear All Filters
+                </button>
               </div>
-              <button 
-                className="mt-4 text-sm text-blue-600 font-medium hover:underline"
-                onClick={() => setSelectedChartTypes([])}
-              >
-                Clear Filters
-              </button>
-            </div>
+            )}
           </div>
 
           {/* Main List */}
@@ -267,13 +386,15 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                 }}
                 className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md cursor-pointer transition-all hover:border-orange-500 hover:ring-1 hover:ring-orange-500 flex flex-col sm:flex-row overflow-hidden"
               >
-                <div className="sm:w-64 bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center p-4 min-h-[160px]">
-                  {test.task1Image ? (
-                    <img src={test.task1Image} alt={test.title} className="max-h-32 object-contain" />
-                  ) : (
-                    <div className="text-blue-400 dark:text-blue-600 font-medium">No Image</div>
-                  )}
-                </div>
+                {test.type !== 'task2' && (
+                  <div className="sm:w-64 bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center p-4 min-h-[160px]">
+                    {test.task1Image ? (
+                      <img src={test.task1Image} alt={test.title} className="max-h-32 object-contain" />
+                    ) : (
+                      <div className="text-blue-400 dark:text-blue-600 font-medium">No Image</div>
+                    )}
+                  </div>
+                )}
                 <div className="p-6 flex-1 flex flex-col justify-center">
                   <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                     {test.type === 'task1' ? 'Task 1' : test.type === 'task2' ? 'Task 2' : 'Task 1 & 2'}
