@@ -1,63 +1,50 @@
-# IELTS Master
+# IELTS Prep
 
-IELTS Master is a full-stack application designed to help students prepare for the IELTS exam. It provides comprehensive practice and AI-powered feedback for various IELTS skills, including Writing and Speaking.
+**Live Deployment:** [https://ielts-prep-pi-ten.vercel.app/](https://ielts-prep-pi-ten.vercel.app/)
 
-## Features
-
-- **Writing Practice:** Practice Task 1 and Task 2 essays with integrated questions.
-- **Speaking Practice:** Simulate Speaking test conditions with timed prep and AI feedback.
-- **Admin Panel:** A comprehensive dashboard for teachers/administrators to manage tests, questions, and curriculum content.
-- **AI Feedback Integration:** Leverages AI (via Groq API) to provide automated grading and constructive feedback based on official IELTS band descriptors.
+IELTS Prep is a comprehensive web application designed to help students prepare for the IELTS exam. It provides practice modules and AI-powered feedback to help users improve their skills under simulated test conditions.
 
 ## Tech Stack
 
 - **Frontend:** React, Vite, Tailwind CSS
-- **Backend:** Node.js (Express/custom backend)
-- **AI Integration:** Groq API
+- **Backend:** Node.js, Express
+- **AI Integration:** Groq API for automated grading and feedback
 
-## Getting Started
+## Pages & Features
 
-### Prerequisites
+- **Landing / Home:** The welcoming entry point introducing the platform.
+- **Authentication (Login / Register / Forgot Password):** Secure user access and account creation.
+- **Onboarding:** Initial setup for new students to get started.
+- **Dashboard:** The central hub for students to view their progress and access modules.
+- **Reading & Listening:** Practice tests for comprehensive reading and listening skills.
+- **Writing:** Practice for Task 1 and Task 2 essays with automated AI grading and feedback.
+- **Speaking:** A simulated Speaking test environment with timed preparation and AI-assisted evaluation.
+- **Mock Test:** A full-length, simulated IELTS test experience.
+- **History:** A record of past test submissions and feedback.
+- **Settings:** User preferences and account management.
+- **Admin Panel:** A comprehensive dashboard for teachers/administrators to manage curriculum content and test questions.
 
-- Node.js installed on your machine
-- npm (Node Package Manager)
+## Folder Structure
 
-### Installation
-
-1. Clone the repository and navigate to the project root:
-   ```bash
-   cd TNhungIelts
-   ```
-
-2. Install dependencies for the root, frontend, and backend simultaneously:
-   ```bash
-   npm run install-all
-   ```
-
-### Running the Application (Development)
-
-To start both the frontend and backend servers concurrently, run:
-
-```bash
-npm start
+```text
+TNhungIelts/
+├── backend/                  # Node.js & Express server
+│   ├── models/               # Database schemas/models
+│   ├── routes/               # API endpoints
+│   ├── uploads/              # Directory for user-uploaded files
+│   └── server.js             # Main backend application entry point
+├── frontend/                 # React & Vite application
+│   ├── public/               # Static assets (favicons, SVGs)
+│   ├── src/
+│   │   ├── assets/           # Internal images/assets
+│   │   ├── components/       # Reusable React UI components
+│   │   ├── context/          # React Context (e.g., authentication state)
+│   │   ├── hooks/            # Custom React hooks
+│   │   ├── pages/            # Top-level page components (Writing, AdminPanel, etc.)
+│   │   ├── services/         # API integration logic (Groq API, backend calls)
+│   │   └── utils/            # Helper functions
+│   ├── tailwind.config.js    # Tailwind CSS configuration
+│   └── vite.config.js        # Vite build configuration
+├── package.json              # Root project dependencies and scripts
+└── vercel.json               # Vercel deployment configuration
 ```
-
-This will run:
-- The backend server on its designated port.
-- The frontend Vite development server.
-
-### Available Scripts
-
-In the project directory, you can run:
-
-- `npm run install-all`: Installs dependencies for the root folder, backend, and frontend.
-- `npm start`: Runs both backend and frontend in development mode concurrently.
-- `npm run server`: Starts only the backend server.
-- `npm run client`: Starts only the frontend development server.
-- `npm run build`: Builds the frontend application for production.
-- `npm run vercel-build`: Script used for Vercel deployment to install and build all necessary packages.
-
-## Deployment
-
-This project is configured for easy deployment on platforms like Vercel (see `vercel.json` and the `vercel-build` script).
-
