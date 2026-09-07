@@ -97,9 +97,9 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       : selectedTest.audioUrl;
 
     return (
-      <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'lg:grid-cols-12' : 'lg:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 overflow-hidden bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 h-full`}>
+      <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'md:grid-cols-12' : 'md:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 overflow-hidden bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 h-full`}>
         {hasLeftPanel && (
-          <div className={`flex flex-col h-full overflow-hidden border-r border-gray-200 pr-4 sm:pr-6 ${selectedTest.pdfUrl ? 'lg:col-span-9' : ''}`}>
+          <div className={`flex flex-col h-full overflow-hidden border-r border-gray-200 pr-4 sm:pr-6 ${selectedTest.pdfUrl ? 'md:col-span-9' : ''}`}>
             <div className="mb-4 shrink-0">
               <ListeningPlayer 
                 key={selectedTest.isSectionMedia ? `section-${activeSectionIndex}` : selectedTest.id} 
@@ -119,7 +119,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
             )}
           </div>
         )}
-        <div className={`flex flex-col h-full overflow-hidden ${hasLeftPanel && selectedTest.pdfUrl ? 'lg:col-span-3' : ''}`}>
+        <div className={`flex flex-col h-full overflow-hidden ${hasLeftPanel && selectedTest.pdfUrl ? 'md:col-span-3' : ''}`}>
           <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
              {selectedTest.sections.map((sec, idx) => (
                <button
@@ -223,7 +223,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     : selectedTest?.audioUrl;
 
   return (
-    <div className="w-full px-4 md:px-8 pb-6 pt-4 h-auto lg:h-[calc(100vh-80px)] flex flex-col">
+    <div className="w-full px-4 md:px-8 pb-6 pt-4 h-auto md:h-[calc(100vh-80px)] flex flex-col">
       <TipsModal 
         isOpen={showTips} 
         onClose={() => setShowTips(false)} 
@@ -280,11 +280,11 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       </div>
 
       {/* Main Layout */}
-      <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'lg:grid-cols-12' : 'lg:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-y-auto lg:overflow-hidden`}>
+      <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'md:grid-cols-12' : 'md:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-y-auto md:overflow-hidden`}>
         
         {/* Left Side: Audio Player & PDF */}
         {hasLeftPanel && (
-          <div className={`flex flex-col h-full overflow-hidden border-r border-gray-200 pr-4 sm:pr-6 ${selectedTest.pdfUrl ? 'lg:col-span-9' : ''}`}>
+          <div className={`flex flex-col h-full overflow-hidden border-r border-gray-200 pr-4 sm:pr-6 ${selectedTest.pdfUrl ? 'md:col-span-9' : ''}`}>
             <div className="mb-4 shrink-0">
               <ListeningPlayer 
                 key={selectedTest.isSectionMedia ? `section-${activeSectionIndex}` : selectedTest.id} 
@@ -305,7 +305,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           </div>
         )}
         
-        <div className={`flex flex-col h-full overflow-hidden ${hasLeftPanel && selectedTest.pdfUrl ? 'lg:col-span-3' : ''}`}>
+        <div className={`flex flex-col h-full overflow-hidden ${hasLeftPanel && selectedTest.pdfUrl ? 'md:col-span-3' : ''}`}>
           <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
              {selectedTest.sections.map((sec, idx) => (
                <button

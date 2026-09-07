@@ -167,7 +167,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
 
   if (isMockMode) {
     return (
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-hidden bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 h-full relative">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8 overflow-hidden bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 h-full relative">
         <ReadingPassage passage={activePassage} />
         <div className="flex flex-col h-full overflow-hidden">
           {/* Passage Navigation for Mock Mode */}
@@ -199,7 +199,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   }
 
   return (
-    <div className="w-full px-4 md:px-8 pb-6 h-auto lg:h-[calc(100vh-80px)] flex flex-col">
+    <div className="w-full px-4 md:px-8 pb-6 h-auto md:h-[calc(100vh-80px)] flex flex-col">
       <TipsModal 
         isOpen={showTips} 
         onClose={() => setShowTips(false)} 
@@ -234,15 +234,15 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         </div>
       </div>
       {/* Split Screen Layout */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-y-auto lg:overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-6 bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-y-auto md:overflow-hidden">
         
         {/* Left Side: Passage text */}
-        <div className="lg:col-span-9 max-h-[50vh] lg:max-h-none lg:h-full overflow-hidden flex flex-col">
+        <div className="md:col-span-9 max-h-[50vh] md:max-h-none md:h-full overflow-hidden flex flex-col">
           <ReadingPassage passage={activePassage} testPdfUrl={selectedTest?.pdfUrl} />
         </div>
 
         {/* Right Side: Questions */}
-        <div className="lg:col-span-3 h-full overflow-hidden flex flex-col border-t lg:border-t-0 lg:border-l border-gray-100 pt-4 lg:pt-0 lg:pl-6">
+        <div className="md:col-span-3 h-full overflow-hidden flex flex-col border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6">
           {/* Passage Navigation for normal mode */}
           <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
              {[0, 1, 2].map((idx) => (
