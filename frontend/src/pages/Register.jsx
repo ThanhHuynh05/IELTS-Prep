@@ -8,7 +8,6 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [adminCode, setAdminCode] = useState('');
   const [error, setError] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
   
@@ -24,7 +23,6 @@ export default function Register() {
 
     const trimmedUsername = username.trim();
     const trimmedEmail = email.trim();
-    const trimmedAdminCode = adminCode.trim();
 
     if (!trimmedUsername || !trimmedEmail || !password) {
       setError('All required fields must be filled');
@@ -44,7 +42,7 @@ export default function Register() {
     setIsRegistering(true);
 
     try {
-      const result = await register(trimmedUsername, trimmedEmail, password, trimmedAdminCode);
+      const result = await register(trimmedUsername, trimmedEmail, password, '');
       if (result.success) {
         navigate('/dashboard');
       } else {
@@ -181,26 +179,6 @@ export default function Register() {
                     )}
                   </div>
                 )}
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="adminCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Admin Code (Optional)
-              </label>
-              <div className="mt-1 relative rounded-md shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Shield className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="adminCode"
-                  name="adminCode"
-                  type="text"
-                  className="block w-full pl-10 sm:text-sm border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 py-2 transition-colors"
-                  placeholder="Enter code if you have one"
-                  value={adminCode}
-                  onChange={(e) => setAdminCode(e.target.value)}
-                />
               </div>
             </div>
 
