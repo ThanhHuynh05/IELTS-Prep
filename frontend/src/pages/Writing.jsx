@@ -36,6 +36,16 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const [currentEssay, setCurrentEssay] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [filterType, setFilterType] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedChartTypes, setSelectedChartTypes] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedChartTypes, filterType]);
+
+  const CHART_TYPES = ['Bar Chart', 'Line', 'Table', 'Map', 'Pie Chart'];
 
   useImperativeHandle(ref, () => ({
     forceSubmit: () => {
@@ -118,84 +128,185 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   if (!selectedTest) {
 
     
+    const filteredTests = tests.filter(test => {
+      if (searchQuery && !test.title?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (selectedChartTypes.length > 0) {
+        const titleMatch = selectedChartTypes.some(type => test.title?.toLowerCase().includes(type.toLowerCase()));
+        if (!titleMatch) return false;
+      }
+      if (filterType !== 'all' && test.type !== filterType && test.type !== 'both') return false;
+      return true;
+    });
+
+    const totalPages = Math.ceil(filteredTests.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const currentTests = filteredTests.slice(startIndex, startIndex + itemsPerPage);
+
     return (
-      <div className="w-full max-w-6xl mx-auto px-4 py-8 h-[calc(100vh-80px)] overflow-y-auto animate-in fade-in">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Writing Practice</h1>
-        <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">Select a test to begin your practice.</p>
+      <div className="w-full max-w-7xl mx-auto px-4 py-8 h-[calc(100vh-80px)] overflow-y-auto animate-in fade-in">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Writing Topics</h1>
         
-        {/* Filter Radio Buttons */}
-        <div className="flex space-x-2 mb-8 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit shadow-sm">
-          <button
-            onClick={() => setFilterType('all')}
-            className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${filterType === 'all' ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
-          >
-            All Tasks
-          </button>
-          <button
-            onClick={() => setFilterType('task1')}
-            className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${filterType === 'task1' ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
-          >
-            Task 1
-          </button>
-          <button
-            onClick={() => setFilterType('task2')}
-            className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${filterType === 'task2' ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
-          >
-            Task 2
-          </button>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {(filterType === 'all' || filterType === 'task2') && (
-            <div 
-            onClick={() => {
-              setSelectedTest({ id: 'custom-test', title: 'Custom Practice', task1: '', task2: '' });
-              setTask2Question('');
-              setTaskType('task2');
-              window.history.pushState({ practiceActive: true }, '', window.location.pathname);
-            }}
-            className="bg-orange-50 dark:bg-orange-900/20 p-6 rounded-2xl border border-orange-200 dark:border-orange-800 shadow-sm hover:shadow-md cursor-pointer transition-all hover:border-orange-500 hover:ring-1 hover:ring-orange-500 group flex flex-col h-full"
-          >
-            <div className="flex-1">
-              <h3 className="text-xl font-bold text-orange-800 dark:text-orange-300 group-hover:text-orange-600 transition-colors mb-2 flex items-center gap-2">
-                ✍️ Custom Practice
-              </h3>
-              <p className="text-sm text-orange-700/80 dark:text-orange-200/80 mb-4 line-clamp-3">
-                Have your own essay question? Paste it here and get instant AI feedback on your writing without saving it to the database.
-              </p>
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Sidebar */}
+          <div className="w-full md:w-64 flex-shrink-0 space-y-6">
+            {/* Search */}
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+              <h3 className="font-bold text-gray-900 dark:text-white mb-3">Search</h3>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full p-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-orange-500"
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+              </div>
             </div>
-            <div className="mt-4 pt-4 border-t border-orange-200/50 dark:border-orange-800/50 flex justify-between items-center text-sm font-medium text-orange-600 dark:text-orange-400">
-              <span>Write now</span>
-              <span>→</span>
+            
+            {/* Filter */}
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+              <h3 className="font-bold text-gray-900 dark:text-white mb-1">Filter</h3>
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-4 uppercase tracking-wider">Chart Type ({CHART_TYPES.length})</p>
+              <div className="space-y-3">
+                {CHART_TYPES.map(type => (
+                  <label key={type} className="flex items-center justify-between cursor-pointer group">
+                    <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-orange-600 transition-colors">{type}</span>
+                    <input 
+                      type="checkbox" 
+                      className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                      checked={selectedChartTypes.includes(type)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedChartTypes([...selectedChartTypes, type]);
+                        } else {
+                          setSelectedChartTypes(selectedChartTypes.filter(t => t !== type));
+                        }
+                      }}
+                    />
+                  </label>
+                ))}
+              </div>
+              <button 
+                className="mt-4 text-sm text-blue-600 font-medium hover:underline"
+                onClick={() => setSelectedChartTypes([])}
+              >
+                Clear Filters
+              </button>
             </div>
           </div>
-          )}
-          
-          {tests.filter(test => filterType === 'all' || test.type === filterType || test.type === 'both').map((test, index) => (
-            <div 
-              key={test.id || index}
-              onClick={() => {
-                setSelectedTest(test);
-                setTask2Question(test.task2 || '');
-                setTaskType(test.type === 'task2' ? 'task2' : 'task1');
-                window.history.pushState({ practiceActive: true }, '', window.location.pathname);
-              }}
-              className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md cursor-pointer transition-all hover:border-orange-500 hover:ring-1 hover:ring-orange-500 group flex flex-col h-full"
-            >
-              <div className="flex-1">
-                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 group-hover:text-orange-600 transition-colors mb-2">
-                  {test.title || `Test ${index + 1}`}
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-3">
-                  {test.type === 'task1' ? 'Task 1 question included.' : test.type === 'task2' ? 'Task 2 question included.' : 'Task 1 and Task 2 questions included.'} Get AI feedback on your writing.
-                </p>
-              </div>
-              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center text-sm font-medium text-orange-600 dark:text-orange-400">
-                <span>Start Test</span>
-                <span>→</span>
-              </div>
+
+          {/* Main List */}
+          <div className="flex-1 space-y-4">
+            {/* Filter Radio Buttons */}
+            <div className="flex space-x-2 mb-4 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit shadow-sm">
+              <button
+                onClick={() => setFilterType('all')}
+                className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${filterType === 'all' ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+              >
+                All Tasks
+              </button>
+              <button
+                onClick={() => setFilterType('task1')}
+                className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${filterType === 'task1' ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+              >
+                Task 1
+              </button>
+              <button
+                onClick={() => setFilterType('task2')}
+                className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${filterType === 'task2' ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+              >
+                Task 2
+              </button>
             </div>
-          ))}
+
+            {(filterType === 'all' || filterType === 'task2') && (
+              <div 
+                onClick={() => {
+                  setSelectedTest({ id: 'custom-test', title: 'Custom Practice', task1: '', task2: '' });
+                  setTask2Question('');
+                  setTaskType('task2');
+                  window.history.pushState({ practiceActive: true }, '', window.location.pathname);
+                }}
+                className="bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-200 dark:border-orange-800 shadow-sm hover:shadow-md cursor-pointer transition-all hover:border-orange-500 hover:ring-1 hover:ring-orange-500 flex flex-col sm:flex-row overflow-hidden"
+              >
+                <div className="sm:w-64 bg-orange-100/50 dark:bg-orange-800/30 flex items-center justify-center p-4">
+                  <span className="text-4xl">✍️</span>
+                </div>
+                <div className="p-6 flex-1 flex flex-col justify-center">
+                  <div className="text-xs text-orange-500 dark:text-orange-400 mb-2">Custom</div>
+                  <h3 className="text-lg font-bold text-orange-800 dark:text-orange-300 mb-2">
+                    Custom Practice
+                  </h3>
+                  <p className="text-sm text-orange-700/80 dark:text-orange-200/80 line-clamp-2">
+                    Have your own essay question? Paste it here and get instant AI feedback on your writing without saving it to the database.
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {currentTests.map((test, index) => (
+              <div 
+                key={test.id || index}
+                onClick={() => {
+                  setSelectedTest(test);
+                  setTask2Question(test.task2 || '');
+                  setTaskType(test.type === 'task2' ? 'task2' : 'task1');
+                  window.history.pushState({ practiceActive: true }, '', window.location.pathname);
+                }}
+                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md cursor-pointer transition-all hover:border-orange-500 hover:ring-1 hover:ring-orange-500 flex flex-col sm:flex-row overflow-hidden"
+              >
+                <div className="sm:w-64 bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center p-4 min-h-[160px]">
+                  {test.task1Image ? (
+                    <img src={test.task1Image} alt={test.title} className="max-h-32 object-contain" />
+                  ) : (
+                    <div className="text-blue-400 dark:text-blue-600 font-medium">No Image</div>
+                  )}
+                </div>
+                <div className="p-6 flex-1 flex flex-col justify-center">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                    {test.type === 'task1' ? 'Task 1' : test.type === 'task2' ? 'Task 2' : 'Task 1 & 2'}
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                    {test.title || `Test ${startIndex + index + 1}`}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                    {test.task1 ? test.task1 : (test.type === 'task1' ? 'Task 1 question included.' : test.type === 'task2' ? 'Task 2 question included.' : 'Task 1 and Task 2 questions included.')}
+                  </p>
+                </div>
+              </div>
+            ))}
+            
+            {filteredTests.length === 0 && (
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                No tests found matching your criteria.
+              </div>
+            )}
+
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center space-x-2 mt-8 pb-4">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 border dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Previous
+                </button>
+                <div className="text-sm text-gray-600 dark:text-gray-400 font-medium px-4">
+                  Page {currentPage} of {totalPages}
+                </div>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 border dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
