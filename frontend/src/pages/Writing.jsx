@@ -35,7 +35,7 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const [showTips, setShowTips] = useState(false);
   const [currentEssay, setCurrentEssay] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [filterType, setFilterType] = useState('all');
+  const [filterType, setFilterType] = useState('task1');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedChartTypes, setSelectedChartTypes] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -142,6 +142,7 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         });
         if (!titleMatch) return false;
       }
+      if (filterType === 'custom') return false;
       if (filterType !== 'all' && test.type !== filterType && test.type !== 'both') return false;
       return true;
     });
@@ -211,12 +212,6 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
             {/* Filter Radio Buttons */}
             <div className="flex space-x-2 mb-4 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg w-fit shadow-sm">
               <button
-                onClick={() => setFilterType('all')}
-                className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${filterType === 'all' ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
-              >
-                All Tasks
-              </button>
-              <button
                 onClick={() => setFilterType('task1')}
                 className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${filterType === 'task1' ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
               >
@@ -228,9 +223,15 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               >
                 Task 2
               </button>
+              <button
+                onClick={() => setFilterType('custom')}
+                className={`px-4 py-2 rounded-md text-sm font-bold transition-all ${filterType === 'custom' ? 'bg-white dark:bg-gray-700 text-orange-600 dark:text-orange-400 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+              >
+                Custom
+              </button>
             </div>
 
-            {(filterType === 'all' || filterType === 'task2') && (
+            {filterType === 'custom' && (
               <div 
                 onClick={() => {
                   setSelectedTest({ id: 'custom-test', title: 'Custom Practice', task1: '', task2: '' });
@@ -287,7 +288,7 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               </div>
             ))}
             
-            {filteredTests.length === 0 && (
+            {filteredTests.length === 0 && filterType !== 'custom' && (
               <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                 No tests found matching your criteria.
               </div>
