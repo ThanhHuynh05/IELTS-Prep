@@ -370,8 +370,8 @@ export default function AdminPanel() {
     setError(''); setSuccess('');
     try {
       if (!wTitle) throw new Error("Title is required.");
-      if (wTestType === 'task1' && !wTask1) throw new Error("Task 1 prompt is required.");
-      if (wTestType === 'task2' && !wTask2) throw new Error("Task 2 prompt is required.");
+      if (wTestType === 'task1' && !wTask1) throw new Error("Task 1 question is required.");
+      if (wTestType === 'task2' && !wTask2) throw new Error("Task 2 question is required.");
 
       let finalImageUrl = wTask1Image;
       if (wTestType === 'task1' && wTask1Image instanceof File) {
@@ -473,7 +473,7 @@ export default function AdminPanel() {
         if (!sPart1.some(q => q.trim())) throw new Error("At least one question is required for Part 1.");
         newTest.questions = sPart1.filter(q => q.trim());
       } else if (sPartType === 2) {
-        if (!sPart2.some(q => q.trim())) throw new Error("At least one prompt is required for Part 2.");
+        if (!sPart2.some(q => q.trim())) throw new Error("At least one question is required for Part 2.");
         newTest.questions = sPart2.filter(q => q.trim());
       } else if (sPartType === 3) {
         const validPart3 = sPart3.filter(item => item.subTopic?.trim() && item.questions?.some(q => q.trim()));
@@ -954,7 +954,7 @@ export default function AdminPanel() {
               
               {wTestType === 'task1' && (
                 <>
-                  <div><label htmlFor="wTask1" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 1 Prompt</label><textarea id="wTask1" value={wTask1} onChange={(e) => setWTask1(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="The chart below shows..." /></div>
+                  <div><label htmlFor="wTask1" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 1 Question</label><textarea id="wTask1" value={wTask1} onChange={(e) => setWTask1(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="The chart below shows..." /></div>
                   <div>
                     <label htmlFor="wTask1Image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 1 Chart Image URL</label>
                     <div className="flex flex-col sm:flex-row gap-4">
@@ -989,7 +989,7 @@ export default function AdminPanel() {
               )}
 
               {wTestType === 'task2' && (
-                <div><label htmlFor="wTask2" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 2 Prompt</label><textarea id="wTask2" value={wTask2} onChange={(e) => setWTask2(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="Some people believe..." /></div>
+                <div><label htmlFor="wTask2" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Task 2 Question</label><textarea id="wTask2" value={wTask2} onChange={(e) => setWTask2(e.target.value)} rows={4} className="w-full p-3 border dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500" placeholder="Some people believe..." /></div>
               )}
               <div className="flex justify-end pt-4"><button onClick={handleSaveWriting} className="flex items-center px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg shadow-sm"><Save size={20} className="mr-2" />{editingId ? 'Update Writing Test' : 'Save Writing Test'}</button></div>
             </div>
@@ -1019,7 +1019,7 @@ export default function AdminPanel() {
                   className="w-5 h-5 text-pink-600 rounded border-gray-300 focus:ring-pink-500"
                 />
                 <label htmlFor="isSpeakingParseMode" className="ml-3 font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
-                  Use Add & Parse Mode (Quick Paste Questions/Prompts)
+                  Use Add & Parse Mode (Quick Paste Questions)
                 </label>
               </div>
 
@@ -1033,7 +1033,7 @@ export default function AdminPanel() {
                     Quick Paste & Parse
                   </h3>
                   <p className="text-sm text-pink-700 dark:text-pink-400 mb-4 max-w-2xl">
-                    Paste your questions/prompts below, one per line. We will automatically parse them and add them to Part {sPartType}.
+                    Paste your questions below, one per line. We will automatically parse them and add them to Part {sPartType}.
                   </p>
                   
                   <div className="flex flex-col space-y-3">
@@ -1075,8 +1075,8 @@ export default function AdminPanel() {
                   {sPartType === 2 && (
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Part 2 Prompts (Cue Cards)</label>
-                        <button type="button" onClick={() => setSPart2([...sPart2, ''])} className="text-xs text-pink-600 hover:text-pink-800 dark:text-pink-400 font-medium">+ Add Prompt</button>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Part 2 Questions (Cue Cards)</label>
+                        <button type="button" onClick={() => setSPart2([...sPart2, ''])} className="text-xs text-pink-600 hover:text-pink-800 dark:text-pink-400 font-medium">+ Add Question</button>
                       </div>
                       <div className="space-y-4">
                         {sPart2.map((q, i) => (

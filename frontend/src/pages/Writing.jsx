@@ -187,7 +187,7 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                   {test.title || `Test ${index + 1}`}
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-3">
-                  {test.type === 'task1' ? 'Task 1 prompt included.' : test.type === 'task2' ? 'Task 2 prompt included.' : 'Task 1 and Task 2 prompts included.'} Get AI feedback on your writing.
+                  {test.type === 'task1' ? 'Task 1 question included.' : test.type === 'task2' ? 'Task 2 question included.' : 'Task 1 and Task 2 questions included.'} Get AI feedback on your writing.
                 </p>
               </div>
               <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center text-sm font-medium text-orange-600 dark:text-orange-400">
@@ -205,7 +205,7 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
 
   const handleSubmit = async (essay) => {
     if (taskType === 'task2' && !currentQuestion.trim()) {
-      setError("Please enter a question/prompt for Task 2.");
+      setError("Please enter a question for Task 2.");
       return;
     }
     
