@@ -45,7 +45,7 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     setCurrentPage(1);
   }, [searchQuery, selectedChartTypes, filterType]);
 
-  const CHART_TYPES = ['Bar Chart', 'Line', 'Table', 'Map', 'Pie Chart'];
+  const CHART_TYPES = ['Bar chart', 'Line', 'Table', 'Map', 'Pie Chart', 'Process', 'Mixed'];
 
   useImperativeHandle(ref, () => ({
     forceSubmit: () => {
@@ -131,7 +131,15 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     const filteredTests = tests.filter(test => {
       if (searchQuery && !test.title?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       if (selectedChartTypes.length > 0) {
-        const titleMatch = selectedChartTypes.some(type => test.title?.toLowerCase().includes(type.toLowerCase()));
+        const titleMatch = selectedChartTypes.some(type => {
+          let keyword = type.split(' ')[0];
+          if (keyword.includes('/')) {
+            keyword = keyword.split('/')[0]; // Use just "Mixed" or first word for multiple
+          }
+          const safeType = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const regex = new RegExp(`\\b${safeType}\\b`, 'i');
+          return regex.test(test.title);
+        });
         if (!titleMatch) return false;
       }
       if (filterType !== 'all' && test.type !== filterType && test.type !== 'both') return false;
