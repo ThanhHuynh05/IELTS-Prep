@@ -5,6 +5,7 @@ import ListeningFeedback from '../components/listening/ListeningFeedback';
 import TipsModal from '../components/common/TipsModal';
 import { Loader2 } from 'lucide-react';
 import { checkAnswer } from '../utils/answerChecker';
+import PdfViewer from '../components/common/PdfViewer';
 
 const LISTENING_TIPS = [
   "Read the questions during the short pauses BEFORE the recording begins.",
@@ -295,11 +296,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
 
             {selectedTest.pdfUrl && (
               <div className="flex-1 min-h-[400px] md:min-h-0 border border-gray-200 rounded-lg overflow-hidden relative">
-                <iframe 
-                  src={selectedTest.pdfUrl} 
-                  className="absolute inset-0 w-full h-full"
-                  title="Listening Test PDF"
-                />
+                <PdfViewer fileUrl={selectedTest.pdfUrl} />
               </div>
             )}
           </div>

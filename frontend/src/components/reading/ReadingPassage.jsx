@@ -1,3 +1,5 @@
+import PdfViewer from '../common/PdfViewer';
+
 export default function ReadingPassage({ passage, testPdfUrl }) {
   if (!passage && !testPdfUrl) return null;
 
@@ -10,14 +12,7 @@ export default function ReadingPassage({ passage, testPdfUrl }) {
       )}
       
       {testPdfUrl ? (
-        <div className="flex-1 w-full h-full min-h-[400px] md:min-h-[600px] border border-gray-200 rounded-lg overflow-hidden">
-          <iframe 
-            src={testPdfUrl} 
-            title={passage?.title || "Test PDF"}
-            className="w-full h-full rounded-md"
-            type="application/pdf"
-          />
-        </div>
+        <PdfViewer fileUrl={testPdfUrl} />
       ) : (
         <div className="overflow-y-auto pr-2">
           <div className="prose prose-lg text-gray-700 dark:text-gray-300 dark:prose-invert leading-relaxed space-y-4">
