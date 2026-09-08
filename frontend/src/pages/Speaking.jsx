@@ -130,7 +130,8 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       <div className="flex flex-col h-[calc(100vh-80px)] bg-gray-50 dark:bg-gray-900 animate-in fade-in">
         {/* Top Header Filter */}
         <div className="flex flex-col md:flex-row md:items-center gap-4 p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shrink-0">
-          <div className="flex overflow-x-auto w-full md:w-auto gap-2 md:gap-4 pb-2 md:pb-0 no-scrollbar shrink-0">
+          {/* Desktop part buttons */}
+          <div className="hidden md:flex flex-wrap w-full md:w-auto gap-2 md:gap-4 pb-2 md:pb-0 shrink-0">
             {[1, 2, 3].map(p => (
               <button
                 key={p}
@@ -145,7 +146,20 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               </button>
             ))}
           </div>
-          <div className="w-full md:w-auto md:ml-auto flex gap-4 shrink-0">
+          
+          {/* Mobile part dropdown */}
+          <div className="block md:hidden w-full shrink-0">
+            <select
+              value={selectedFilterPart}
+              onChange={(e) => setSelectedFilterPart(Number(e.target.value))}
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-medium focus:ring-2 focus:ring-purple-500"
+            >
+              {[1, 2, 3].map(p => (
+                <option key={p} value={p}>Practice Part {p}</option>
+              ))}
+            </select>
+          </div>
+          <div className="w-full md:w-auto md:ml-auto flex gap-4 shrink-0 order-first md:order-last mb-4 md:mb-0">
              <button
                onClick={() => {
                  const part1s = topics.filter(t => t.part === 1 || t.part1?.length > 0);
@@ -192,16 +206,23 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         <div className="flex flex-col flex-1 overflow-hidden">
           {/* Mobile/Tablet horizontal topic pills */}
           {filteredTopics.length > 0 && (
-            <div className="md:hidden border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 flex overflow-x-auto gap-2 no-scrollbar shrink-0">
-              {filteredTopics.map((t, index) => (
-                <a
-                  key={t.id || index}
-                  href={`#topic-${t.id}`}
-                  className="whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-100 dark:border-purple-800 hover:bg-purple-100 transition-colors"
-                >
-                  {t.title || `Topic ${index + 1}`}
-                </a>
-              ))}
+            <div className="md:hidden border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 shrink-0">
+              <select 
+                onChange={(e) => {
+                  if (!e.target.value) return;
+                  const el = document.getElementById(`topic-${e.target.value}`);
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  e.target.value = '';
+                }}
+                className="w-full p-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white text-sm font-medium focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="">Jump to a topic...</option>
+                {filteredTopics.map((t, index) => (
+                  <option key={t.id || index} value={t.id}>
+                    {t.title || `Topic ${index + 1}`}
+                  </option>
+                ))}
+              </select>
             </div>
           )}
 
@@ -379,24 +400,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
 
   return (
     <div className="max-w-7xl mx-auto pb-12 p-4 md:p-8 flex flex-col md:flex-row h-[calc(100vh-80px)]">
-      {/* Mobile Back Button */}
-      {!isMockMode && (
-        <button
-          onClick={() => {
-            if (window.history.state?.practiceActive) {
-              window.history.back();
-            } else {
-              setSelectedTopic(null);
-              setFeedback(null);
-              setPracticeMode(false);
-            }
-          }}
-          className="md:hidden w-full mb-4 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
-        >
-          <span>←</span> Back to Tests
-        </button>
-      )}
-      
+
       {/* Sidebar - Topic Selector */}
       {!isMockMode && (
         <div className="hidden md:block w-64 border-r border-gray-200 dark:border-gray-700 pr-6 overflow-y-auto shrink-0">
@@ -483,8 +487,28 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               </button>
             )}
           </div>
+          <div className="flex items-center w-full md:w-auto md:justify-end mt-4 md:mt-0 overflow-x-auto no-scrollbar shrink-0">
+            {/* Mobile Back Button */}
+            {!isMockMode && (
+              <div className="flex-1 md:hidden flex justify-start">
+                <button
+                  onClick={() => {
+                    if (window.history.state?.practiceActive) {
+                      window.history.back();
+                    } else {
+                      setSelectedTopic(null);
+                      setFeedback(null);
+                      setPracticeMode(false);
+                    }
+                  }}
+                  className="px-3 py-1.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors inline-flex items-center justify-center gap-1.5 shrink-0"
+                >
+                  <span>←</span> Back
+                </button>
+              </div>
+            )}
           {(!feedback && practiceMode && !isMockMode && !isGrading) && (
-            <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg flex overflow-x-auto w-full md:w-auto no-scrollbar shrink-0 mt-4 md:mt-0">
+            <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-lg inline-flex shrink-0 mx-auto md:mx-0">
               {selectedTopic.part1 && selectedTopic.part1.length > 0 && (
                 <button 
                   onClick={() => { setTaskPart('part1'); setCurrentQuestionIndex(0); }}
@@ -511,6 +535,8 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               )}
             </div>
           )}
+          {!isMockMode && <div className="flex-1 md:hidden"></div>}
+          </div>
         </div>
 
         {error && (
@@ -535,7 +561,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
 
             
             {taskPart !== 'part2' && (
-              <div className="flex flex-wrap justify-between items-center gap-2 mb-4 bg-gray-50 p-2 rounded border">
+              <div className="flex justify-between items-center mb-4 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg border border-gray-200 dark:border-gray-700">
                  <button 
                    onClick={() => setCurrentQuestionIndex(p => Math.max(0, p - 1))}
                    disabled={currentQuestionIndex === 0}
@@ -544,7 +570,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                  >
                    &larr; Previous
                  </button>
-                 <span className="text-sm font-medium text-gray-600">
+                 <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
                    Question {currentQuestionIndex + 1} of {selectedTopic[taskPart].length}
                  </span>
                  <button 

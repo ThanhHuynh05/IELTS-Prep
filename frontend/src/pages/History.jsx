@@ -52,7 +52,7 @@ export default function History() {
         </div>
       </div>
 
-      <div className="flex space-x-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+      <div className="flex flex-wrap gap-2 mb-6 pb-2">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;

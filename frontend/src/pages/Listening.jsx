@@ -109,7 +109,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
             </div>
             
             {selectedTest.pdfUrl && (
-              <div className="flex-1 min-h-0 border border-gray-200 rounded-lg overflow-hidden relative">
+              <div className="flex-1 min-h-[400px] md:min-h-0 border border-gray-200 rounded-lg overflow-hidden relative">
                 <iframe 
                   src={selectedTest.pdfUrl} 
                   className="absolute inset-0 w-full h-full"
@@ -294,7 +294,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
             </div>
 
             {selectedTest.pdfUrl && (
-              <div className="flex-1 min-h-0 border border-gray-200 rounded-lg overflow-hidden relative">
+              <div className="flex-1 min-h-[400px] md:min-h-0 border border-gray-200 rounded-lg overflow-hidden relative">
                 <iframe 
                   src={selectedTest.pdfUrl} 
                   className="absolute inset-0 w-full h-full"

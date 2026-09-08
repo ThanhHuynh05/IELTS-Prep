@@ -606,7 +606,7 @@ export default function AdminPanel() {
 
       {/* Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
-        <div className="flex space-x-2 overflow-x-auto pb-2 sm:pb-0">
+        <div className="flex flex-wrap gap-2 pb-2 sm:pb-0">
           <button onClick={() => {setActiveTab('reading'); setError(''); setSuccess(''); if(manageType !== 'reading') setEditingId(null);}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'reading' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><BookOpen size={16} className="mr-2" /> Reading</button>
           <button onClick={() => {setActiveTab('listening'); setError(''); setSuccess(''); if(manageType !== 'listening') setEditingId(null);}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'listening' ? 'bg-purple-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><Headphones size={16} className="mr-2" /> Listening</button>
           <button onClick={() => {setActiveTab('writing'); setError(''); setSuccess(''); if(manageType !== 'writing') setEditingId(null);}} className={`flex items-center px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === 'writing' ? 'bg-orange-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border dark:border-gray-700'}`}><PenTool size={16} className="mr-2" /> Writing</button>
@@ -695,7 +695,7 @@ export default function AdminPanel() {
               </div>
 
               {/* Passage Tabs */}
-              <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6 mt-4 overflow-x-auto no-scrollbar">
+              <div className="flex flex-wrap border-b border-gray-200 dark:border-gray-700 mb-6 mt-4">
                 {[1, 2, 3].map((num) => (
                   <button
                     key={num}

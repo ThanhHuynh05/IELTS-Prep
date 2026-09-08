@@ -237,7 +237,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-6 bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-y-auto md:overflow-hidden">
         
         {/* Left Side: Passage text */}
-        <div className="md:col-span-9 max-h-[50vh] md:max-h-none md:h-full overflow-hidden flex flex-col">
+        <div className="md:col-span-9 max-h-[65vh] min-h-[400px] md:max-h-none md:h-full overflow-hidden flex flex-col">
           <ReadingPassage passage={activePassage} testPdfUrl={selectedTest?.pdfUrl} />
         </div>
 
