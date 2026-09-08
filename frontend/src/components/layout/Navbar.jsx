@@ -39,7 +39,7 @@ export default function Navbar() {
             <Link to="/dashboard" className="flex-shrink-0 flex items-center text-xl font-bold text-blue-600 dark:text-blue-400">
               IELTS Prep
             </Link>
-            <div className="hidden md:ml-6 md:flex md:space-x-8">
+            <div className="hidden md:ml-4 xl:ml-6 md:flex md:space-x-4 xl:space-x-8 overflow-hidden">
               <Link to="/dashboard" className={getLinkClasses('/dashboard')} aria-current={location.pathname === '/dashboard' ? 'page' : undefined}>Dashboard</Link>
               <Link to="/listening" className={getLinkClasses('/listening')} aria-current={location.pathname === '/listening' ? 'page' : undefined}>Listening</Link>
               <Link to="/reading" className={getLinkClasses('/reading')} aria-current={location.pathname === '/reading' ? 'page' : undefined}>Reading</Link>
@@ -47,21 +47,21 @@ export default function Navbar() {
               <Link to="/speaking" className={getLinkClasses('/speaking')} aria-current={location.pathname === '/speaking' ? 'page' : undefined}>Speaking</Link>
               <Link to="/history" className={getLinkClasses('/history')} aria-current={location.pathname === '/history' ? 'page' : undefined}>History</Link>
               {user?.role === 'admin' && (
-                <Link to="/admin" className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-fuchsia-600 dark:text-fuchsia-400 hover:text-fuchsia-800">
+                <Link to="/admin" className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-fuchsia-600 dark:text-fuchsia-400 hover:text-fuchsia-800 whitespace-nowrap">
                   <Shield size={16} className="mr-1" /> Admin Panel
                 </Link>
               )}
             </div>
           </div>
-          <div className="hidden md:ml-6 md:flex md:items-center space-x-4">
+          <div className="hidden md:ml-2 xl:ml-6 md:flex md:items-center space-x-2 xl:space-x-4 shrink-0">
             {user && (
-              <Link to="/settings" className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2 flex items-center border-r dark:border-gray-700 pr-4 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs mr-2 border dark:border-gray-700 uppercase tracking-wider">{user.role}</span>
+              <Link to="/settings" className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-1 xl:mr-2 flex items-center border-r dark:border-gray-700 pr-2 xl:pr-4 hover:text-blue-600 dark:hover:text-blue-400 transition-colors whitespace-nowrap">
+                <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs mr-2 border dark:border-gray-700 uppercase tracking-wider hidden xl:inline-block">{user.role}</span>
                 {user.username}
               </Link>
             )}
             <ThemeToggle />
-            <Link to="/mock-test" className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-bold rounded-md text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-colors">
+            <Link to="/mock-test" className="inline-flex items-center px-3 xl:px-4 py-2 border border-transparent text-sm font-bold rounded-md text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-colors whitespace-nowrap">
               Full Mock Test
             </Link>
             {user && (

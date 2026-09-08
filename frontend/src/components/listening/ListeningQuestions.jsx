@@ -56,7 +56,7 @@ export default function ListeningQuestions({ sections, activeSectionIndex = 0, u
                           <select 
                             value={userAnswers[q.id] || ''}
                             onChange={(e) => handleInputChange(q.id, e.target.value)}
-                            className="form-select border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:w-40 text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border p-1.5 transition-colors"
+                            className="form-select border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 w-full text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white border p-1.5 transition-colors"
                           >
                             <option value="" disabled></option>
                             {section.options.map(opt => (
@@ -108,7 +108,7 @@ export default function ListeningQuestions({ sections, activeSectionIndex = 0, u
                             value={userAnswers[q.id] || ''}
                             onChange={(e) => handleInputChange(q.id, e.target.value)}
                             placeholder="Type your answer..."
-                            className="w-full sm:w-64 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
+                            className="w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                           />
                         </div>
                       )}

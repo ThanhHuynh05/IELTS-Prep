@@ -188,7 +188,7 @@ export default function PdfViewer({ fileUrl }) {
               inputRef={pageRef}
               pageNumber={pageNumber}
               scale={scale}
-              width={containerWidth - 32} // Subtracting padding
+              width={containerWidth}
               renderTextLayer={true}
               renderAnnotationLayer={true}
               className="shadow-lg bg-white relative"
