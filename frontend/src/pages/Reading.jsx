@@ -234,15 +234,15 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         </div>
       </div>
       {/* Split Screen Layout */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-5 lg:grid-cols-12 gap-6 bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-y-auto md:overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-y-auto lg:overflow-hidden">
         
         {/* Left Side: Passage text */}
-        <div className="md:col-span-3 lg:col-span-8 max-h-[65vh] min-h-[400px] md:max-h-none md:h-full overflow-hidden flex flex-col">
+        <div className="lg:col-span-8 max-h-[65vh] min-h-[400px] lg:max-h-none lg:h-full overflow-hidden flex flex-col">
           <ReadingPassage passage={activePassage} testPdfUrl={selectedTest?.pdfUrl} />
         </div>
 
         {/* Right Side: Questions */}
-        <div className="md:col-span-2 lg:col-span-4 h-full overflow-hidden flex flex-col border-t md:border-t-0 md:border-l border-gray-200 pt-6 md:pt-0 md:pl-6 mt-6 md:mt-0 min-w-0">
+        <div className="lg:col-span-4 h-full overflow-hidden flex flex-col border-t lg:border-t-0 lg:border-l border-gray-200 pt-6 lg:pt-0 lg:pl-6 mt-6 lg:mt-0 min-w-0">
           {/* Passage Navigation for normal mode */}
           <div className="flex flex-wrap gap-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
              {[0, 1, 2].map((idx) => (

@@ -39,7 +39,7 @@ export default function Navbar() {
             <Link to="/dashboard" className="flex-shrink-0 flex items-center text-xl font-bold text-blue-600 dark:text-blue-400">
               IELTS Prep
             </Link>
-            <div className="hidden md:ml-4 xl:ml-6 md:flex md:space-x-4 xl:space-x-8 overflow-hidden">
+            <div className="hidden lg:ml-4 xl:ml-6 lg:flex lg:space-x-4 xl:space-x-8 overflow-hidden">
               <Link to="/dashboard" className={getLinkClasses('/dashboard')} aria-current={location.pathname === '/dashboard' ? 'page' : undefined}>Dashboard</Link>
               <Link to="/listening" className={getLinkClasses('/listening')} aria-current={location.pathname === '/listening' ? 'page' : undefined}>Listening</Link>
               <Link to="/reading" className={getLinkClasses('/reading')} aria-current={location.pathname === '/reading' ? 'page' : undefined}>Reading</Link>
@@ -53,7 +53,7 @@ export default function Navbar() {
               )}
             </div>
           </div>
-          <div className="hidden md:ml-2 xl:ml-6 md:flex md:items-center space-x-2 xl:space-x-4 shrink-0">
+          <div className="hidden lg:ml-2 xl:ml-6 lg:flex lg:items-center space-x-2 xl:space-x-4 shrink-0">
             {user && (
               <Link to="/settings" className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-1 xl:mr-2 flex items-center border-r dark:border-gray-700 pr-2 xl:pr-4 hover:text-blue-600 dark:hover:text-blue-400 transition-colors whitespace-nowrap">
                 <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs mr-2 border dark:border-gray-700 uppercase tracking-wider hidden xl:inline-block">{user.role}</span>
@@ -77,7 +77,7 @@ export default function Navbar() {
           </div>
           
           {/* Mobile menu button */}
-          <div className="flex items-center md:hidden space-x-2">
+          <div className="flex items-center lg:hidden space-x-2">
             <ThemeToggle />
             <button
               onClick={() => setMenuOpen(!menuOpen)}
@@ -93,7 +93,7 @@ export default function Navbar() {
 
       {/* Mobile Menu Dropdown */}
       {menuOpen && (
-        <div className="md:hidden absolute top-16 left-0 w-full bg-white dark:bg-gray-900 border-b dark:border-gray-800 shadow-lg">
+        <div className="lg:hidden absolute top-16 left-0 w-full bg-white dark:bg-gray-900 border-b dark:border-gray-800 shadow-lg">
           <div className="px-2 pt-2 pb-3 space-y-1">
             <Link to="/dashboard" onClick={() => setMenuOpen(false)} className={getMobileLinkClasses('/dashboard')}>Dashboard</Link>
             <Link to="/listening" onClick={() => setMenuOpen(false)} className={getMobileLinkClasses('/listening')}>Listening</Link>

@@ -204,9 +204,9 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       <div className="w-full max-w-7xl mx-auto px-4 py-8 h-[calc(100vh-80px)] overflow-y-auto animate-in fade-in">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Writing Topics</h1>
         
-        <div className="flex flex-col md:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
-          <div className="w-full md:w-64 flex-shrink-0 space-y-6">
+          <div className="w-full lg:w-64 flex-shrink-0 space-y-6">
             {/* Search */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
               <h3 className="font-bold text-gray-900 dark:text-white mb-3">Search</h3>
@@ -403,7 +403,9 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                     {test.title || `Test ${startIndex + index + 1}`}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                    {test.task1 ? test.task1 : (test.type === 'task1' ? 'Task 1 question included.' : test.type === 'task2' ? 'Task 2 question included.' : 'Task 1 and Task 2 questions included.')}
+                    {test.type === 'task2' 
+                      ? (test.task2 || 'Task 2 question included.')
+                      : (test.task1 || (test.type === 'task1' ? 'Task 1 question included.' : 'Task 1 and Task 2 questions included.'))}
                   </p>
                 </div>
               </div>

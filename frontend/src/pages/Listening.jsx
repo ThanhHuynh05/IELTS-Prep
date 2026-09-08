@@ -281,11 +281,11 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       </div>
 
       {/* Main Layout */}
-      <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'md:grid-cols-5 lg:grid-cols-12' : 'md:grid-cols-2 lg:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-y-auto md:overflow-hidden`}>
+      <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'lg:grid-cols-12' : 'lg:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-y-auto lg:overflow-hidden`}>
         
         {/* Left Side: Audio Player & PDF */}
         {hasLeftPanel && (
-          <div className={`flex flex-col h-full overflow-hidden md:border-r border-gray-200 pr-0 md:pr-6 pb-6 md:pb-0 border-b md:border-b-0 mb-6 md:mb-0 ${selectedTest.pdfUrl ? 'md:col-span-3 lg:col-span-8' : ''}`}>
+          <div className={`flex flex-col h-full overflow-hidden lg:border-r border-gray-200 pr-0 lg:pr-6 pb-6 lg:pb-0 border-b lg:border-b-0 mb-6 lg:mb-0 ${selectedTest.pdfUrl ? 'lg:col-span-8' : ''}`}>
             <div className="mb-4 shrink-0">
               <ListeningPlayer 
                 key={selectedTest.isSectionMedia ? `section-${activeSectionIndex}` : selectedTest.id} 
@@ -295,14 +295,14 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
             </div>
 
             {selectedTest.pdfUrl && (
-              <div className="flex-1 min-h-[400px] md:min-h-0 border border-gray-200 rounded-lg overflow-hidden relative">
+              <div className="flex-1 min-h-[400px] lg:min-h-0 border border-gray-200 rounded-lg overflow-hidden relative">
                 <PdfViewer fileUrl={selectedTest.pdfUrl} />
               </div>
             )}
           </div>
         )}
         
-        <div className={`flex flex-col h-full overflow-hidden min-w-0 ${hasLeftPanel && selectedTest.pdfUrl ? 'md:col-span-2 lg:col-span-4' : ''}`}>
+        <div className={`flex flex-col h-full overflow-hidden min-w-0 ${hasLeftPanel && selectedTest.pdfUrl ? 'lg:col-span-4' : ''}`}>
           <div className="flex flex-wrap gap-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
              {selectedTest.sections.map((sec, idx) => (
                <button
