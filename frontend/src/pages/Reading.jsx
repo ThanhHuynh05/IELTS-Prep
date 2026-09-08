@@ -171,7 +171,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         <ReadingPassage passage={activePassage} />
         <div className="flex flex-col h-full overflow-hidden">
           {/* Passage Navigation for Mock Mode */}
-          <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
+          <div className="flex flex-wrap gap-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
              {[0, 1, 2].map((idx) => (
                 <button
                   key={idx}
@@ -217,7 +217,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
             💡 Tips
           </button>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex gap-2">
           <button
             onClick={() => {
               if (window.history.state?.practiceActive) {
@@ -242,9 +242,9 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         </div>
 
         {/* Right Side: Questions */}
-        <div className="md:col-span-3 h-full overflow-hidden flex flex-col border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6">
+        <div className="md:col-span-3 h-full overflow-hidden flex flex-col border-t md:border-t-0 md:border-l border-gray-200 pt-6 md:pt-0 md:pl-6 mt-6 md:mt-0">
           {/* Passage Navigation for normal mode */}
-          <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
+          <div className="flex flex-wrap gap-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
              {[0, 1, 2].map((idx) => (
                 <button
                   key={idx}

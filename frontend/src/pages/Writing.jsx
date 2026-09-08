@@ -483,8 +483,8 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       />
       
       {!isMockMode && (
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+          <div className="flex flex-wrap items-center gap-2 md:space-x-4">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Writing Practice</h1>
             <button 
               onClick={() => setShowTips(true)}
@@ -493,7 +493,7 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               💡 Tips
             </button>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-wrap items-center gap-2 md:space-x-4">
             <button
               onClick={() => {
                 if (window.history.state?.practiceActive) {

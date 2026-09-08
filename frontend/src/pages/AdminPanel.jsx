@@ -695,7 +695,7 @@ export default function AdminPanel() {
               </div>
 
               {/* Passage Tabs */}
-              <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6 mt-4">
+              <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6 mt-4 overflow-x-auto no-scrollbar">
                 {[1, 2, 3].map((num) => (
                   <button
                     key={num}

@@ -469,8 +469,8 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           title="IELTS Speaking Tips"
           tips={SPEAKING_TIPS}
         />
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 md:gap-0">
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div className="flex flex-wrap items-center gap-3 md:space-x-4">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
               {practiceMode ? 'Speaking Practice' : `Topic: ${selectedTopic.title}`}
             </h1>
@@ -535,7 +535,7 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
 
             
             {taskPart !== 'part2' && (
-              <div className="flex justify-between items-center mb-4 bg-gray-50 p-2 rounded border">
+              <div className="flex flex-wrap justify-between items-center gap-2 mb-4 bg-gray-50 p-2 rounded border">
                  <button 
                    onClick={() => setCurrentQuestionIndex(p => Math.max(0, p - 1))}
                    disabled={currentQuestionIndex === 0}

@@ -99,7 +99,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     return (
       <div className={`flex-1 ${hasLeftPanel ? `grid grid-cols-1 ${selectedTest.pdfUrl ? 'md:grid-cols-12' : 'md:grid-cols-[1fr_2fr]'}` : 'flex flex-col'} gap-6 overflow-hidden bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 h-full`}>
         {hasLeftPanel && (
-          <div className={`flex flex-col h-full overflow-hidden border-r border-gray-200 pr-4 sm:pr-6 ${selectedTest.pdfUrl ? 'md:col-span-9' : ''}`}>
+          <div className={`flex flex-col h-full overflow-hidden md:border-r border-gray-200 pr-0 md:pr-6 pb-6 md:pb-0 border-b md:border-b-0 mb-6 md:mb-0 ${selectedTest.pdfUrl ? 'md:col-span-9' : ''}`}>
             <div className="mb-4 shrink-0">
               <ListeningPlayer 
                 key={selectedTest.isSectionMedia ? `section-${activeSectionIndex}` : selectedTest.id} 
@@ -120,7 +120,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           </div>
         )}
         <div className={`flex flex-col h-full overflow-hidden ${hasLeftPanel && selectedTest.pdfUrl ? 'md:col-span-3' : ''}`}>
-          <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
+          <div className="flex flex-wrap gap-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
              {selectedTest.sections.map((sec, idx) => (
                <button
                  key={idx}
@@ -247,7 +247,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 shrink-0">
         <div className="flex items-center gap-3 flex-wrap">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Listening Practice</h1>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <button 
               onClick={() => setShowTips(true)}
               className="text-sm font-medium text-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-400 px-3 py-1 rounded-full hover:bg-blue-100 transition-colors"
@@ -262,7 +262,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
             </button>
           </div>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex gap-2">
           <button
             onClick={() => {
               if (window.history.state?.practiceActive) {
@@ -284,7 +284,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         
         {/* Left Side: Audio Player & PDF */}
         {hasLeftPanel && (
-          <div className={`flex flex-col h-full overflow-hidden border-r border-gray-200 pr-4 sm:pr-6 ${selectedTest.pdfUrl ? 'md:col-span-9' : ''}`}>
+          <div className={`flex flex-col h-full overflow-hidden md:border-r border-gray-200 pr-0 md:pr-6 pb-6 md:pb-0 border-b md:border-b-0 mb-6 md:mb-0 ${selectedTest.pdfUrl ? 'md:col-span-9' : ''}`}>
             <div className="mb-4 shrink-0">
               <ListeningPlayer 
                 key={selectedTest.isSectionMedia ? `section-${activeSectionIndex}` : selectedTest.id} 
@@ -306,7 +306,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         )}
         
         <div className={`flex flex-col h-full overflow-hidden ${hasLeftPanel && selectedTest.pdfUrl ? 'md:col-span-3' : ''}`}>
-          <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
+          <div className="flex flex-wrap gap-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
              {selectedTest.sections.map((sec, idx) => (
                <button
                  key={idx}

@@ -2,7 +2,7 @@ export default function ReadingPassage({ passage, testPdfUrl }) {
   if (!passage && !testPdfUrl) return null;
 
   return (
-    <div className="h-full pr-6 flex flex-col">
+    <div className="h-full md:pr-6 flex flex-col">
       {!testPdfUrl && (
         <h2 className="text-2xl font-bold text-gray-900 mb-6 pb-4 border-b border-gray-200 shrink-0">
           {passage.title}
@@ -10,7 +10,7 @@ export default function ReadingPassage({ passage, testPdfUrl }) {
       )}
       
       {testPdfUrl ? (
-        <div className="flex-1 w-full h-full min-h-[600px] border border-gray-200 rounded-lg overflow-hidden">
+        <div className="flex-1 w-full h-full min-h-[400px] md:min-h-[600px] border border-gray-200 rounded-lg overflow-hidden">
           <iframe 
             src={testPdfUrl} 
             title={passage?.title || "Test PDF"}
