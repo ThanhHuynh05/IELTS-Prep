@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { saveResult } from '../../utils/storage';
 
-export default function SpeakingFeedback({ feedback, onReset, originalTranscript }) {
+export default function SpeakingFeedback({ feedback, onReset, originalTranscript, testTitle, question }) {
   const [activeError, setActiveError] = useState(null);
 
   if (!feedback) return null;
@@ -55,12 +55,16 @@ export default function SpeakingFeedback({ feedback, onReset, originalTranscript
     if (feedback && !hasSaved.current) {
       saveResult('speaking', {
         estimatedBand: Number(feedback.overallBand),
-        title: "Speaking Practice",
-        criteria: feedback.criteria
+        title: testTitle || "Speaking Practice",
+        criteria: feedback.criteria,
+        transcript: originalTranscript,
+        feedback,
+        question,
+        taskType: sessionStorage.getItem('speaking_taskType') || 'part1'
       });
       hasSaved.current = true;
     }
-  }, [feedback]);
+  }, [feedback, originalTranscript, testTitle, question]);
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">

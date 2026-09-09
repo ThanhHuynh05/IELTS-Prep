@@ -303,7 +303,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         )}
         
         <div className={`flex flex-col h-full overflow-hidden min-w-0 ${hasLeftPanel && selectedTest.pdfUrl ? 'lg:col-span-4' : ''}`}>
-          <div className="flex flex-wrap gap-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
+          <div className="flex flex-wrap gap-2 bg-gray-100 dark:bg-gray-900/50 p-1 rounded-lg shadow-sm mb-4 shrink-0">
              {selectedTest.sections.map((sec, idx) => (
                <button
                  key={idx}
@@ -311,7 +311,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                  className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${
                    activeSectionIndex === idx 
                      ? 'bg-white dark:bg-gray-800 text-blue-600 shadow' 
-                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
+                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800'
                  }`}
                >
                  Section {idx + 1}
@@ -324,6 +324,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               userAnswers={userAnswers}
               transcript={selectedTest.transcript}
               onReset={handleReset}
+              testTitle={selectedTest.title}
             />
           ) : (
             <ListeningQuestions 

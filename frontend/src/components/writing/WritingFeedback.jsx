@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { saveResult } from '../../utils/storage';
 
-export default function WritingFeedback({ feedback, onReset, originalEssay }) {
+export default function WritingFeedback({ feedback, onReset, originalEssay, testTitle, question }) {
   const [activeError, setActiveError] = useState(null);
 
   if (!feedback) return null;
@@ -72,12 +72,17 @@ export default function WritingFeedback({ feedback, onReset, originalEssay }) {
     if (feedback && !hasSaved.current) {
       saveResult('writing', {
         estimatedBand: Number(feedback.overallBand),
-        title: "Writing Practice",
-        criteria: feedback.criteria
+        title: testTitle || "Writing Practice",
+        criteria: feedback.criteria,
+        originalEssay,
+        feedback,
+        question,
+        taskType: sessionStorage.getItem('writing_taskType') || 'task',
+        chartImg: JSON.parse(sessionStorage.getItem('writing_selectedTest') || '{}')?.task1Image || null
       });
       hasSaved.current = true;
     }
-  }, [feedback]);
+  }, [feedback, originalEssay, testTitle, question]);
 
   return (
     <div className="space-y-6">

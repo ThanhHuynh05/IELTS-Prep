@@ -578,7 +578,13 @@ const Writing = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
           />
         </>
       ) : (
-        <WritingFeedback feedback={feedback} onReset={handleReset} originalEssay={submittedEssay} />
+        <WritingFeedback 
+          feedback={feedback} 
+          onReset={handleReset} 
+          originalEssay={submittedEssay} 
+          testTitle={selectedTest?.title}
+          question={currentQuestion}
+        />
       )}
     </div>
   );

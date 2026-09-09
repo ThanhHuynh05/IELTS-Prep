@@ -638,6 +638,8 @@ const Speaking = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               feedback={feedback} 
               onReset={handleReset} 
               originalTranscript={submittedTranscript}
+              testTitle={selectedTest?.title}
+              question={activeQuestion?.text}
             />
           </div>
         )}

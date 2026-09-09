@@ -14,6 +14,7 @@ import Onboarding from './pages/Onboarding';
 import Login from './pages/Login';
 import AdminPanel from './pages/AdminPanel';
 import History from './pages/History';
+import HistoryDetail from './pages/HistoryDetail';
 import Settings from './pages/Settings';
 import { getSettings } from './utils/storage';
 
@@ -57,6 +58,7 @@ function AppContent() {
         <Route path="/writing" element={<Writing />} />
         <Route path="/speaking" element={<Speaking />} />
         <Route path="/history" element={<History />} />
+        <Route path="/history/:section/:id" element={<HistoryDetail />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/mock-test" element={<MockTest />} />
         <Route path="/admin" element={<ProtectedRoute requireAdmin={true}><AdminPanel /></ProtectedRoute>} />

@@ -97,12 +97,31 @@ export default function History() {
               
               return (
                 <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
-                    <div>
-                      <h4 className="font-semibold text-lg text-gray-900 dark:text-white">{result.title || `${activeTabInfo.label} Practice`}</h4>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">{date}</div>
+                  <div className="flex flex-col sm:flex-row justify-between mb-4 gap-4">
+                    <div className="flex gap-4">
+                      {activeTab === 'writing' && result.chartImg && (
+                        <div className="hidden sm:block shrink-0 w-24 h-24 bg-gray-50 border rounded flex items-center justify-center p-1">
+                          <img src={result.chartImg} alt="Task Chart" className="max-w-full max-h-full object-contain" />
+                        </div>
+                      )}
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-semibold text-lg text-gray-900 dark:text-white">
+                            {result.title || `${activeTabInfo.label} Practice`}
+                          </h4>
+                          {(activeTab === 'writing' || activeTab === 'speaking') && result.taskType && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border capitalize">
+                              {result.taskType.replace('-', ' ')}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{date}</div>
+                        {activeTab === 'speaking' && result.taskType && (
+                           <div className="text-xs text-gray-500 mt-1 capitalize">Task: {result.taskType.replace('-', ' ')}</div>
+                        )}
+                      </div>
                     </div>
-                    <div className="mt-2 sm:mt-0 flex items-center space-x-3">
+                    <div className="flex items-start shrink-0">
                       <div className="flex items-baseline space-x-1">
                         <span className="text-3xl font-bold text-gray-900 dark:text-white">{Number(result.estimatedBand).toFixed(1)}</span>
                         <span className="text-sm font-medium text-gray-500">Band</span>
@@ -117,51 +136,23 @@ export default function History() {
                   )}
 
                   {(activeTab === 'reading' || activeTab === 'listening') && result.detailedResults && (
-                    <details className="text-sm text-gray-600 dark:text-gray-300 group mt-3">
-                      <summary className="cursor-pointer font-medium text-blue-600 dark:text-blue-400 select-none flex items-center">
-                        <span className="group-open:hidden">View detailed answers &darr;</span>
-                        <span className="hidden group-open:inline">Hide detailed answers &uarr;</span>
-                      </summary>
-                      <div className="mt-3 space-y-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-700 max-h-64 overflow-y-auto">
-                        {result.detailedResults.map((q, qIndex) => (
-                          <div key={q.id || qIndex} className="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-gray-200 dark:border-gray-800 pb-3 last:border-0 last:pb-0">
-                            <div className="flex flex-col sm:w-1/2 pr-2">
-                              <span className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">Q{qIndex + 1}</span>
-                              <span className="text-sm text-gray-800 dark:text-gray-200 line-clamp-2" title={q.question}>{q.question}</span>
-                            </div>
-                            <div className="flex flex-col mt-2 sm:mt-0 sm:items-end">
-                              <div className="flex items-center space-x-2">
-                                <span className="text-xs text-gray-500 w-16 sm:w-auto text-left sm:text-right">You:</span>
-                                <span className={`text-sm font-semibold truncate max-w-[120px] ${q.isCorrect ? 'text-green-600' : 'text-red-600 line-through'}`} title={q.userAnswer || '-'}>{q.userAnswer || '-'}</span>
-                              </div>
-                              {!q.isCorrect && (
-                                <div className="flex items-center space-x-2 mt-1">
-                                  <span className="text-xs text-gray-500 w-16 sm:w-auto text-left sm:text-right">Correct:</span>
-                                  <span className="text-sm font-semibold text-green-600 truncate max-w-[120px]" title={q.answer}>{q.answer}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </details>
+                    <Link
+                      to={`/history/${activeTab}/${new Date(result.date).getTime()}`}
+                      state={{ result, activeTabLabel: activeTabInfo.label }}
+                      className="inline-block mt-3 font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center"
+                    >
+                      View detailed answers &rarr;
+                    </Link>
                   )}
 
                   {(activeTab === 'writing' || activeTab === 'speaking') && result.criteria && (
-                    <details className="text-sm text-gray-600 dark:text-gray-300 group mt-2">
-                      <summary className="cursor-pointer font-medium text-blue-600 dark:text-blue-400 select-none flex items-center">
-                        <span className="group-open:hidden">View detailed criteria &darr;</span>
-                        <span className="hidden group-open:inline">Hide detailed criteria &uarr;</span>
-                      </summary>
-                      <div className="mt-3 grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-700">
-                        {Object.entries(result.criteria).map(([key, value]) => (
-                          <div key={key}>
-                            <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{key.replace(/([A-Z])/g, ' $1')}</div>
-                            <div className="font-semibold text-gray-900 dark:text-white">Band: {typeof value === 'object' ? Number(value.band).toFixed(1) : value}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </details>
+                    <Link
+                      to={`/history/${activeTab}/${new Date(result.date).getTime()}`}
+                      state={{ result, activeTabLabel: activeTabInfo.label }}
+                      className="inline-block mt-2 font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center"
+                    >
+                      View detailed criteria &rarr;
+                    </Link>
                   )}
                 </div>
               );

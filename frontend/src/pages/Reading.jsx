@@ -140,7 +140,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               key={test.id || index}
               onClick={() => {
                 handleTestSelect(test);
-                window.history.pushState({ practiceActive: true }, '', window.location.pathname);
+                window.history.pushState({ practiceActive: true, pdfUrl: test.pdfUrl }, '', window.location.pathname);
               }}
               className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md cursor-pointer transition-all hover:border-blue-500 hover:ring-1 hover:ring-blue-500 group flex flex-col h-full"
             >
@@ -171,7 +171,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         <ReadingPassage passage={activePassage} />
         <div className="flex flex-col h-full overflow-hidden">
           {/* Passage Navigation for Mock Mode */}
-          <div className="flex flex-wrap gap-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
+          <div className="flex flex-wrap gap-2 bg-gray-100 dark:bg-gray-900/50 p-1 rounded-lg shadow-sm mb-4 shrink-0">
              {[0, 1, 2].map((idx) => (
                 <button
                   key={idx}
@@ -179,7 +179,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                   className={`flex-1 py-1.5 rounded-md text-sm font-bold transition-all ${
                     activePassageIndex === idx 
                       ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-sm' 
-                      : 'text-gray-600 hover:bg-gray-200'
+                      : 'text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800'
                   }`}
                 >
                   Passage {idx + 1}
@@ -244,7 +244,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         {/* Right Side: Questions */}
         <div className="lg:col-span-4 h-full overflow-hidden flex flex-col border-t lg:border-t-0 lg:border-l border-gray-200 pt-6 lg:pt-0 lg:pl-6 mt-6 lg:mt-0 min-w-0">
           {/* Passage Navigation for normal mode */}
-          <div className="flex flex-wrap gap-2 bg-gray-100 p-1 rounded-lg shadow-sm mb-4 shrink-0">
+          <div className="flex flex-wrap gap-2 bg-gray-100 dark:bg-gray-900/50 p-1 rounded-lg shadow-sm mb-4 shrink-0">
              {[0, 1, 2].map((idx) => (
                 <button
                   key={idx}
@@ -252,7 +252,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                   className={`flex-1 py-1.5 rounded-md text-sm font-bold transition-all ${
                     activePassageIndex === idx 
                       ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-sm' 
-                      : 'text-gray-600 hover:bg-gray-200'
+                      : 'text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800'
                   }`}
                 >
                   Passage {idx + 1}
@@ -275,6 +275,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                 sections={selectedTest.passages.flatMap(p => p.sections)}
                 userAnswers={userAnswers}
                 onReset={handleReset}
+                testTitle={selectedTest.title}
               />
             </div>
           )}
