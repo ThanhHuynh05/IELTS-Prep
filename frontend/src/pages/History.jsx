@@ -1,16 +1,50 @@
 import { useState, useEffect } from 'react';
-import { getResults } from '../utils/storage';
-import { BookOpen, Headphones, PenTool, Mic, History as HistoryIcon } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { getResults, deleteResult } from '../utils/storage';
+import { BookOpen, Headphones, PenTool, Mic, History as HistoryIcon, Trash2, CheckCircle2 } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import ConfirmModal from '../components/common/ConfirmModal';
 
 export default function History() {
   const [activeTab, setActiveTab] = useState('reading');
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [toastMessage, setToastMessage] = useState('');
+  const location = useLocation();
+
   const [results, setResults] = useState({
     reading: [],
     listening: [],
     writing: [],
     speaking: []
   });
+
+  const showToast = (message) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(''), 3000);
+  };
+
+  useEffect(() => {
+    if (location.state?.deleted) {
+      showToast('History item successfully deleted.');
+      // Clean up the state so it doesn't show again on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return;
+    const { id, section } = itemToDelete;
+    const success = await deleteResult(id);
+    if (success) {
+      setResults(prev => ({
+        ...prev,
+        [section]: prev[section].filter(r => r._id !== id)
+      }));
+      showToast('History item successfully deleted.');
+    } else {
+      alert("Failed to delete history item. Please try again.");
+    }
+    setItemToDelete(null);
+  };
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -41,7 +75,16 @@ export default function History() {
   const activeTabInfo = tabs.find(t => t.id === activeTab);
 
   return (
-    <div className="max-w-[1400px] mx-auto p-4 md:p-8 min-h-[calc(100vh-80px)]">
+    <div className="max-w-[1400px] mx-auto p-4 md:p-8 min-h-[calc(100vh-80px)] relative">
+      {toastMessage && (
+        <div className="fixed top-20 right-8 z-50 animate-in slide-in-from-top-4 fade-in duration-300">
+          <div className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 px-4 py-3 rounded-lg shadow-lg border border-emerald-200 dark:border-emerald-800/30 flex items-center space-x-3">
+            <CheckCircle2 size={20} />
+            <span className="font-medium">{toastMessage}</span>
+          </div>
+        </div>
+      )}
+      
       <div className="flex items-center space-x-3 mb-8">
         <div className="p-3 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
           <HistoryIcon size={28} className="text-blue-600 dark:text-blue-400" />
@@ -96,8 +139,17 @@ export default function History() {
               });
               
               return (
-                <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  <div className="flex flex-col sm:flex-row justify-between mb-4 gap-4">
+                <div key={result._id || index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors relative group">
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => setItemToDelete({ id: result._id, section: activeTab })}
+                      className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
+                      title="Delete result"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
+                  <div className="flex flex-col sm:flex-row justify-between mb-4 gap-4 pr-12">
                     <div className="flex gap-4">
                       {activeTab === 'writing' && result.chartImg && (
                         <div className="hidden sm:block shrink-0 w-24 h-24 bg-gray-50 border rounded flex items-center justify-center p-1">
@@ -160,6 +212,16 @@ export default function History() {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        onConfirm={handleDelete}
+        title="Delete History Item"
+        message="Are you sure you want to delete this practice result? This action cannot be undone."
+        confirmText="Delete"
+        isDestructive={true}
+      />
     </div>
   );
 }

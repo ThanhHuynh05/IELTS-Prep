@@ -1,15 +1,19 @@
+import { useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trash2 } from 'lucide-react';
 import PdfViewer from '../components/common/PdfViewer';
 import WritingFeedback from '../components/writing/WritingFeedback';
 import SpeakingFeedback from '../components/speaking/SpeakingFeedback';
 import ReadingFeedback from '../components/reading/ReadingFeedback';
 import ListeningFeedback from '../components/listening/ListeningFeedback';
+import ConfirmModal from '../components/common/ConfirmModal';
+import { deleteResult } from '../utils/storage';
 
 export default function HistoryDetail() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const { section, id } = useParams();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   
   if (!state || !state.result) {
     return (
@@ -25,8 +29,26 @@ export default function HistoryDetail() {
   const { result, activeTabLabel } = state;
   const dateStr = new Date(result.date).toLocaleString();
 
+  const handleDelete = async () => {
+    const success = await deleteResult(result._id);
+    if (success) {
+      navigate('/history');
+    } else {
+      alert("Failed to delete history item. Please try again.");
+    }
+  };
+
   return (
     <div className="max-w-[1600px] mx-auto p-4 md:p-8 min-h-[calc(100vh-80px)] flex flex-col">
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete History Item"
+        message="Are you sure you want to delete this practice result? This action cannot be undone."
+        confirmText="Delete"
+        isDestructive={true}
+      />
       <div className="flex items-center space-x-4 mb-6">
         <button 
           onClick={() => navigate('/history')}
@@ -40,11 +62,21 @@ export default function HistoryDetail() {
           </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm">{dateStr}</p>
         </div>
-        <div className="ml-auto flex items-center bg-gray-50 dark:bg-gray-800 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
-          <span className="text-sm text-gray-500 mr-2">Score:</span>
-          <span className="text-xl font-bold text-gray-900 dark:text-white">
-            {Number(result.estimatedBand).toFixed(1)} <span className="text-sm font-medium">Band</span>
-          </span>
+        <div className="ml-auto flex items-center space-x-3">
+          <div className="flex items-center bg-gray-50 dark:bg-gray-800 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700">
+            <span className="text-sm text-gray-500 mr-2">Score:</span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">
+              {Number(result.estimatedBand).toFixed(1)} <span className="text-sm font-medium">Band</span>
+            </span>
+          </div>
+          <button 
+            onClick={() => setIsDeleteModalOpen(true)}
+            className="flex items-center space-x-1 px-4 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 rounded-lg transition-colors border border-red-200 dark:border-red-800/30"
+            title="Delete this history"
+          >
+            <Trash2 size={18} />
+            <span className="text-sm font-medium">Delete</span>
+          </button>
         </div>
       </div>
 

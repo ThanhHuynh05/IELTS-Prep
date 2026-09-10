@@ -77,12 +77,26 @@ export const getResults = async (section) => {
     const res = await fetch(`${API_URL}/results/section/${user.username}/${section}`);
     if (res.ok) {
       const results = await res.json();
-      return results.map(r => ({ ...r.data, date: r.date }));
+      return results.map(r => ({ ...r.data, date: r.date, _id: r._id }));
     }
   } catch (error) {
     console.error('Failed to get section results', error);
   }
   return [];
+};
+
+export const deleteResult = async (id) => {
+  const user = getUser();
+  if (!user || !id) return false;
+  try {
+    const res = await fetch(`${API_URL}/results/section/${id}`, {
+      method: 'DELETE'
+    });
+    return res.ok;
+  } catch (error) {
+    console.error('Failed to delete section result', error);
+    return false;
+  }
 };
 
 export const getRecentActivity = async () => {

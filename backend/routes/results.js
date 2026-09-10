@@ -44,7 +44,8 @@ router.get('/activity/:username', async (req, res) => {
     const flattened = results.map(r => ({
       ...r.data,
       section: r.section,
-      date: r.date
+      date: r.date,
+      _id: r._id
     }));
     res.json(flattened);
   } catch (error) {
@@ -58,6 +59,18 @@ router.post('/section', async (req, res) => {
     const result = new SectionResult({ username, section, data });
     await result.save();
     res.status(201).json(result);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+router.delete('/section/:id', async (req, res) => {
+  try {
+    const result = await SectionResult.findByIdAndDelete(req.params.id);
+    if (!result) {
+      return res.status(404).json({ message: 'Result not found' });
+    }
+    res.json({ message: 'Result deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
