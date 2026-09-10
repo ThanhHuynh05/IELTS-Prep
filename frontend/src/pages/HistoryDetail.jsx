@@ -26,7 +26,7 @@ export default function HistoryDetail() {
   const dateStr = new Date(result.date).toLocaleString();
 
   return (
-    <div className="max-w-[1400px] mx-auto p-4 md:p-8 min-h-[calc(100vh-80px)] flex flex-col">
+    <div className="max-w-[1600px] mx-auto p-4 md:p-8 min-h-[calc(100vh-80px)] flex flex-col">
       <div className="flex items-center space-x-4 mb-6">
         <button 
           onClick={() => navigate('/history')}
@@ -51,39 +51,41 @@ export default function HistoryDetail() {
       <div className="flex-1 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 overflow-hidden flex flex-col">
         
         {section === 'reading' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full overflow-hidden">
-            <div className="h-full border border-gray-200 rounded-lg overflow-hidden flex-1 min-h-[500px]">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full overflow-hidden">
+            <div className="h-full border border-gray-200 rounded-lg overflow-hidden lg:col-span-8 min-h-[500px]">
               {result.pdfUrl ? (
                 <PdfViewer fileUrl={result.pdfUrl} />
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-400">No PDF available for this past test</div>
               )}
             </div>
-            <div className="overflow-y-auto">
+            <div className="overflow-y-auto lg:col-span-4 pr-2">
               <ReadingFeedback 
                 sections={[{ questions: result.detailedResults || [] }]} 
                 userAnswers={(result.detailedResults || []).reduce((acc, q) => ({ ...acc, [q.id]: q.userAnswer }), {})}
-                onReset={() => navigate('/reading')} 
+                onReset={() => navigate('/reading')}
+                isHistoryView={true}
               />
             </div>
           </div>
         )}
 
         {section === 'listening' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full overflow-hidden">
-            <div className="h-full border border-gray-200 rounded-lg overflow-hidden flex-1 min-h-[500px]">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full overflow-hidden">
+            <div className="h-full border border-gray-200 rounded-lg overflow-hidden lg:col-span-8 min-h-[500px]">
               {result.pdfUrl ? (
                 <PdfViewer fileUrl={result.pdfUrl} />
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-400">No PDF available for this past test</div>
               )}
             </div>
-            <div className="overflow-y-auto">
+            <div className="overflow-y-auto lg:col-span-4 pr-2">
               <ListeningFeedback 
                 sections={[{ questions: result.detailedResults || [] }]} 
                 userAnswers={(result.detailedResults || []).reduce((acc, q) => ({ ...acc, [q.id]: q.userAnswer }), {})}
                 transcript={result.transcript || "Transcript not available."}
-                onReset={() => navigate('/listening')} 
+                onReset={() => navigate('/listening')}
+                isHistoryView={true}
               />
             </div>
           </div>

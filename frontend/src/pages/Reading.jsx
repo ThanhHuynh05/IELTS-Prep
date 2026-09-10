@@ -276,6 +276,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                 userAnswers={userAnswers}
                 onReset={handleReset}
                 testTitle={selectedTest.title}
+                pdfUrl={selectedTest.pdfUrl}
               />
             </div>
           )}

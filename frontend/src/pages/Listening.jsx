@@ -325,6 +325,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               transcript={selectedTest.transcript}
               onReset={handleReset}
               testTitle={selectedTest.title}
+              pdfUrl={selectedTest.pdfUrl}
             />
           ) : (
             <ListeningQuestions 
