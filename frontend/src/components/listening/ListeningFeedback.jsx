@@ -131,7 +131,7 @@ export default function ListeningFeedback({ sections, userAnswers, transcript, o
               <div className="ml-8 space-y-1 text-sm">
                 <div className="flex items-start">
                   <span className="text-gray-500 w-24 shrink-0">Your Answer:</span>
-                  <span className={`font-semibold ${res.isCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400 line-through'}`}>
+                  <span className={`font-semibold break-words min-w-0 flex-1 ${res.isCorrect ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400 line-through'}`}>
                     {res.userAnswer || "No answer provided"}
                   </span>
                 </div>
@@ -139,7 +139,7 @@ export default function ListeningFeedback({ sections, userAnswers, transcript, o
                 {!res.isCorrect && (
                   <div className="flex items-start mt-1">
                     <span className="text-gray-500 w-24 shrink-0">Correct:</span>
-                    <span className="font-semibold text-green-700 dark:text-green-400">{res.answer}</span>
+                    <span className="font-semibold text-green-700 dark:text-green-400 break-words min-w-0 flex-1">{res.answer}</span>
                   </div>
                 )}
               </div>
