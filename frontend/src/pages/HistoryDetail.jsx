@@ -132,8 +132,8 @@ export default function HistoryDetail() {
             </div>}
             
             {result.chartImg && (
-              <div className="mb-6 bg-gray-50 p-4 rounded-lg border flex justify-center">
-                <img src={result.chartImg} alt="Task Chart" className="max-h-64 object-contain" />
+              <div className="mb-6 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-200 dark:border-gray-700 flex justify-center overflow-hidden">
+                <img src={result.chartImg} alt="Task Chart" className="w-full max-w-3xl object-contain rounded" style={{ maxHeight: '600px' }} />
               </div>
             )}
             

@@ -138,6 +138,17 @@ export default function History() {
                 weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
               });
               
+              const band = Number(result.estimatedBand) || 0;
+              const radius = 24;
+              const circumference = 2 * Math.PI * radius;
+              const dashoffset = circumference - (circumference * (band / 9));
+              
+              let strokeColor = '#3B82F6';
+              if (activeTab === 'reading') strokeColor = '#10B981';
+              if (activeTab === 'listening') strokeColor = '#A855F7';
+              if (activeTab === 'writing') strokeColor = '#F97316';
+              if (activeTab === 'speaking') strokeColor = '#EC4899';
+
               return (
                 <div key={result._id || index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors relative group">
                   <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -174,9 +185,25 @@ export default function History() {
                       </div>
                     </div>
                     <div className="flex items-start shrink-0">
-                      <div className="flex items-baseline space-x-1">
-                        <span className="text-3xl font-bold text-gray-900 dark:text-white">{Number(result.estimatedBand).toFixed(1)}</span>
-                        <span className="text-sm font-medium text-gray-500">Band</span>
+                      <div className="relative w-16 h-16 flex items-center justify-center shrink-0" title={`Band ${band.toFixed(1)} out of 9.0`}>
+                        <svg className="absolute top-0 left-0 w-full h-full transform -rotate-90">
+                          <circle cx="32" cy="32" r={radius} stroke="currentColor" className="text-gray-200 dark:text-gray-700" strokeWidth="4" fill="none" />
+                          <circle 
+                            cx="32" cy="32" r={radius} 
+                            stroke={strokeColor} 
+                            strokeWidth="4" 
+                            fill="none" 
+                            strokeDasharray={circumference} 
+                            strokeDashoffset={dashoffset}
+                            strokeLinecap="round"
+                            className="transition-all duration-1000 ease-out"
+                          />
+                        </svg>
+                        <div className="flex flex-col items-center justify-center z-10">
+                          <span className="text-lg font-bold text-gray-900 dark:text-white leading-none mt-0.5">
+                            {band.toFixed(1)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
