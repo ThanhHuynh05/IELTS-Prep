@@ -1,14 +1,25 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import ThemeToggle from './ThemeToggle';
 import { useAuth } from '../../context/AuthContext';
-import { LogOut, Shield, Menu, X } from 'lucide-react';
+import { LogOut, Shield, Menu, X, Settings, ChevronDown } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -46,39 +57,56 @@ export default function Navbar() {
               <Link to="/writing" className={getLinkClasses('/writing')} aria-current={location.pathname === '/writing' ? 'page' : undefined}>Writing</Link>
               <Link to="/speaking" className={getLinkClasses('/speaking')} aria-current={location.pathname === '/speaking' ? 'page' : undefined}>Speaking</Link>
               <Link to="/history" className={getLinkClasses('/history')} aria-current={location.pathname === '/history' ? 'page' : undefined}>History</Link>
-              {user?.role === 'admin' && (
-                <Link to="/admin" className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-fuchsia-600 dark:text-fuchsia-400 hover:text-fuchsia-800 whitespace-nowrap">
-                  <Shield size={16} className="mr-1" /> Admin Panel
-                </Link>
-              )}
             </div>
           </div>
-          <div className="hidden lg:ml-2 xl:ml-6 lg:flex lg:items-center space-x-2 xl:space-x-4 shrink-0">
-            {user && (
-              <Link to="/settings" className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-1 xl:mr-2 flex items-center border-r dark:border-gray-700 pr-2 xl:pr-4 hover:text-blue-600 dark:hover:text-blue-400 transition-colors whitespace-nowrap">
-                <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs mr-2 border dark:border-gray-700 uppercase tracking-wider hidden xl:inline-block">{user.role}</span>
-                {user.username}
-              </Link>
-            )}
-            <ThemeToggle />
+          <div className="hidden lg:ml-2 xl:ml-6 lg:flex lg:items-center space-x-4 shrink-0">
             <Link to="/mock-test" className="inline-flex items-center px-3 xl:px-4 py-2 border border-transparent text-sm font-bold rounded-md text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition-colors whitespace-nowrap">
               Full Mock Test
             </Link>
+            
             {user && (
-              <button 
-                onClick={handleLogout}
-                className="inline-flex items-center p-2 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors"
-                title="Logout"
-                aria-label="Log out"
-              >
-                <LogOut size={20} />
-              </button>
+              <div className="relative" ref={userMenuRef}>
+                <button 
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-2 px-3 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none"
+                >
+                  <span className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-xs border dark:border-gray-700 uppercase tracking-wider">{user.role}</span>
+                  <span>{user.username}</span>
+                  <ChevronDown size={16} />
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-10 z-50">
+                    {user?.role === 'admin' && (
+                      <Link 
+                        to="/admin" 
+                        className="flex items-center px-4 py-2 text-sm text-fuchsia-600 dark:text-fuchsia-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <Shield size={16} className="mr-2" /> Admin Panel
+                      </Link>
+                    )}
+                    <Link 
+                      to="/settings" 
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <Settings size={16} className="mr-2" /> Settings
+                    </Link>
+                    <button 
+                      onClick={() => { setUserMenuOpen(false); handleLogout(); }}
+                      className="flex w-full items-center px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      <LogOut size={16} className="mr-2" /> Log out
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
           
           {/* Mobile menu button */}
           <div className="flex items-center lg:hidden space-x-2">
-            <ThemeToggle />
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none"
