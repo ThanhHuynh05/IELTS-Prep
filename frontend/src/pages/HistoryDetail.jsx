@@ -177,7 +177,7 @@ export default function HistoryDetail() {
             {result.feedback ? (
               <SpeakingFeedback 
                 feedback={result.feedback}
-                transcript={result.transcript}
+                originalTranscript={result.transcript}
                 audioUrl={result.audioUrl}
                 onReset={() => navigate('/speaking')}
                 isHistoryView={true}
