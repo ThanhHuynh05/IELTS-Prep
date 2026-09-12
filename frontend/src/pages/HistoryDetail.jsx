@@ -32,7 +32,7 @@ export default function HistoryDetail() {
   const handleDelete = async () => {
     const success = await deleteResult(result._id);
     if (success) {
-      navigate('/history');
+      navigate('/history', { state: { deleted: true } });
     } else {
       alert("Failed to delete history item. Please try again.");
     }
@@ -149,6 +149,7 @@ export default function HistoryDetail() {
                 feedback={result.feedback} 
                 onReset={() => navigate('/writing')} 
                 originalEssay={result.originalEssay} 
+                isHistoryView={true}
               />
             ) : (
               <div className="p-4 text-gray-500 italic">Detailed feedback not available for this past attempt.</div>
@@ -179,6 +180,7 @@ export default function HistoryDetail() {
                 transcript={result.transcript}
                 audioUrl={result.audioUrl}
                 onReset={() => navigate('/speaking')}
+                isHistoryView={true}
               />
             ) : (
               <div className="p-4 text-gray-500 italic">Detailed feedback not available for this past attempt.</div>

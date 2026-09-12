@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { saveResult } from '../../utils/storage';
 
-export default function WritingFeedback({ feedback, onReset, originalEssay, testTitle, question }) {
+export default function WritingFeedback({ feedback, onReset, originalEssay, testTitle, question, isHistoryView }) {
   const [activeError, setActiveError] = useState(null);
 
   if (!feedback) return null;
@@ -69,7 +69,7 @@ export default function WritingFeedback({ feedback, onReset, originalEssay, test
 
   const hasSaved = useRef(false);
   useEffect(() => {
-    if (feedback && !hasSaved.current) {
+    if (feedback && !hasSaved.current && !isHistoryView) {
       saveResult('writing', {
         estimatedBand: Number(feedback.overallBand),
         title: testTitle || "Writing Practice",
@@ -82,7 +82,7 @@ export default function WritingFeedback({ feedback, onReset, originalEssay, test
       });
       hasSaved.current = true;
     }
-  }, [feedback, originalEssay, testTitle, question]);
+  }, [feedback, originalEssay, testTitle, question, isHistoryView]);
 
   return (
     <div className="space-y-6">
