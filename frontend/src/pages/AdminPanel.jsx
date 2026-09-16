@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, List, FileText, Wand2, Edit2, XCircle, Loader2 } from 'lucide-react';
 import { upload } from '@vercel/blob/client';
 import QuestionBuilder from '../components/common/QuestionBuilder';
@@ -25,6 +25,70 @@ export default function AdminPanel() {
   const [isLoadingContent, setIsLoadingContent] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  // Loading Modal State
+  const [loadingModal, setLoadingModal] = useState({
+    isOpen: false,
+    operation: 'upload',
+    currentFile: '',
+    percentage: 0,
+    eta: '',
+    statusText: ''
+  });
+
+  const uploadBatchState = useRef({
+    totalBytes: 0,
+    accumulatedBytes: 0,
+    startTime: 0
+  });
+
+  const startUploadBatch = (totalBytes) => {
+    uploadBatchState.current = { totalBytes, accumulatedBytes: 0, startTime: Date.now() };
+    setLoadingModal(prev => ({ ...prev, isOpen: true, operation: 'upload', percentage: 0, eta: 'Calculating...', statusText: 'Starting upload...' }));
+  };
+
+  const uploadWithProgress = async (name, file, label) => {
+    return await upload(name, file, {
+      access: 'public',
+      handleUploadUrl: `${API_URL}/upload-file/token`,
+      onUploadProgress: (progress) => {
+        const batch = uploadBatchState.current;
+        const currentTotalLoaded = batch.accumulatedBytes + progress.loaded;
+        
+        let percent = 0;
+        let etaString = 'Just a moment...';
+        
+        if (batch.totalBytes > 0) {
+           percent = Math.round((currentTotalLoaded / batch.totalBytes) * 100);
+           const elapsedSeconds = (Date.now() - batch.startTime) / 1000;
+           if (elapsedSeconds > 0) {
+             const bytesPerSecond = currentTotalLoaded / elapsedSeconds;
+             const remainingBytes = batch.totalBytes - currentTotalLoaded;
+             const remainingSeconds = Math.round(remainingBytes / bytesPerSecond);
+             
+             if (remainingSeconds > 0 && isFinite(remainingSeconds)) {
+               etaString = remainingSeconds > 60 
+                 ? `${Math.floor(remainingSeconds / 60)}m ${remainingSeconds % 60}s remaining` 
+                 : `${remainingSeconds}s remaining`;
+             }
+           }
+        } else {
+           percent = Math.round((progress.loaded / progress.total) * 100);
+        }
+        
+        setLoadingModal(prev => ({ 
+          ...prev, 
+          percentage: Math.min(percent, 100), 
+          eta: etaString, 
+          currentFile: label || name,
+          statusText: `Uploading... ${Math.min(percent, 100)}%` 
+        }));
+      }
+    }).then(res => {
+      uploadBatchState.current.accumulatedBytes += file.size;
+      return res;
+    });
+  };
 
   // Reading State
   const [rTestTitle, setRTestTitle] = useState('');
@@ -112,13 +176,13 @@ export default function AdminPanel() {
         throw new Error("You must add at least one question section to all 3 passages.");
       }
 
+      let totalBytes = 0;
+      if (rTestPdfUrl instanceof File) totalBytes += rTestPdfUrl.size;
+      if (totalBytes > 0) startUploadBatch(totalBytes);
+
       let finalPdfUrl = rTestPdfUrl;
       if (rTestPdfUrl instanceof File) {
-        setSuccess('Uploading PDF to storage... Please wait.');
-        const newBlob = await upload(rTestPdfUrl.name, rTestPdfUrl, {
-          access: 'public',
-          handleUploadUrl: `${API_URL}/upload-file/token`,
-        });
+        const newBlob = await uploadWithProgress(rTestPdfUrl.name, rTestPdfUrl, "Reading Test PDF");
         finalPdfUrl = newBlob.url;
       }
 
@@ -149,6 +213,9 @@ export default function AdminPanel() {
       setActivePassageTab(1);
       setEditingId(null);
     } catch (err) { setError(err.message); }
+    finally {
+      setLoadingModal(prev => ({ ...prev, isOpen: false }));
+    }
   };
 
   const handleFileUpload = (e, setFileOrUrl, fileTypeLabel = 'File') => {
@@ -323,10 +390,13 @@ export default function AdminPanel() {
       
       let finalPdfUrl = lPdfUrl;
       let finalTranscriptPdfUrl = lTranscriptPdfUrl;
+      
+      let totalBytes = 0;
+      let qFile, tFile;
 
       if (lPdfUrl instanceof File) {
         if (hasTranscriptInPdf && lTranscriptPages) {
-          setSuccess('Processing and splitting PDF... Please wait.');
+          setLoadingModal(prev => ({ ...prev, isOpen: true, operation: 'upload', currentFile: 'Processing PDF...', percentage: 0, eta: 'Calculating...', statusText: 'Splitting PDF...' }));
           const pagesArr = lTranscriptPages.split('-').map(n => parseInt(n.trim(), 10));
           if (pagesArr.length !== 2 || isNaN(pagesArr[0]) || isNaN(pagesArr[1])) {
             throw new Error("Invalid transcript page range. Use format like '10-12'");
@@ -362,37 +432,51 @@ export default function AdminPanel() {
           const qBytes = await qDoc.save();
           const tBytes = await tDoc.save();
 
-          const qFile = new File([qBytes], `questions_${lPdfUrl.name}`, { type: 'application/pdf' });
-          const tFile = new File([tBytes], `transcript_${lPdfUrl.name}`, { type: 'application/pdf' });
+          qFile = new File([qBytes], `questions_${lPdfUrl.name}`, { type: 'application/pdf' });
+          tFile = new File([tBytes], `transcript_${lPdfUrl.name}`, { type: 'application/pdf' });
+          totalBytes += qFile.size + tFile.size;
+        } else {
+          totalBytes += lPdfUrl.size;
+        }
+      }
 
-          setSuccess('Uploading split Questions PDF...');
-          const qBlob = await upload(qFile.name, qFile, { access: 'public', handleUploadUrl: `${API_URL}/upload-file/token` });
+      if (!isSectionMedia && lAudio instanceof File) {
+        totalBytes += lAudio.size;
+      }
+      const sections = [...lSections];
+      if (isSectionMedia) {
+        for (let i = 0; i < sections.length; i++) {
+          if (sections[i].audioUrl instanceof File) {
+            totalBytes += sections[i].audioUrl.size;
+          }
+        }
+      }
+
+      if (totalBytes > 0) startUploadBatch(totalBytes);
+
+      if (lPdfUrl instanceof File) {
+        if (hasTranscriptInPdf && lTranscriptPages && qFile && tFile) {
+          const qBlob = await uploadWithProgress(qFile.name, qFile, "Questions PDF");
           finalPdfUrl = qBlob.url;
 
-          setSuccess('Uploading split Transcript PDF...');
-          const tBlob = await upload(tFile.name, tFile, { access: 'public', handleUploadUrl: `${API_URL}/upload-file/token` });
+          const tBlob = await uploadWithProgress(tFile.name, tFile, "Transcript PDF");
           finalTranscriptPdfUrl = tBlob.url;
-
         } else {
-          setSuccess('Uploading global PDF to storage... Please wait.');
-          const newBlob = await upload(lPdfUrl.name, lPdfUrl, { access: 'public', handleUploadUrl: `${API_URL}/upload-file/token` });
+          const newBlob = await uploadWithProgress(lPdfUrl.name, lPdfUrl, "Listening Test PDF");
           finalPdfUrl = newBlob.url;
         }
       }
 
       let finalAudioUrl = isSectionMedia ? '' : lAudio;
       if (!isSectionMedia && lAudio instanceof File) {
-        setSuccess('Uploading global Audio to storage... Please wait.');
-        const newBlob = await upload(lAudio.name, lAudio, { access: 'public', handleUploadUrl: `${API_URL}/upload-file/token` });
+        const newBlob = await uploadWithProgress(lAudio.name, lAudio, "Global Audio");
         finalAudioUrl = newBlob.url;
       }
 
-      const sections = [...lSections];
       for (let i = 0; i < sections.length; i++) {
         if (isSectionMedia && sections[i].audioUrl instanceof File) {
-          setSuccess(`Uploading Audio for Section ${i + 1}... Please wait.`);
           const file = sections[i].audioUrl;
-          const newBlob = await upload(file.name, file, { access: 'public', handleUploadUrl: `${API_URL}/upload-file/token` });
+          const newBlob = await uploadWithProgress(file.name, file, `Audio for Section ${i + 1}`);
           sections[i].audioUrl = newBlob.url;
         }
       }
@@ -422,6 +506,9 @@ export default function AdminPanel() {
       setLTitle(''); setLAudio(''); setLPdfUrl(''); setLTranscript(''); setLTranscriptPdfUrl(''); setHasTranscriptInPdf(false); setLTranscriptPages(''); setLSections(JSON.parse(DEFAULT_LISTENING_JSON));
       setEditingId(null);
     } catch (err) { setError(err.message); }
+    finally {
+      setLoadingModal(prev => ({ ...prev, isOpen: false }));
+    }
   };
 
   const handleSaveWriting = async () => {
@@ -431,10 +518,13 @@ export default function AdminPanel() {
       if (wTestType === 'task1' && !wTask1) throw new Error("Task 1 question is required.");
       if (wTestType === 'task2' && !wTask2) throw new Error("Task 2 question is required.");
 
+      let totalBytes = 0;
+      if (wTestType === 'task1' && wTask1Image instanceof File) totalBytes += wTask1Image.size;
+      if (totalBytes > 0) startUploadBatch(totalBytes);
+
       let finalImageUrl = wTask1Image;
       if (wTestType === 'task1' && wTask1Image instanceof File) {
-        setSuccess('Uploading image to storage... Please wait.');
-        const newBlob = await upload(wTask1Image.name, wTask1Image, { access: 'public', handleUploadUrl: `${API_URL}/upload-file/token` });
+        const newBlob = await uploadWithProgress(wTask1Image.name, wTask1Image, "Task 1 Image");
         finalImageUrl = newBlob.url;
       }
 
@@ -552,6 +642,9 @@ export default function AdminPanel() {
       setSuccess(`Speaking Part ${sPartType} Topic "${sTitle}" added!`);
       setSTitle(''); setSPart1(['', '', '', '']); setSPart2(['']); setSPart3([{ subTopic: '', questions: ['', '', ''] }]);
     } catch (err) { setError(err.message); }
+    finally {
+      setLoadingModal(prev => ({ ...prev, isOpen: false }));
+    }
   };
 
   useEffect(() => {
@@ -575,12 +668,9 @@ export default function AdminPanel() {
     }
   };
 
-  const handleDeleteRequest = (item) => {
-    setDeleteConfirm(item);
-  };
-
   const confirmDelete = async () => {
     if (!deleteConfirm) return;
+    setLoadingModal({ isOpen: true, operation: 'delete', currentFile: deleteConfirm.title, percentage: 0, eta: '', statusText: 'Deleting...' });
     try {
       const res = await fetch(`${API_URL}/content/${manageType}/${deleteConfirm._id}`, {
         method: 'DELETE'
@@ -593,7 +683,12 @@ export default function AdminPanel() {
       setError(err.message);
     } finally {
       setDeleteConfirm(null);
+      setLoadingModal(prev => ({ ...prev, isOpen: false }));
     }
+  };
+
+  const handleDeleteRequest = (item) => {
+    setDeleteConfirm(item);
   };
 
   const handleEdit = (item) => {
@@ -1396,6 +1491,56 @@ export default function AdminPanel() {
         </div>
       </div>
       
+      {loadingModal.isOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl max-w-sm w-full border border-gray-200 dark:border-gray-700 flex flex-col items-center">
+            {loadingModal.operation === 'upload' ? (
+              <>
+                <div className="relative w-32 h-32 mb-6">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="8" className="text-gray-200 dark:text-gray-700" />
+                    <circle 
+                      cx="50" cy="50" r="45" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      strokeWidth="8" 
+                      strokeLinecap="round" 
+                      className="text-blue-500 transition-all duration-300 ease-out" 
+                      strokeDasharray="282.7" 
+                      strokeDashoffset={282.7 - (282.7 * loadingModal.percentage) / 100}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center flex-col">
+                    <span className="text-2xl font-bold text-gray-800 dark:text-white">{loadingModal.percentage}%</span>
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1 text-center truncate w-full">
+                  Uploading {loadingModal.currentFile}
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                  {loadingModal.eta}
+                </p>
+                <div className="text-xs text-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-400 px-3 py-1 rounded-full animate-pulse">
+                  {loadingModal.statusText}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mb-6">
+                  <Loader2 className="w-16 h-16 text-red-500 animate-spin" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1 text-center truncate w-full">
+                  Deleting {loadingModal.currentFile}
+                </h3>
+                <div className="text-xs text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400 px-3 py-1 rounded-full animate-pulse mt-2">
+                  {loadingModal.statusText}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {deleteConfirm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl max-w-sm w-full border border-red-100 dark:border-red-900/30 transform transition-all animate-in zoom-in-95 duration-200">
