@@ -142,6 +142,10 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
             userAnswers={userAnswers}
             onAnswerChange={handleAnswerChange}
             onSubmit={handleSubmit}
+            hasPrevious={activeSectionIndex > 0}
+            hasNext={activeSectionIndex < selectedTest.sections.length - 1}
+            onPrevious={() => setActiveSectionIndex(p => p - 1)}
+            onNext={() => setActiveSectionIndex(p => p + 1)}
           />
         </div>
       </div>
@@ -336,6 +340,10 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               userAnswers={userAnswers}
               onAnswerChange={handleAnswerChange}
               onSubmit={handleSubmit}
+              hasPrevious={activeSectionIndex > 0}
+              hasNext={activeSectionIndex < selectedTest.sections.length - 1}
+              onPrevious={() => setActiveSectionIndex(p => p - 1)}
+              onNext={() => setActiveSectionIndex(p => p + 1)}
             />
           )}
         </div>

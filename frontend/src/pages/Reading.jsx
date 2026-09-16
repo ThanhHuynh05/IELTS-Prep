@@ -187,12 +187,16 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               ))}
           </div>
           
-          <ReadingQuestions 
-            sections={activePassage.sections} 
-            userAnswers={userAnswers}
-            onAnswerChange={handleAnswerChange}
-            onSubmit={handleSubmit}
-          />
+            <ReadingQuestions 
+              sections={activePassage.sections} 
+              userAnswers={userAnswers}
+              onAnswerChange={handleAnswerChange}
+              onSubmit={handleSubmit}
+              hasPrevious={activePassageIndex > 0}
+              hasNext={activePassageIndex < selectedTest.passages.length - 1}
+              onPrevious={() => setActivePassageIndex(p => p - 1)}
+              onNext={() => setActivePassageIndex(p => p + 1)}
+            />
         </div>
       </div>
     );
@@ -267,6 +271,10 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               userAnswers={userAnswers}
               onAnswerChange={handleAnswerChange}
               onSubmit={handleSubmit}
+              hasPrevious={activePassageIndex > 0}
+              hasNext={activePassageIndex < selectedTest.passages.length - 1}
+              onPrevious={() => setActivePassageIndex(p => p - 1)}
+              onNext={() => setActivePassageIndex(p => p + 1)}
             />
           ) : (
             <div className="flex flex-col h-full flex-1 min-h-0 overflow-hidden">

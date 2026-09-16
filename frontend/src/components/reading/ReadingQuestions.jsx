@@ -1,5 +1,15 @@
-export default function ReadingQuestions({ sections, allTestQuestions, userAnswers, onAnswerChange, onSubmit }) {
+import { useRef, useEffect } from 'react';
+
+export default function ReadingQuestions({ sections, allTestQuestions, userAnswers, onAnswerChange, onSubmit, hasPrevious, hasNext, onPrevious, onNext }) {
   if (!sections) return null;
+
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [sections]);
 
   const handleInputChange = (questionId, value) => {
     onAnswerChange(questionId, value);
@@ -15,7 +25,7 @@ export default function ReadingQuestions({ sections, allTestQuestions, userAnswe
 
   return (
     <div className="flex flex-col flex-1 min-h-0 h-full pl-6 border-l border-gray-200 dark:border-gray-700">
-      <div className="flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar pb-4">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar pb-4">
         <div className="mb-6 flex justify-between items-end">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white">Questions</h2>
         <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -130,11 +140,31 @@ export default function ReadingQuestions({ sections, allTestQuestions, userAnswe
       </div>
 
       </div>
-      <div className="shrink-0 bg-white dark:bg-gray-800 p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end mt-4 transition-colors">
+      <div className="shrink-0 bg-white dark:bg-gray-800 p-4 border-t border-gray-200 dark:border-gray-700 flex justify-between mt-4 transition-colors">
+        <div className="flex space-x-2">
+          {onPrevious && (
+            <button
+              onClick={onPrevious}
+              disabled={!hasPrevious}
+              className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            >
+              Previous
+            </button>
+          )}
+          {onNext && (
+            <button
+              onClick={onNext}
+              disabled={!hasNext}
+              className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            >
+              Next
+            </button>
+          )}
+        </div>
         <button
           onClick={onSubmit}
           disabled={!allAnswered}
-          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 text-white font-bold py-3 px-8 rounded-full shadow-md transition-all flex items-center"
+          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-all flex items-center"
         >
           Submit Answers
         </button>
