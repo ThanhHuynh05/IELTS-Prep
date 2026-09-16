@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Shield, PlusCircle, Save, BookOpen, Headphones, PenTool, Mic, Trash2, List, FileText, Wand2, Edit2, XCircle, Loader2 } from 'lucide-react';
 import { upload } from '@vercel/blob/client';
 import QuestionBuilder from '../components/common/QuestionBuilder';
+import { PDFDocument } from 'pdf-lib';
 
 const DEFAULT_READING_JSON = `[]`;
 
@@ -48,6 +49,9 @@ export default function AdminPanel() {
   const [lAudio, setLAudio] = useState('');
   const [lPdfUrl, setLPdfUrl] = useState('');
   const [lTranscript, setLTranscript] = useState('');
+  const [lTranscriptPdfUrl, setLTranscriptPdfUrl] = useState('');
+  const [hasTranscriptInPdf, setHasTranscriptInPdf] = useState(false);
+  const [lTranscriptPages, setLTranscriptPages] = useState('');
   const [pastedListeningAnswers, setPastedListeningAnswers] = useState('');
   const [lSections, setLSections] = useState(() => JSON.parse(DEFAULT_LISTENING_JSON));
   const [isSectionMedia, setIsSectionMedia] = useState(false);
@@ -318,10 +322,62 @@ export default function AdminPanel() {
       if (!isSectionMedia && !lAudio) throw new Error("Audio must be selected for full test mode.");
       
       let finalPdfUrl = lPdfUrl;
+      let finalTranscriptPdfUrl = lTranscriptPdfUrl;
+
       if (lPdfUrl instanceof File) {
-        setSuccess('Uploading global PDF to storage... Please wait.');
-        const newBlob = await upload(lPdfUrl.name, lPdfUrl, { access: 'public', handleUploadUrl: `${API_URL}/upload-file/token` });
-        finalPdfUrl = newBlob.url;
+        if (hasTranscriptInPdf && lTranscriptPages) {
+          setSuccess('Processing and splitting PDF... Please wait.');
+          const pagesArr = lTranscriptPages.split('-').map(n => parseInt(n.trim(), 10));
+          if (pagesArr.length !== 2 || isNaN(pagesArr[0]) || isNaN(pagesArr[1])) {
+            throw new Error("Invalid transcript page range. Use format like '10-12'");
+          }
+          
+          const arrayBuffer = await lPdfUrl.arrayBuffer();
+          const pdfDoc = await PDFDocument.load(arrayBuffer);
+          const totalPages = pdfDoc.getPageCount();
+          
+          const startPage = Math.max(1, pagesArr[0]);
+          const endPage = Math.min(totalPages, pagesArr[1]);
+          
+          if (startPage > endPage || startPage > totalPages) {
+            throw new Error(`Invalid page range. PDF has ${totalPages} pages.`);
+          }
+
+          // Create questions PDF (pages 1 to startPage - 1)
+          const qDoc = await PDFDocument.create();
+          const qIndices = Array.from({ length: startPage - 1 }, (_, i) => i);
+          if (qIndices.length > 0) {
+            const copiedQPages = await qDoc.copyPages(pdfDoc, qIndices);
+            copiedQPages.forEach(p => qDoc.addPage(p));
+          } else {
+             throw new Error("No pages left for questions based on the range.");
+          }
+
+          // Create transcript PDF
+          const tDoc = await PDFDocument.create();
+          const tIndices = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage - 1 + i);
+          const copiedTPages = await tDoc.copyPages(pdfDoc, tIndices);
+          copiedTPages.forEach(p => tDoc.addPage(p));
+
+          const qBytes = await qDoc.save();
+          const tBytes = await tDoc.save();
+
+          const qFile = new File([qBytes], `questions_${lPdfUrl.name}`, { type: 'application/pdf' });
+          const tFile = new File([tBytes], `transcript_${lPdfUrl.name}`, { type: 'application/pdf' });
+
+          setSuccess('Uploading split Questions PDF...');
+          const qBlob = await upload(qFile.name, qFile, { access: 'public', handleUploadUrl: `${API_URL}/upload-file/token` });
+          finalPdfUrl = qBlob.url;
+
+          setSuccess('Uploading split Transcript PDF...');
+          const tBlob = await upload(tFile.name, tFile, { access: 'public', handleUploadUrl: `${API_URL}/upload-file/token` });
+          finalTranscriptPdfUrl = tBlob.url;
+
+        } else {
+          setSuccess('Uploading global PDF to storage... Please wait.');
+          const newBlob = await upload(lPdfUrl.name, lPdfUrl, { access: 'public', handleUploadUrl: `${API_URL}/upload-file/token` });
+          finalPdfUrl = newBlob.url;
+        }
       }
 
       let finalAudioUrl = isSectionMedia ? '' : lAudio;
@@ -346,6 +402,8 @@ export default function AdminPanel() {
         title: lTitle, 
         audioUrl: finalAudioUrl, 
         pdfUrl: finalPdfUrl,
+        transcriptPdfUrl: finalTranscriptPdfUrl,
+        transcript: lTranscript,
         isSectionMedia,
         sections 
       };
@@ -361,7 +419,7 @@ export default function AdminPanel() {
       if (!res.ok) throw new Error('Failed to save to database');
       
       setSuccess(`Listening Test "${lTitle}" ${editingId ? 'updated' : 'added'}!`);
-      setLTitle(''); setLAudio(''); setLPdfUrl(''); setLTranscript(''); setLSections(JSON.parse(DEFAULT_LISTENING_JSON));
+      setLTitle(''); setLAudio(''); setLPdfUrl(''); setLTranscript(''); setLTranscriptPdfUrl(''); setHasTranscriptInPdf(false); setLTranscriptPages(''); setLSections(JSON.parse(DEFAULT_LISTENING_JSON));
       setEditingId(null);
     } catch (err) { setError(err.message); }
   };
@@ -557,6 +615,9 @@ export default function AdminPanel() {
       setLAudio(item.audioUrl || '');
       setLPdfUrl(item.pdfUrl || '');
       setLTranscript(item.transcript || '');
+      setLTranscriptPdfUrl(item.transcriptPdfUrl || '');
+      setHasTranscriptInPdf(false);
+      setLTranscriptPages('');
       setIsSectionMedia(item.isSectionMedia || false);
       setLSections(item.sections || JSON.parse(DEFAULT_LISTENING_JSON));
       setEditingId(item._id);
@@ -843,6 +904,37 @@ export default function AdminPanel() {
                 </div>
                 <p className="text-xs text-gray-500 mt-1">Upload a single PDF containing all the questions.</p>
               </div>
+
+              {lPdfUrl && lPdfUrl instanceof File && (
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center mb-3">
+                    <input
+                      type="checkbox"
+                      id="hasTranscriptInPdf"
+                      checked={hasTranscriptInPdf}
+                      onChange={(e) => setHasTranscriptInPdf(e.target.checked)}
+                      className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
+                    />
+                    <label htmlFor="hasTranscriptInPdf" className="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Does this PDF contain the transcript at the end? (We will split it for you)
+                    </label>
+                  </div>
+                  
+                  {hasTranscriptInPdf && (
+                    <div className="ml-6">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Transcript Page Range</label>
+                      <input 
+                        type="text" 
+                        value={lTranscriptPages} 
+                        onChange={(e) => setLTranscriptPages(e.target.value)} 
+                        className="w-full sm:w-64 p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-sm focus:ring-2 focus:ring-purple-500" 
+                        placeholder="e.g. 10-12" 
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Specify the pages containing the transcript. We will extract them to a separate file.</p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {isSectionMedia && (
                 <div className="mb-6 space-y-4">

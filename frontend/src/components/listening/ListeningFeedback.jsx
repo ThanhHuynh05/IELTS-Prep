@@ -3,8 +3,16 @@ import { useState, useEffect, useRef } from 'react';
 import { saveResult } from '../../utils/storage';
 import { checkAnswer } from '../../utils/answerChecker';
 
-export default function ListeningFeedback({ sections, userAnswers, transcript, onReset, testTitle, pdfUrl, isHistoryView }) {
+export default function ListeningFeedback({ sections, userAnswers, transcript, transcriptPdfUrl, isViewingTranscript, setIsViewingTranscript, onReset, testTitle, pdfUrl, isHistoryView }) {
   const [showTranscript, setShowTranscript] = useState(false);
+
+  const handleToggleTranscript = () => {
+    if (transcriptPdfUrl && setIsViewingTranscript) {
+      setIsViewingTranscript(!isViewingTranscript);
+    } else {
+      setShowTranscript(!showTranscript);
+    }
+  };
 
   if (!sections || !userAnswers) return null;
 
@@ -52,7 +60,8 @@ export default function ListeningFeedback({ sections, userAnswers, transcript, o
         title: testTitle || "Listening Practice",
         detailedResults: results,
         pdfUrl: pdfUrl || window.history.state?.pdfUrl || null,
-        transcript
+        transcript,
+        transcriptPdfUrl
       });
       hasSaved.current = true;
     }
@@ -77,16 +86,18 @@ export default function ListeningFeedback({ sections, userAnswers, transcript, o
 
       <div className="mb-8">
         <button
-          onClick={() => setShowTranscript(!showTranscript)}
+          onClick={handleToggleTranscript}
           className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold"
         >
           <FileText size={20} />
-          <span>{showTranscript ? "Hide Audio Transcript" : "View Audio Transcript"}</span>
+          <span>{(isViewingTranscript || showTranscript) ? "View Questions" : "View Audio Transcript"}</span>
         </button>
 
         {showTranscript && (
-          <div className="mt-4 p-5 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
-            {transcript}
+          <div className="mt-4">
+            <div className="p-5 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
+              {transcript || "No transcript available."}
+            </div>
           </div>
         )}
       </div>

@@ -24,6 +24,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
   const [showTips, setShowTips] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isViewingTranscript, setIsViewingTranscript] = useState(false);
 
   useEffect(() => {
     const fetchCustomTests = async () => {
@@ -156,6 +157,7 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
     setUserAnswers({});
     setIsSubmitted(false);
     setActiveSectionIndex(0);
+    setIsViewingTranscript(false);
   };
 
   const handleTestSelect = (test) => {
@@ -298,9 +300,9 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               />
             </div>
 
-            {selectedTest.pdfUrl && (
+            {(selectedTest.pdfUrl || (isViewingTranscript && selectedTest.transcriptPdfUrl)) && (
               <div className="flex-1 min-h-[400px] lg:min-h-0 border border-gray-200 rounded-lg overflow-hidden relative">
-                <PdfViewer fileUrl={selectedTest.pdfUrl} />
+                <PdfViewer fileUrl={(isViewingTranscript && selectedTest.transcriptPdfUrl) ? selectedTest.transcriptPdfUrl : selectedTest.pdfUrl} />
               </div>
             )}
           </div>
@@ -328,6 +330,9 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
                 sections={selectedTest.sections}
                 userAnswers={userAnswers}
                 transcript={selectedTest.transcript}
+                transcriptPdfUrl={selectedTest.transcriptPdfUrl}
+                isViewingTranscript={isViewingTranscript}
+                setIsViewingTranscript={setIsViewingTranscript}
                 onReset={handleReset}
                 testTitle={selectedTest.title}
                 pdfUrl={selectedTest.pdfUrl}

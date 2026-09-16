@@ -14,6 +14,7 @@ export default function HistoryDetail() {
   const navigate = useNavigate();
   const { section, id } = useParams();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isViewingTranscript, setIsViewingTranscript] = useState(false);
   
   if (!state || !state.result) {
     return (
@@ -105,8 +106,8 @@ export default function HistoryDetail() {
         {section === 'listening' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full overflow-hidden">
             <div className="h-full border border-gray-200 rounded-lg overflow-hidden lg:col-span-8 min-h-[500px]">
-              {result.pdfUrl ? (
-                <PdfViewer fileUrl={result.pdfUrl} />
+              {(result.pdfUrl || (isViewingTranscript && result.transcriptPdfUrl)) ? (
+                <PdfViewer fileUrl={(isViewingTranscript && result.transcriptPdfUrl) ? result.transcriptPdfUrl : result.pdfUrl} />
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-400">No PDF available for this past test</div>
               )}
@@ -116,6 +117,9 @@ export default function HistoryDetail() {
                 sections={[{ questions: result.detailedResults || [] }]} 
                 userAnswers={(result.detailedResults || []).reduce((acc, q) => ({ ...acc, [q.id]: q.userAnswer }), {})}
                 transcript={result.transcript || "Transcript not available."}
+                transcriptPdfUrl={result.transcriptPdfUrl}
+                isViewingTranscript={isViewingTranscript}
+                setIsViewingTranscript={setIsViewingTranscript}
                 onReset={() => navigate('/listening')}
                 isHistoryView={true}
               />
