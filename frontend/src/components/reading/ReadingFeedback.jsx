@@ -8,7 +8,14 @@ export default function ReadingFeedback({ sections, userAnswers, onReset, testTi
 
   const allQuestions = sections.flatMap(sec => sec.questions);
   const [currentPage, setCurrentPage] = useState(1);
+  const scrollRef = useRef(null);
   const questionsPerPage = 10;
+  
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentPage]);
   
   let correctCount = 0;
   
@@ -50,7 +57,8 @@ export default function ReadingFeedback({ sections, userAnswers, onReset, testTi
   }, [correctCount, allQuestions.length, estimatedBand, results, pdfUrl, isHistoryView]);
 
   return (
-    <div className="h-full overflow-y-auto pl-6 border-l border-gray-200 dark:border-gray-700 animate-in fade-in slide-in-from-right-4 duration-500">
+    <div className="flex flex-col flex-1 min-h-0 h-full pl-6 border-l border-gray-200 dark:border-gray-700 animate-in fade-in slide-in-from-right-4 duration-500">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar pb-4">
       
       {/* Overall Score */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700 mb-8 text-center flex justify-around items-center">
@@ -151,7 +159,8 @@ export default function ReadingFeedback({ sections, userAnswers, onReset, testTi
         </div>
       )}
 
-      <div className="sticky bottom-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end mt-4">
+      </div>
+      <div className="shrink-0 bg-white dark:bg-gray-800 p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end mt-4">
         <button
           onClick={onReset}
           className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold py-3 px-8 rounded-full border dark:border-gray-600 transition-all"

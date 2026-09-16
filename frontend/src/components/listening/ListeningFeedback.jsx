@@ -10,7 +10,14 @@ export default function ListeningFeedback({ sections, userAnswers, transcript, o
 
   const allQuestions = sections.flatMap(sec => sec.questions);
   const [currentPage, setCurrentPage] = useState(1);
+  const scrollRef = useRef(null);
   const questionsPerPage = 10;
+  
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentPage]);
   
   let correctCount = 0;
 
@@ -52,9 +59,9 @@ export default function ListeningFeedback({ sections, userAnswers, transcript, o
   }, [correctCount, allQuestions.length, estimatedBand, results, transcript, pdfUrl, isHistoryView]);
 
   return (
-    <div className="h-full overflow-y-auto pr-2 animate-in fade-in slide-in-from-right-4 duration-500">
-
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700 mb-8 text-center flex justify-around items-center">
+    <div className="flex flex-col flex-1 min-h-0 h-full animate-in fade-in slide-in-from-right-4 duration-500">
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar pb-4">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border dark:border-gray-700 mb-8 text-center flex justify-around items-center">
         <div>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Raw Score</h2>
           <div className="text-4xl font-bold text-gray-800 dark:text-white">
@@ -167,7 +174,8 @@ export default function ListeningFeedback({ sections, userAnswers, transcript, o
         </div>
       )}
 
-      <div className="sticky bottom-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end mt-4">
+      </div>
+      <div className="shrink-0 bg-white dark:bg-gray-800 p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end mt-4">
         <button
           onClick={onReset}
           className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-bold py-3 px-8 rounded-full border dark:border-gray-600 transition-all"

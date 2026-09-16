@@ -14,8 +14,9 @@ export default function ReadingQuestions({ sections, allTestQuestions, userAnswe
   const allAnswered = totalQuestionsInTest > 0 && answeredCount === totalQuestionsInTest;
 
   return (
-    <div className="h-full overflow-y-auto pl-6 border-l border-gray-200 dark:border-gray-700">
-      <div className="mb-6 flex justify-between items-end">
+    <div className="flex flex-col flex-1 min-h-0 h-full pl-6 border-l border-gray-200 dark:border-gray-700">
+      <div className="flex-1 min-h-0 overflow-y-auto pr-2 custom-scrollbar pb-4">
+        <div className="mb-6 flex justify-between items-end">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white">Questions</h2>
         <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
           {answeredCount} / {totalQuestionsInTest} Answered
@@ -128,7 +129,8 @@ export default function ReadingQuestions({ sections, allTestQuestions, userAnswe
         ))}
       </div>
 
-      <div className="sticky bottom-0 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end mt-4 transition-colors">
+      </div>
+      <div className="shrink-0 bg-white dark:bg-gray-800 p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end mt-4 transition-colors">
         <button
           onClick={onSubmit}
           disabled={!allAnswered}

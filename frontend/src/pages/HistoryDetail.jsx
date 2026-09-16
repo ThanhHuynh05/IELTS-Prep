@@ -39,7 +39,7 @@ export default function HistoryDetail() {
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto p-4 md:p-8 min-h-[calc(100vh-80px)] flex flex-col">
+    <div className="max-w-[1600px] mx-auto p-4 md:p-8 h-auto md:h-[calc(100vh-80px)] flex flex-col">
       <ConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
@@ -91,7 +91,7 @@ export default function HistoryDetail() {
                 <div className="flex items-center justify-center h-full text-gray-400">No PDF available for this past test</div>
               )}
             </div>
-            <div className="overflow-y-auto lg:col-span-4 pr-2">
+            <div className="h-full min-h-0 flex flex-col overflow-hidden lg:col-span-4 pr-2">
               <ReadingFeedback 
                 sections={[{ questions: result.detailedResults || [] }]} 
                 userAnswers={(result.detailedResults || []).reduce((acc, q) => ({ ...acc, [q.id]: q.userAnswer }), {})}
@@ -111,7 +111,7 @@ export default function HistoryDetail() {
                 <div className="flex items-center justify-center h-full text-gray-400">No PDF available for this past test</div>
               )}
             </div>
-            <div className="overflow-y-auto lg:col-span-4 pr-2">
+            <div className="h-full min-h-0 flex flex-col overflow-hidden lg:col-span-4 pr-2">
               <ListeningFeedback 
                 sections={[{ questions: result.detailedResults || [] }]} 
                 userAnswers={(result.detailedResults || []).reduce((acc, q) => ({ ...acc, [q.id]: q.userAnswer }), {})}

@@ -319,14 +319,16 @@ const Listening = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
              ))}
           </div>
           {isSubmitted ? (
-            <ListeningFeedback 
-              sections={selectedTest.sections}
-              userAnswers={userAnswers}
-              transcript={selectedTest.transcript}
-              onReset={handleReset}
-              testTitle={selectedTest.title}
-              pdfUrl={selectedTest.pdfUrl}
-            />
+            <div className="flex flex-col h-full flex-1 min-h-0 overflow-hidden">
+              <ListeningFeedback 
+                sections={selectedTest.sections}
+                userAnswers={userAnswers}
+                transcript={selectedTest.transcript}
+                onReset={handleReset}
+                testTitle={selectedTest.title}
+                pdfUrl={selectedTest.pdfUrl}
+              />
+            </div>
           ) : (
             <ListeningQuestions 
               sections={selectedTest.sections} 

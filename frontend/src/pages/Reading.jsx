@@ -242,7 +242,7 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
         </div>
 
         {/* Right Side: Questions */}
-        <div className="lg:col-span-4 h-full overflow-hidden flex flex-col border-t lg:border-t-0 lg:border-l border-gray-200 pt-6 lg:pt-0 lg:pl-6 mt-6 lg:mt-0 min-w-0">
+        <div className="lg:col-span-4 h-full min-h-0 flex-1 overflow-hidden flex flex-col border-t lg:border-t-0 lg:border-l border-gray-200 pt-6 lg:pt-0 lg:pl-6 mt-6 lg:mt-0 min-w-0">
           {/* Passage Navigation for normal mode */}
           <div className="flex flex-wrap gap-2 bg-gray-100 dark:bg-gray-900/50 p-1 rounded-lg shadow-sm mb-4 shrink-0">
              {[0, 1, 2].map((idx) => (
@@ -269,8 +269,8 @@ const Reading = forwardRef(({ isMockMode, onMockSubmit }, ref) => {
               onSubmit={handleSubmit}
             />
           ) : (
-            <div className="flex flex-col h-full overflow-y-auto pr-2 custom-scrollbar">
-              <h2 className="text-xl font-bold mb-4">Test Feedback</h2>
+            <div className="flex flex-col h-full flex-1 min-h-0 overflow-hidden">
+              <h2 className="text-xl font-bold mb-4 shrink-0">Test Feedback</h2>
               <ReadingFeedback 
                 sections={selectedTest.passages.flatMap(p => p.sections)}
                 userAnswers={userAnswers}
